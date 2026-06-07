@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String    
+  role          Role      @default(USER)
+  projects      Project[]
+  appointments  Appointment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float?   
+  imageUrl    String?  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String   
+  description String?
+  progress    Int      @default(0) 
+  isCompleted Boolean  @default(false)
+  customerId  String
+  customer    User     @relation(fields: [customerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  date        DateTime          
+  subject     String            
+  status      AppointmentStatus @default(PENDING)
+  customerId  String
+  customer    User              @relation(fields: [customerId], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  
+  phone     String   @default("")  
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
