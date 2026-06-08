@@ -35,7 +35,9 @@ export async function POST(request) {
       user = await prisma.user.create({
         data: {
           email: customerEmail,
-          name: customerName || "Yeni Müşteri" // Eğer formdan isim gelmezse varsayılan isim ata
+          name: customerName || "Yeni Müşteri",
+          password: "musteri123", // <-- Prisma'nın kızmasını engelleyen cankurtaran satırımız!
+          // Eğer schema.prisma dosyasında 'role' gibi başka zorunlu alanlar varsa onu da buraya eklemelisin. Örn: role: "USER"
         }
       });
     }
