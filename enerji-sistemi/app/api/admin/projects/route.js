@@ -18,26 +18,35 @@ export async function GET() {
   }
 }
 
-// Yeni Proje Ekleme
+// Yeni Proje Ekleme (Otomatik Müşteri Kaydı ile)
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { title, description, progress, customerEmail } = body;
+    // Formdan gelen verileri yakalıyoruz (İsim bilgisi geliyorsa onu da alıyoruz)
+    const { title, description, progress, customerEmail, customerName } = body;
 
-    const user = await prisma.user.findUnique({ 
+    // 1. Adım: Önce bu e-postaya sahip bir müşteri var mı diye veritabanına bak
+    let user = await prisma.user.findUnique({ 
       where: { email: customerEmail } 
     });
 
+    // 2. Adım: Eğer müşteri YOKSA, sistemi durdurmak yerine arka planda yeni müşteriyi yarat
     if (!user) {
-       return NextResponse.json({ error: "Bu e-posta adresiyle kayıtlı müşteri bulunamadı." }, { status: 404 });
+      user = await prisma.user.create({
+        data: {
+          email: customerEmail,
+          name: customerName || "Yeni Müşteri" // Eğer formdan isim gelmezse varsayılan isim ata
+        }
+      });
     }
 
+    // 3. Adım: Artık elimizde (eski veya yeni fark etmeksizin) kesinlikle bir müşteri ID'si var. Projeyi rahatça oluştur!
     const project = await prisma.project.create({
       data: {
         title,
         description,
         progress: parseInt(progress),
-        customerId: user.id // <--- DÜZELTME: userId yerine customerId yapıldı
+        customerId: user.id 
       }
     });
 
