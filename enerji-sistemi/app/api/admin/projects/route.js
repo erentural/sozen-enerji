@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcrypt";
 
 // Projeleri Listeleme
 export async function GET() {
@@ -30,14 +31,16 @@ export async function POST(request) {
       where: { email: customerEmail } 
     });
 
-    // 2. Adım: Eğer müşteri YOKSA, sistemi durdurmak yerine arka planda yeni müşteriyi yarat
+    // 2. Adım: Eğer müşteri YOKSA, arka planda yeni müşteriyi yarat
     if (!user) {
+      // Önce şifreyi NextAuth'un onaylayacağı şifreli formata (hash) çeviriyoruz
+      const hashedPassword = await bcrypt.hash("Sistem_Otomatik_Sifre_123!", 10);
+
       user = await prisma.user.create({
         data: {
           email: customerEmail,
           name: customerName || "Yeni Müşteri",
-          password: "musteri123", // <-- Prisma'nın kızmasını engelleyen cankurtaran satırımız!
-          // Eğer schema.prisma dosyasında 'role' gibi başka zorunlu alanlar varsa onu da buraya eklemelisin. Örn: role: "USER"
+          password: hashedPassword, // Düz metin yerine şifrelenmiş halini kaydediyoruz
         }
       });
     }
