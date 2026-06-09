@@ -34,7 +34,7 @@ export async function POST(request) {
     // 2. Adım: Eğer müşteri YOKSA, arka planda yeni müşteriyi yarat
     if (!user) {
       // Önce şifreyi NextAuth'un onaylayacağı şifreli formata (hash) çeviriyoruz
-      const hashedPassword = await bcrypt.hash("Sistem_Otomatik_Sifre_123!", 10);
+      const hashedPassword = await bcrypt.hash("musteri123", 10);
 
       user = await prisma.user.create({
         data: {
