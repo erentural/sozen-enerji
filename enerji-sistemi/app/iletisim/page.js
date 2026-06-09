@@ -21,7 +21,7 @@ export default function IletisimPage() {
                 <MapPin className="w-6 h-6 text-[#02529C] shrink-0 mt-1" />
                 <div>
                   <h4 className="font-bold text-gray-900">Adres</h4>
-                  <p className="text-gray-600 mt-1 leading-relaxed">Cumhuriyet Meydanı Mevkii, Atatürk Bulvarı No:123<br/>İlkadım / Samsun</p>
+                  <p className="text-gray-600 mt-1 leading-relaxed">Yaşardoğu, Şehit Tuncay Karataş BulvarıNo:40, 55050<br/>İlkadım / Samsun</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -45,7 +45,7 @@ export default function IletisimPage() {
                 <Mail className="w-6 h-6 text-[#02529C] shrink-0 mt-1" />
                 <div>
                   <h4 className="font-bold text-gray-900">E-Posta</h4>
-                  <p className="text-gray-600 mt-1 leading-relaxed">info@enerjimiz.com<br/>destek@enerjimiz.com</p>
+                  <p className="text-gray-600 mt-1 leading-relaxed">info@sozenenerji.com<br/>destek@sozenenerji.com</p>
                 </div>
               </div>
             </div>
