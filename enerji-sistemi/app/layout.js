@@ -21,8 +21,9 @@ export default function RootLayout({ children }) {
             {children}
           </ThemeProvider>
         </AuthProvider>
+        <meta name="google-site-verification" content="Sp24FlwX9QmeamUO1MPQId3BZovoM4-oh8m0Lg7Y9VI" />
       </body>
     </html>
   )
 }
-<meta name="google-site-verification" content="Sp24FlwX9QmeamUO1MPQId3BZovoM4-oh8m0Lg7Y9VI" />
+
