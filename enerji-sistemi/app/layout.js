@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
+
 export const metadata = {
   title: 'Enerji Sistemi',
   description: 'Enerji Takip ve Yönetim Sistemi',
@@ -24,3 +25,4 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
+<meta name="google-site-verification" content="Sp24FlwX9QmeamUO1MPQId3BZovoM4-oh8m0Lg7Y9VI" />
