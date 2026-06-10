@@ -25,4 +25,4 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
-<meta name="google-site-verification" content="Sp24FlwX9QmeamUO1MPQId3BZovoM4-oh8m0Lg7Y9VI" />
+<meta name="google-site-verification" content="google82f69a2eaed749c8.html" />
