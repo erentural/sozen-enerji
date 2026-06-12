@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -89,6 +91,17 @@ export default function LoginPage() {
             {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
           </button>
         </form>
+        {/* YENİ EKLENEN KISIM: Ana Sayfaya Dön Butonu */}
+        <div className="mt-6 text-center">
+          <Link 
+            href="/" 
+            className="inline-flex items-center justify-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Ana Sayfaya Dön
+          </Link>
+        </div>
+        {/* YENİ EKLENEN KISIM BİTİŞİ */}
       </div>
     </div>
   );
