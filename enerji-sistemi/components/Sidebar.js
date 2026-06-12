@@ -12,18 +12,20 @@ import {
   LogOut,
   FolderKanban,
   Mail,
-  Globe // Ana sayfa kısayolu için eklendi
+  Globe, // Ana sayfa kısayolu için eklendi
+  BookOpen, // Kılavuz için eklendi
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    { name: "Ana Sayfa", icon: LayoutDashboard, path: "/admin" },
     { name: "Mesajlar", icon: Mail, path: "/admin/mesajlar" },
     { name: "Ürünler", icon: Briefcase, path: "/admin/urunler" },
     { name: "Projeler & İşler", icon: FolderKanban, path: "/admin/projeler" },
     { name: "Randevular", icon: CalendarDays, path: "/admin/randevular" },
+    { name: "Kılavuz", icon: BookOpen, path: "/admin/kilavuz" },
     { name: "Ayarlar", icon: Settings, path: "/admin/ayarlar" },
   ];
 
