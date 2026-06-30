@@ -92,37 +92,118 @@ export default function CustomerPortal() {
     }
   };
 
+  const temizleTR = (text) => {
+    if (!text) return "";
+    return text
+      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+      .replace(/ş/g, 's').replace(/Ş/g, 'S')
+      .replace(/ı/g, 'i').replace(/İ/g, 'I')
+      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+      .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+      .replace(/ü/g, 'u').replace(/Ü/g, 'U');
+  };
+
   const generatePDF = (project) => {
     const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.setTextColor(37, 99, 235);
-    doc.text("Enerji Sistemleri Proje Raporu", 14, 22);
-    
-    doc.setFontSize(12);
-    doc.setTextColor(100, 100, 100);
-    const dateStr = new Date().toLocaleDateString("tr-TR");
-    doc.text(`Rapor Tarihi: ${dateStr}`, 14, 32);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Musteri: ${session?.user?.name}`, 14, 45);
-    doc.text(`Proje Adi: ${project.title}`, 14, 53);
-    doc.text(`Tamamlanma Orani: %${project.progress}`, 14, 61);
+    const pageWidth = doc.internal.pageSize.width;
 
+    // 1. KURUMSAL ÜST BİLGİ (HEADER) ALANI - Sözen Enerji Mavisi
+    doc.setFillColor(2, 82, 156); 
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    // Logo / Şirket İsmi
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("SOZEN ENERJI", 14, 24);
+
+    // Alt Slogan
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Guvenilir Elektrik ve Yenilenebilir Enerji Cozumleri", 14, 32);
+
+    // 2. RAPOR BAŞLIĞI VE ÇİZGİ
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("PROJE DURUM RAPORU", 14, 55);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 60, pageWidth - 14, 60);
+
+    // 3. PROJE VE MÜŞTERİ BİLGİLERİ (Izgara Görünümü)
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Musteri Bilgileri", 14, 70);
+    doc.text("Proje Bilgileri", 110, 70);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    
+    // Sol Kolon
+    doc.setFont("helvetica", "bold");
+    doc.text("Ad Soyad:", 14, 78);
+    doc.setFont("helvetica", "normal");
+    doc.text(temizleTR(session?.user?.name || "Musteri"), 35, 78);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Rapor Tarihi:", 14, 85);
+    doc.setFont("helvetica", "normal");
+    const dateStr = new Date().toLocaleDateString("tr-TR");
+    doc.text(dateStr, 38, 85);
+
+    // Sağ Kolon
+    doc.setFont("helvetica", "bold");
+    doc.text("Proje Adi:", 110, 78);
+    doc.setFont("helvetica", "normal");
+    doc.text(temizleTR(project.title), 132, 78);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Guncel Durum:", 110, 85);
+    doc.setFont("helvetica", "normal");
+    doc.text(`%${project.progress} Tamamlandi`, 138, 85);
+
+    // 4. TABLO TASARIMI (Modern ve Renkli)
     autoTable(doc, {
-      startY: 75,
-      head: [['Proje Aciklamasi', 'Baslangic Tarihi', 'Guncel Durum']],
+      startY: 95,
+      head: [['Proje Aciklamasi', 'Baslangic Tarihi', 'Ilerleme']],
       body: [
-        [project.description, new Date(project.createdAt).toLocaleDateString("tr-TR"), `%${project.progress} Tamamlandi`],
+        [
+          temizleTR(project.description), 
+          new Date(project.createdAt).toLocaleDateString("tr-TR"), 
+          `%${project.progress}`
+        ],
       ],
-      headStyles: { fillColor: [37, 99, 235] },
-      styles: { fontSize: 10, cellPadding: 6 },
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [2, 82, 156], 
+        textColor: 255, 
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: { 
+        fontSize: 10, 
+        cellPadding: 8, 
+        textColor: [60, 60, 60] 
+      },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { cellWidth: 40, halign: 'center' },
+        2: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },
+      },
+      alternateRowStyles: { fillColor: [245, 248, 250] },
     });
 
-    const finalY = doc.lastAutoTable.finalY || 90;
-    doc.setFontSize(10);
+    // 5. ALT BİLGİ (FOOTER)
+    const finalY = doc.lastAutoTable.finalY || 120;
+    doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
-    doc.text("Bu belge sistem tarafindan otomatik olarak olusturulmustur.", 14, finalY + 20);
-    doc.save(`${project.title}_Durum_Raporu.pdf`);
+    doc.text("Bu belge Sozen Enerji sistemleri tarafindan otomatik olarak uretilmistir.", 14, finalY + 20);
+    doc.text("Herhangi bir sorunuz icin: destek@sozen-enerji.com | 444 0 123", 14, finalY + 25);
+
+    // PDF'i İndir (İsimde boşlukları alt tire yapar)
+    const dosyaIsmi = `SozenEnerji_${temizleTR(project.title).replace(/\s+/g, '_')}_Raporu.pdf`;
+    doc.save(dosyaIsmi);
   };
 
   if (status === "loading" || loading) {
