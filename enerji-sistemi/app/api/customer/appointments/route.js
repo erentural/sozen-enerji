@@ -10,7 +10,16 @@ export async function POST(request) {
       return NextResponse.json({ error: "Lütfen tüm alanları doldurun." }, { status: 400 });
     }
 
-    // E-posta üzerinden hangi müşterinin talep ettiğini bul
+    const randevuTarihi = new Date(date);
+    const suAn = new Date();
+
+    if (randevuTarihi < suAn) {
+      return NextResponse.json(
+        { error: "Güvenlik İhlali: Geçmiş tarihli randevu oluşturulamaz." }, 
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.user.findUnique({ 
       where: { email } 
     });
@@ -19,11 +28,11 @@ export async function POST(request) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
     }
 
-  // Randevuyu 'PENDING' durumuyla ve müşteriye 'connect' ederek kaydet
+    // Randevuyu 'PENDING' durumuyla ve müşteriye 'connect' ederek kaydet
     const appointment = await prisma.appointment.create({
       data: {
         subject,
-        date: new Date(date),
+        date: randevuTarihi, // Yukarıda Date objesine çevirmiştik, direkt kullanabiliriz
         status: "PENDING",
         customer: {
           connect: { id: user.id }

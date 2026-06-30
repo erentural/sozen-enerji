@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-// YENİ: Modal içinde kullanacağımız X, Calendar, MapPin ve Zap ikonlarını ekledik
-import { CheckCircle2, ChevronRight, X, Calendar, MapPin, Zap } from "lucide-react"; 
+import { CheckCircle2, ChevronRight } from "lucide-react"; 
+import Link from "next/link"; // Link bileşenini ekledik
 
 export default function TamamlananProjelerPage() {
   const [completedProjects, setCompletedProjects] = useState([]);
   
-  // YENİ: Hangi projenin detayına tıklandığını aklında tutacak hafıza (State)
-  const [selectedProject, setSelectedProject] = useState(null);
+  // NOT: Modal kullanmayacağımız için selectedProject state'ini tamamen sildik.
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -56,9 +55,11 @@ export default function TamamlananProjelerPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {completedProjects.map((project, i) => (
-              <div 
+              
+              // DİKKAT: Buradaki <div> etiketini <Link> olarak değiştirdik ve href ekledik!
+              <Link 
                 key={project.id} 
-                onClick={() => setSelectedProject(project)} // YENİ: Karta tıklandığında projeyi hafızaya al
+                href={`/projeler/${project.id}`} // Tıklanan projenin kendi sayfasına gider
                 className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-gray-100 cursor-pointer flex flex-col"
               >
                 <div className="overflow-hidden relative h-64">
@@ -76,86 +77,13 @@ export default function TamamlananProjelerPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
 
-      {/* YENİ: PROFESYONEL PROJE DETAY MODALI */}
-      {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
-            
-            <button 
-              onClick={() => setSelectedProject(null)}
-              className="absolute top-4 right-4 p-2 bg-white rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all z-10 shadow-sm"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-              
-              {/* Sol Taraf: Proje Görseli */}
-              <div className="h-64 md:h-full min-h-[300px] bg-slate-200 relative">
-                {/* Modal içinde de karta karşılık gelen aynı resmi gösteriyoruz */}
-                <img 
-                  src={placeholderImages[completedProjects.findIndex(p => p.id === selectedProject.id) % placeholderImages.length]} 
-                  alt={selectedProject.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 bg-green-500 text-white text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
-                  <CheckCircle2 className="w-4 h-4" /> Teslim Edildi
-                </div>
-              </div>
-
-              {/* Sağ Taraf: Proje Detayları */}
-              <div className="p-8">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  {selectedProject.title}
-                </h2>
-                <p className="text-slate-600 mb-6 leading-relaxed">
-                  {selectedProject.description}
-                </p>
-
-                {/* Teknik Detaylar */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <Calendar className="w-5 h-5 text-blue-600 mb-2" />
-                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Tamamlanma</p>
-                    <p className="text-sm font-bold text-slate-900">
-                      {new Date(selectedProject.createdAt).toLocaleDateString("tr-TR")}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <MapPin className="w-5 h-5 text-blue-600 mb-2" />
-                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Lokasyon</p>
-                    <p className="text-sm font-bold text-slate-900">Merkez Şube</p>
-                  </div>
-                  
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 col-span-2 flex items-center gap-3">
-                    <div className="bg-[#02529C]/10 p-2 rounded-lg text-[#02529C]">
-                      <Zap className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Kurum Standartları</p>
-                      <p className="text-sm font-bold text-slate-900">Sözen Enerji Kalite Güvencesi</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => window.location.href = "/iletisim"}
-                  className="w-full bg-[#FFC107] hover:bg-[#e0a800] text-slate-900 font-bold py-3 px-4 rounded-xl transition-colors shadow-md"
-                >
-                  Benzer Bir Proje İçin Teklif Al
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* NOT: Ekranın en altındaki o uzun Modal kodlarını tamamen sildik çünkü artık ayrı sayfaya gidiyoruz. */}
     </div>
   );
 }
