@@ -6,18 +6,17 @@ export async function PATCH(request, { params }) {
   try {
     const { id } = params;
     const body = await request.json();
-    const { status } = body; // PENDING, APPROVED, REJECTED, COMPLETED
+    const { status } = body;
 
-    // 1. Veritabanında randevuyu güncelle ve güncel veriyi çek
+    // 1. GÜNCELLEME BURADA: include { customer: true } ekledik ki mail adresini çekebilelim!
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: { status },
+      include: { customer: true } // Müşteri tablosundaki verileri (isim, mail) de getir
     });
 
-    // 2. EĞER DURUM "ONAYLANDI" VEYA "REDDEDİLDİ" İSE MAİL SİSTEMİNİ TETİKLE
     if (status === 'APPROVED' || status === 'REJECTED') {
       
-      // Mail gönderim ayarlarını .env dosyasından alıyoruz
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -29,17 +28,15 @@ export async function PATCH(request, { params }) {
       let mailSubject = '';
       let mailHtml = '';
 
-      // NOT: Veritabanındaki sütun isimlerin farklıysa (örn: isim için sadece 'name' veya mail için 'email' kullanıyorsan) burayı ona göre değiştir:
-      const musteriAdi = updatedAppointment.customerName || updatedAppointment.name || 'Değerli Müşterimiz';
-      const musteriMaili = updatedAppointment.customerEmail || updatedAppointment.email;
-      const isBasligi = updatedAppointment.title || 'Randevu';
+      // 2. GÜNCELLEME BURADA: Artık verileri "customer" objesinin içinden alıyoruz
+      const musteriAdi = updatedAppointment.customer?.name || 'Değerli Müşterimiz';
+      const musteriMaili = updatedAppointment.customer?.email; // Maili buradan yakalıyoruz
+      const isBasligi = updatedAppointment.subject || 'Randevu'; // Frontend'de subject kullanmışsın
       
-      // Tarih formatını Türkiye standartlarına çeviriyoruz
       const randevuTarihi = updatedAppointment.date 
         ? new Date(updatedAppointment.date).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' }) 
         : 'Belirtilen tarih';
 
-      // 3. Duruma göre mail içeriğini (HTML) hazırla
       if (status === 'APPROVED') {
         mailSubject = '✅ Randevunuz Onaylandı - Sözen Enerji';
         mailHtml = `
@@ -59,27 +56,25 @@ export async function PATCH(request, { params }) {
           <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px;">
             <h2 style="color: #ef4444; margin-top: 0;">Randevu Bilgilendirmesi</h2>
             <p>Sayın <strong>${musteriAdi}</strong>,</p>
-            <p>İletmiş olduğunuz <b>"${isBasligi}"</b> konulu randevu talebiniz yoğunluk veya planlama değişiklikleri sebebiyle maalesef onaylanamamıştır.</p>
-            <p>Farklı bir zaman dilimi için sistem üzerinden yeniden talep oluşturabilirsiniz.</p>
-            <p>Anlayışınız için teşekkür ederiz.</p>
+            <p>İletmiş olduğunuz <b>"${isBasligi}"</b> konulu randevu talebiniz maalesef onaylanamamıştır.</p>
           </div>
         `;
       }
 
-      // 4. Eğer müşterinin geçerli bir mail adresi varsa gönderimi tamamla
       if (musteriMaili && musteriMaili.includes('@')) {
         await transporter.sendMail({
           from: `"Sözen Enerji Bildirim" <${process.env.EMAIL_USER}>`,
           to: musteriMaili,
           subject: mailSubject,
           html: mailHtml
-        }).catch(err => console.error("Mail gönderme hatası:", err)); // Gönderilemezse sistemi çökertmemesi için hatayı yakalıyoruz
+        });
       }
     }
 
     return NextResponse.json(updatedAppointment);
   } catch (error) {
-    console.error("Randevu Güncelleme Hatası:", error);
-    return NextResponse.json({ error: "Randevu güncellenirken hata oluştu." }, { status: 500 });
+    // HATAYI GÖRMEK İÇİN: Sunucu loglarına hatanın gerçek sebebini yazdırıyoruz
+    console.error("RANDEVU GÜNCELLEME VE MAİL HATASI OLUŞTU:", error);
+    return NextResponse.json({ error: error.message || "İşlem başarısız" }, { status: 500 });
   }
 }
