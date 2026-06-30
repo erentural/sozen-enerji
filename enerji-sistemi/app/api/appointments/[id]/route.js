@@ -2,32 +2,35 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 
-export async function PATCH(request, { params }) {
+// DİKKAT: Burada ikinci parametreyi 'context' olarak alıyoruz
+export async function PATCH(request, context) {
   try {
-    // 1. STANDART YAKALAMA (Next.js 13/14 Uyumludur)
-    const { id } = params;
+    // 1. KESİN ÇÖZÜM: params'ı await ile çözüyoruz (Next.js 15 uyumluluğu)
+    const resolvedParams = await context.params;
+    
+    // Klasörünün adı [id] ise bu satır kusursuz çalışacaktır.
+    const id = resolvedParams.id; 
 
-    // Kilit: ID yoksa işlemi Prisma'ya gitmeden durdur
-    if (!id) {
-      return NextResponse.json({ error: "Sistem Hatası: Randevu ID'si URL'den alınamadı!" }, { status: 400 });
+    // Hem verinin hiç gelmemesi (undefined) hem de Frontend'den yanlışlıkla "undefined" metni gelmesine karşı çifte kilit:
+    if (!id || id === "undefined" || id === "null") {
+      return NextResponse.json({ error: "Sistem Hatası: Randevu ID'si URL'den alınamadı! (Klasör adının [id] olduğundan emin olun)" }, { status: 400 });
     }
 
     const body = await request.json();
     const { status } = body;
 
-    // 2. ID TİPİNİ GÜVENCEYE AL: Harfli (CUID) ise string, rakamsa sayı yap
+    // 2. ID TİPİNİ GÜVENCEYE AL
     const islemId = isNaN(Number(id)) ? id : Number(id);
 
-    // 3. PRİSMA GÜNCELLEMESİ VE MÜŞTERİ VERİSİNİ ÇEKME
+    // 3. PRİSMA GÜNCELLEMESİ
     const updatedAppointment = await prisma.appointment.update({
       where: { id: islemId },
       data: { status },
-      include: { customer: true } // Müşteri detaylarını çekmek zorundayız
+      include: { customer: true }
     });
 
-    // 4. MAİL GÖNDERİM İŞLEMİ
+    // 4. MAİL GÖNDERİMİ
     if (status === 'APPROVED' || status === 'REJECTED') {
-      
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -66,12 +69,11 @@ export async function PATCH(request, { params }) {
           <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px;">
             <h2 style="color: #ef4444; margin-top: 0;">Randevu Bilgilendirmesi</h2>
             <p>Sayın <strong>${musteriAdi}</strong>,</p>
-            <p>İletmiş olduğunuz <b>"${isBasligi}"</b> konulu randevu talebiniz maalesef onaylanamamıştır.</p>
+            <p>İletmiş olduğunuz <b>"${isBasligi}"</b> konulu randevu talebiniz mevcut planlamalar sebebiyle maalesef onaylanamamıştır.</p>
           </div>
         `;
       }
 
-      // Müşterinin maili varsa gönder
       if (musteriMaili && musteriMaili.includes('@')) {
         await transporter.sendMail({
           from: `"Sözen Enerji Bildirim" <${process.env.EMAIL_USER}>`,
