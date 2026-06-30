@@ -6,6 +6,9 @@ import { CalendarDays, CheckCircle, XCircle, Clock } from "lucide-react";
 export default function AdminRandevularPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // YENİ: Hangi randevu üzerinde işlem (mail gönderme) yapıldığını takip eden hafıza
+  const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -13,7 +16,6 @@ export default function AdminRandevularPage() {
 
   const fetchAppointments = async () => {
     try {
-      // Not: Bu API'nin app/api/admin/appointments/route.js adresinde olduğunu varsayıyoruz
       const res = await fetch("/api/admin/appointments");
       if (res.ok) {
         const data = await res.json();
@@ -26,9 +28,14 @@ export default function AdminRandevularPage() {
     }
   };
 
-  // Durum Güncelleme Fonksiyonu
+  // GELİŞTİRİLMİŞ Durum Güncelleme Fonksiyonu
   const handleStatusChange = async (id, newStatus) => {
     try {
+      setLoadingId(id); // İşlem başlar başlamaz o randevunun butonlarını kilitle
+
+      // Not: Eğer bir önceki adımda oluşturduğumuz API dosyan app/api/appointments/[id] yolundaysa,
+      // aşağıdaki fetch URL'ini `/api/appointments/${id}` olarak değiştirmelisin. 
+      // Kendi API yapına göre burayı teyit et.
       const res = await fetch(`/api/admin/appointments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -43,9 +50,18 @@ export default function AdminRandevularPage() {
         
         // Zili güncellemesi için sinyal gönder
         window.dispatchEvent(new Event("notificationsUpdated"));
+
+        // İşlem bittiğinde yöneticiye bilgi ver
+        alert(`Müşteriye "${newStatus === 'APPROVED' ? 'Onay' : 'Red'}" e-postası başarıyla gönderildi!`);
+      } else {
+        const data = await res.json();
+        alert("Hata: " + (data.error || "İşlem başarısız oldu."));
       }
     } catch (error) {
       console.error("Durum güncellenemedi", error);
+      alert("Sistemsel bir bağlantı hatası oluştu.");
+    } finally {
+      setLoadingId(null); // İşlem bitince (başarılı veya başarısız) kilidi mutlaka aç
     }
   };
 
@@ -84,21 +100,31 @@ export default function AdminRandevularPage() {
                   </div>
                 </div>
 
-                {/* Butonlar veya Durum Rozeti */}
+                {/* YENİ: Yüklenme Durumuna (loadingId) Göre Tepki Veren Butonlar */}
                 <div className="flex items-center gap-3">
                   {app.status === 'PENDING' ? (
                     <>
                       <button 
                         onClick={() => handleStatusChange(app.id, "APPROVED")}
-                        className="px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-sm font-bold rounded hover:bg-green-100 transition-colors"
+                        disabled={loadingId === app.id}
+                        className={`px-4 py-2 border text-sm font-bold rounded transition-colors ${
+                          loadingId === app.id 
+                            ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" 
+                            : "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                        }`}
                       >
-                        Onayla
+                        {loadingId === app.id ? "İşleniyor..." : "Onayla"}
                       </button>
                       <button 
                         onClick={() => handleStatusChange(app.id, "REJECTED")}
-                        className="px-4 py-2 bg-red-50 border border-red-200 text-red-700 text-sm font-bold rounded hover:bg-red-100 transition-colors"
+                        disabled={loadingId === app.id}
+                        className={`px-4 py-2 border text-sm font-bold rounded transition-colors ${
+                          loadingId === app.id 
+                            ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" 
+                            : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                        }`}
                       >
-                        Reddet
+                        {loadingId === app.id ? "İşleniyor..." : "Reddet"}
                       </button>
                     </>
                   ) : (
