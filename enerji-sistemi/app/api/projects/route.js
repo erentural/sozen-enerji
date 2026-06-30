@@ -47,6 +47,7 @@ export async function POST(request) {
       data: {
         title,
         description,
+        location,
         progress: parseInt(progress) || 0,
         customerId: customer.id,
       },

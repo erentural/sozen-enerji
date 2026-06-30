@@ -112,7 +112,12 @@ export default function ProjeDetayPage() {
               <MapPin className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Operasyon Bölgesi</p>
-                <p className="text-sm font-bold text-gray-900">Merkez / Saha Kurulumu</p>
+                
+                {/* DEĞİŞİKLİK BURADA: Artık veritabanından gelen location değerini yazdırıyoruz */}
+                <p className="text-sm font-bold text-gray-900">
+                  {project.location || "Adres Belirtilmedi"}
+                </p>
+                
               </div>
             </div>
 
