@@ -25,6 +25,7 @@ export async function POST(request) {
     const body = await request.json();
     // Formdan gelen verileri yakalıyoruz (İsim bilgisi geliyorsa onu da alıyoruz)
     const { title, description, progress, customerEmail, customerName } = body;
+    
 
     // 1. Adım: Önce bu e-postaya sahip bir müşteri var mı diye veritabanına bak
     let user = await prisma.user.findUnique({ 
@@ -50,6 +51,7 @@ export async function POST(request) {
       data: {
         title,
         description,
+        location,
         progress: parseInt(progress),
         customerId: user.id 
       }

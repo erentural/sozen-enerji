@@ -109,11 +109,15 @@ export default function ProjeDetayPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <div>
+            <MapPin className="w-5 h-5 text-gray-400" />
+            <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Operasyon Bölgesi</p>
-                <p className="text-sm font-bold text-gray-900">Merkez / Saha Kurulumu</p>
-              </div>
+                
+                {/* DEĞİŞİKLİK BURADA: Artık veritabanından gelen location değerini yazdırıyoruz */}
+                <p className="text-sm font-bold text-gray-900">
+                {project.location || "Adres Belirtilmedi"}
+                </p>
+            </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -128,8 +132,8 @@ export default function ProjeDetayPage() {
           <div className="bg-gradient-to-br from-gray-900 to-slate-800 p-6 rounded-xl text-white text-center shadow-lg">
             <h3 className="font-bold text-lg mb-2">Benzer Bir Projeniz mi Var?</h3>
             <p className="text-sm text-slate-300 mb-6 leading-relaxed">Uzman mühendis kadromuzla şirketiniz için en verimli enerji çözümlerini planlayalım.</p>
-            <button onClick={() => router.push('/randevular')} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 rounded-lg shadow transition-colors">
-              Hemen Randevu Alın
+            <button onClick={() => router.push('/teklif-al')} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 rounded-lg shadow transition-colors">
+              Hemen Teklif Alın
             </button>
           </div>
 
