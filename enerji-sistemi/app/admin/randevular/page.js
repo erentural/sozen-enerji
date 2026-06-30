@@ -36,7 +36,7 @@ export default function AdminRandevularPage() {
       // Not: Eğer bir önceki adımda oluşturduğumuz API dosyan app/api/appointments/[id] yolundaysa,
       // aşağıdaki fetch URL'ini `/api/appointments/${id}` olarak değiştirmelisin. 
       // Kendi API yapına göre burayı teyit et.
-      const res = await fetch(`/api/admin/appointments/${id}`, {
+      const res = await fetch(`/api/appointments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
