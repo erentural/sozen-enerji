@@ -18,6 +18,14 @@ export default function CustomerPortal() {
   const [newAppt, setNewAppt] = useState({ subject: "", date: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // YENİ: Takvimin geçmişi seçmesini engellemek için şu anki zamanı hesapla
+  const getLocalMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+  const minDateTime = getLocalMinDateTime();
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -40,9 +48,19 @@ export default function CustomerPortal() {
     }
   };
 
-  // Yeni Randevu Gönderme Fonksiyonu
+  // Yeni Randevu Gönderme Fonksiyonu (GÜNCELLENDİ)
   const handleApptSubmit = async (e) => {
     e.preventDefault();
+    
+    // YENİ: Arayüz (Frontend) Güvenlik Kontrolü - Göndermeden önce tarihi son kez teyit et
+    const secilenTarih = new Date(newAppt.date);
+    const suAn = new Date();
+    
+    if (secilenTarih < suAn) {
+      alert("Hata: Geçmiş bir tarihe veya saate randevu talebi oluşturamazsınız!");
+      return; // İşlemi durdur, API'ye gönderme
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -61,9 +79,14 @@ export default function CustomerPortal() {
         fetchCustomerData(); // Listeyi yenile
         // Admin zili için sinyal gönder
         window.dispatchEvent(new Event("notificationsUpdated"));
+        alert("Randevu talebiniz başarıyla iletildi!");
+      } else {
+        const errorData = await res.json();
+        alert("Hata: " + (errorData.error || "Randevu oluşturulamadı."));
       }
     } catch (error) {
       console.error("Randevu oluşturulamadı", error);
+      alert("Sistemsel bir hata oluştu.");
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +194,6 @@ export default function CustomerPortal() {
 
         <div className="lg:col-span-1 space-y-6">
           
-          {/* GÜNCELLENEN RANDEVULAR KARTI */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-gray-900 flex items-center">
@@ -204,13 +226,17 @@ export default function CustomerPortal() {
                   className="w-full text-sm px-3 py-2 mb-3 border border-gray-200 rounded focus:outline-none focus:border-blue-400"
                   required
                 />
+                
+                {/* YENİ: min={minDateTime} özelliği eklendi! */}
                 <input 
                   type="datetime-local" 
                   value={newAppt.date}
+                  min={minDateTime}
                   onChange={(e) => setNewAppt({...newAppt, date: e.target.value})}
                   className="w-full text-sm px-3 py-2 mb-4 border border-gray-200 rounded focus:outline-none focus:border-blue-400"
                   required
                 />
+                
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
