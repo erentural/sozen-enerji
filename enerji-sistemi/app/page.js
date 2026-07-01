@@ -226,9 +226,9 @@ export default function HomePage() {
               {/* Footer Yazıları */}
               <div className="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center text-blue-200 text-sm gap-4">
                 <div className="flex gap-6 font-medium">
-                  <a href="#" className="hover:text-white transition-colors">Anasayfa</a>
-                  <a href="#" className="hover:text-white transition-colors">Hizmetler</a>
-                  <a href="#" className="hover:text-white transition-colors">Yenilenebilir</a>
+                  <a href="/" className="hover:text-white transition-colors">Anasayfa</a>
+                  <a href="/hizmetler" className="hover:text-white transition-colors">Hizmetler</a>
+                  <a href="/yenilenebilir" className="hover:text-white transition-colors">Yenilenebilir</a>
                 </div>
                 <div className="font-medium text-center sm:text-right">Sözen Enerji Elektrik & İnşaat - Copyright © 2026</div>
               </div>
