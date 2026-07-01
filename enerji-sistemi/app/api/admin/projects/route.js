@@ -24,7 +24,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     // Formdan gelen verileri yakalıyoruz (İsim bilgisi geliyorsa onu da alıyoruz)
-    const { title, description, progress, customerEmail, customerName } = body;
+    const { title, description, location, progress, customerEmail, customerName } = body;
     
 
     // 1. Adım: Önce bu e-postaya sahip bir müşteri var mı diye veritabanına bak
