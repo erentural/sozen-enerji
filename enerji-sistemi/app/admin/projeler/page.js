@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FolderKanban, Plus, Activity, Send, Trash2, Edit2, X } from "lucide-react";
+import { FolderKanban, Plus, Activity, Send, Trash2, Edit2, X, Image as ImageIcon } from "lucide-react";
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingEmailId, setSendingEmailId] = useState(null);
   
-  // Ortak Form State'i
+  // Ortak Form State'i (location ve imageUrl eklendi)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    location: "",
     progress: 0,
     customerName: "",
-    customerEmail: ""
+    customerEmail: "",
+    imageUrl: "" // YENİ: Görsel için alan
   });
 
   // Düzenleme Modu Kontrolü
@@ -43,22 +45,47 @@ export default function AdminProjectsPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // YENİ: Yüklenen resmi Base64 formatına çeviren fonksiyon
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // 2MB Sınırı Kontrolü
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Dosya boyutu 2MB'den küçük olmalıdır.");
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imageUrl: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // YENİ: Yüklenen resmi formdan silme fonksiyonu
+  const removeImage = () => {
+    setFormData({ ...formData, imageUrl: "" });
+  };
+
   // Düzenleme Modunu Başlat
   const handleEditClick = (project) => {
     setEditingId(project.id);
     setFormData({
       title: project.title || "",
       description: project.description || "",
+      location: project.location || "",
       progress: project.progress || 0,
-      customerName: project.customer?.name || "", // <--- customer yapıldı
-      customerEmail: project.customer?.email || "" // <--- customer yapıldı
+      customerName: project.customer?.name || "", 
+      customerEmail: project.customer?.email || "",
+      imageUrl: project.imageUrl || "" // Düzenlerken görseli de getir
     });
   };
 
   // Düzenleme Modundan Çık
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ title: "", description: "", progress: 0, customerName: "", customerEmail: "" });
+    setFormData({ title: "", description: "", location: "", progress: 0, customerName: "", customerEmail: "", imageUrl: "" });
   };
 
   // Formu Gönder (Yeni Ekle veya Güncelle)
@@ -73,12 +100,15 @@ export default function AdminProjectsPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // Limit artırımı gerektirebilir (Base64 verisi büyüktür)
+        body: JSON.stringify(formData), 
       });
 
       if (res.ok) {
         cancelEdit();
         fetchProjects();
+      } else {
+        alert("Proje kaydedilirken bir hata oluştu. Görsel boyutu çok büyük olabilir.");
       }
     } catch (error) {
       console.error("İşlem başarısız", error);
@@ -101,9 +131,10 @@ export default function AdminProjectsPage() {
       console.error("Proje silinemedi", error);
     }
   };
+
   // Mail Gönderme İşlemi
   const handleNotify = async (projectId) => {
-    setSendingEmailId(projectId); // Butonu "Gönderiliyor..." moduna al
+    setSendingEmailId(projectId); 
     
     try {
       const res = await fetch(`/api/admin/projects/${projectId}/notify`, {
@@ -118,7 +149,7 @@ export default function AdminProjectsPage() {
     } catch (error) {
       console.error("Bildirim hatası:", error);
     } finally {
-      setSendingEmailId(null); // Butonu eski haline getir
+      setSendingEmailId(null); 
     }
   };
 
@@ -157,17 +188,53 @@ export default function AdminProjectsPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Kısa Açıklama</label>
                     <textarea name="description" value={formData.description} onChange={handleChange} rows="2" placeholder="Yapılacak işlemler..." className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:border-blue-500" required></textarea>
                   </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Proje Lokasyonu / Adresi</label>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Proje Lokasyonu / Adresi</label>
                     <input 
                       type="text" 
+                      name="location"
                       placeholder="Örn: İstanbul, Levent Ofis"
-                      // state ismini kendi projendeki form state'ine göre uyarla (örn: formData.location)
                       value={formData.location} 
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:border-blue-500"
                     />
                   </div>
+                  
+                  {/* YENİ: Görsel Yükleme Alanı */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Proje Görseli (Opsiyonel)</label>
+                    
+                    {!formData.imageUrl ? (
+                      <div className="flex items-center justify-center w-full mt-1">
+                        <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <ImageIcon className="w-6 h-6 mb-2 text-gray-500" />
+                            <p className="mb-1 text-xs text-gray-500"><span className="font-semibold">Yüklemek için tıklayın</span></p>
+                            <p className="text-[10px] text-gray-400">PNG, JPG (Max: 2MB)</p>
+                          </div>
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/png, image/jpeg, image/webp" 
+                            onChange={handleImageUpload} 
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="relative mt-2">
+                        <img src={formData.imageUrl} alt="Önizleme" className="w-full h-32 object-cover rounded-lg border border-gray-200" />
+                        <button 
+                          type="button" 
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1 bg-white rounded-full text-red-500 shadow hover:bg-red-50 transition-colors"
+                          title="Görseli Kaldır"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1 flex justify-between">
                       <span>İlerleme Yüzdesi (%)</span>
@@ -178,7 +245,6 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
-              {/* Müşteri bilgileri kısmı, eğer yeni ekleniyorsa görünsün, düzenleniyorsa gizlenebilir (isteğe bağlı, şimdilik gösteriyoruz) */}
               <div className={editingId ? "opacity-50 pointer-events-none" : ""}>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b pb-2 mt-6">Müşteri Bilgileri {editingId && "(Değiştirilemez)"}</p>
                 <div className="space-y-4">
@@ -215,49 +281,64 @@ export default function AdminProjectsPage() {
                   <div key={project.id} className={`border rounded-xl p-5 relative group transition-colors ${editingId === project.id ? 'border-[#02529C] bg-blue-50/20' : 'border-gray-100 hover:border-blue-200'}`}>
                     
                     {/* Sağ Üst Düzenle/Sil İkonları */}
-                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleEditClick(project)} className="p-2 text-gray-400 hover:text-[#02529C] hover:bg-blue-50 rounded-lg transition-colors" title="Düzenle">
+                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button onClick={() => handleEditClick(project)} className="p-2 text-gray-400 hover:text-[#02529C] hover:bg-blue-50 rounded-lg transition-colors bg-white/80 backdrop-blur-sm shadow-sm" title="Düzenle">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(project.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Projeyi Sil">
+                      <button onClick={() => handleDelete(project.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white/80 backdrop-blur-sm shadow-sm" title="Projeyi Sil">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div className="pr-20">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-bold text-gray-900 text-lg">{project.title}</h3>
-                        {/* Eski hali: {project.user?.name || "Bilinmiyor"} */}
+                    <div className="flex flex-col sm:flex-row gap-5">
+                      {/* Varsa Proje Görseli */}
+                      {project.imageUrl && (
+                        <div className="shrink-0">
+                          <img src={project.imageUrl} alt={project.title} className="w-full sm:w-32 h-32 object-cover rounded-lg border border-gray-200" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1 pr-16">
+                          <h3 className="font-bold text-gray-900 text-lg">{project.title}</h3>
                           <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-semibold">
                             {project.customer?.name || "Bilinmiyor"} 
                           </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-4">{project.description}</p>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <div className="flex justify-between text-xs font-bold text-gray-600 mb-1.5">
-                        <span>Tamamlanma Durumu</span>
-                        <span className="text-blue-600">%{project.progress}</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2.5">
-                        <div className="bg-[#02529C] h-2.5 rounded-full transition-all duration-500" style={{ width: `${project.progress}%` }}></div>
-                      </div>
-                    </div>
+                        </div>
+                        
+                        {project.location && (
+                          <p className="text-xs text-gray-500 mb-2 font-medium flex items-center">
+                            📍 {project.location}
+                          </p>
+                        )}
+                        
+                        <p className="text-sm text-gray-600 mb-4">{project.description}</p>
+                        
+                        <div className="mb-4">
+                          <div className="flex justify-between text-xs font-bold text-gray-600 mb-1.5">
+                            <span>Tamamlanma Durumu</span>
+                            <span className="text-blue-600">%{project.progress}</span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-2.5">
+                            <div className="bg-[#02529C] h-2.5 rounded-full transition-all duration-500" style={{ width: `${project.progress}%` }}></div>
+                          </div>
+                        </div>
 
-                    <div className="flex justify-end border-t border-gray-100 pt-3 mt-1">
-                     <button 
-                        onClick={() => handleNotify(project.id)}
-                        disabled={sendingEmailId === project.id}
-                        className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-                          sendingEmailId === project.id 
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
-                            : 'text-green-700 bg-green-50 hover:bg-green-100'
-                        }`}
-                      >
-                        <Send className={`w-4 h-4 ${sendingEmailId === project.id ? 'animate-pulse' : ''}`} /> 
-                        {sendingEmailId === project.id ? 'Gönderiliyor...' : 'Durumu Mail ile Bildir'}
-                      </button>
+                        <div className="flex justify-end border-t border-gray-100 pt-3 mt-1">
+                         <button 
+                            onClick={() => handleNotify(project.id)}
+                            disabled={sendingEmailId === project.id}
+                            className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
+                              sendingEmailId === project.id 
+                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
+                                : 'text-green-700 bg-green-50 hover:bg-green-100'
+                            }`}
+                          >
+                            <Send className={`w-4 h-4 ${sendingEmailId === project.id ? 'animate-pulse' : ''}`} /> 
+                            {sendingEmailId === project.id ? 'Gönderiliyor...' : 'Durumu Mail ile Bildir'}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

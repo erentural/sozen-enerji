@@ -53,6 +53,7 @@ model Project {
   location    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  imageUrl        String?  @db.Text
 }
 
 model Appointment {
