@@ -8,9 +8,8 @@ export default function EnergyCalculator() {
   const [region, setRegion] = useState("marmara");
   const [city, setCity] = useState("İstanbul");
   const [panelPower, setPanelPower] = useState(400); 
-  const [structure, setStructure] = useState("mustakil"); // YENİ: Kurulum alanı state'i
+  const [structure, setStructure] = useState("mustakil"); 
 
-  // 1. TÜRKİYE'NİN 7 BÖLGESİ VE GÜNEŞLENME ÇARPANLARI
   const regionsData = {
     marmara: { 
       name: "Marmara Bölgesi", 
@@ -44,56 +43,61 @@ export default function EnergyCalculator() {
     },
     guneydogu: { 
       name: "Güneydoğu Anadolu", 
-      multiplier: 1.40, // En yüksek güneş verimi
+      multiplier: 1.40, 
       cities: ["Gaziantep", "Diyarbakır", "Şanlıurfa", "Mardin", "Batman", "Adıyaman", "Şırnak"]
     }
   };
 
-  // 2. KURULUM ALANLARI VE TARİFELER
-  // tariff: Türkiye ortalaması güncel elektrik birim fiyatı (TL/kWh)
-  // turnkeyMultiplier: Sistemin anahtar teslim maliyet çarpanı (Ölçek ekonomisi)
+  // Baz çarpanlar biraz daha yüksek tutuldu ki indirim eğrisi daha güzel çalışsın
   const structuresData = {
-    mustakil: { name: "Müstakil Ev", tariff: 3.0, turnkeyMultiplier: 2.4 },
-    apartman: { name: "Apartman (Ortak Alan)", tariff: 3.0, turnkeyMultiplier: 2.3 },
-    dukkan: { name: "Dükkan / Ticarethane", tariff: 4.5, turnkeyMultiplier: 2.1 },
-    fabrika: { name: "Fabrika / Endüstriyel Tesis", tariff: 3.8, turnkeyMultiplier: 1.85 },
-    sanayi: { name: "Sanayi Kuruluşu", tariff: 3.8, turnkeyMultiplier: 1.85 },
-    tarla: { name: "Arazi / Güneş Paneli Tarlası", tariff: 3.0, turnkeyMultiplier: 1.7 }, // Devasa kurulumlar en ucuz birim maliyete sahiptir
+    mustakil: { name: "Müstakil Ev", tariff: 3.0, baseMultiplier: 2.5 },
+    apartman: { name: "Apartman (Ortak Alan)", tariff: 3.0, baseMultiplier: 2.4 },
+    dukkan: { name: "Dükkan / Ticarethane", tariff: 4.5, baseMultiplier: 2.2 },
+    fabrika: { name: "Fabrika / Endüstriyel Tesis", tariff: 3.8, baseMultiplier: 2.0 },
+    sanayi: { name: "Sanayi Kuruluşu", tariff: 3.8, baseMultiplier: 2.0 },
+    tarla: { name: "Arazi / Güneş Paneli Tarlası", tariff: 3.0, baseMultiplier: 1.8 },
   };
 
-  // 3. PANEL TİPLERİ VE FİYATLARI
   const panelOptions = [
     { power: 400, label: "400W - Standart Monokristal", price: 4500 },
     { power: 455, label: "455W - Yarı Kesim (Half-Cut)", price: 5100 },
     { power: 545, label: "545W - Endüstriyel Yüksek Verim", price: 6100 },
   ];
 
-  // Bölge değiştiğinde şehri o bölgenin ilk şehri yap
   useEffect(() => {
     setCity(regionsData[region].cities[0]);
   }, [region]);
 
-  // --- HESAPLAMA ALGORİTMASI ---
+  // --- GELİŞMİŞ LOGARİTMİK HESAPLAMA ALGORİTMASI ---
   const currentBill = Number(bill) || 0; 
   const selectedStructure = structuresData[structure];
   
-  // 1. Tüketilen Günlük Elektrik (Seçilen Abone Tarifesine Göre kWh)
+  // 1. Tüketilen Günlük Elektrik (kWh)
   const dailyKwh = (currentBill / selectedStructure.tariff) / 30; 
   
-  // 2. Gereken Kurulu Güç (Seçilen Bölgenin Güneşlenme Verimine Göre)
+  // 2. Gereken Kurulu Güç
   const requiredKw = dailyKwh / (4 * regionsData[region].multiplier); 
   
   // 3. Gereken Panel Adedi
   const panelCount = Math.ceil((requiredKw * 1000) / panelPower); 
   
-  // 4. Panel Maliyeti
+  // 4. Ham Panel Maliyeti
   const selectedPanelPrice = panelOptions.find(p => p.power === panelPower)?.price || 4500;
   const rawPanelsCost = panelCount * selectedPanelPrice; 
   
-  // 5. TOPLAM ANAHTAR TESLİM MALİYET (Seçilen Kurulum Alanının Çarpanına Göre)
-  const estimatedCost = rawPanelsCost * selectedStructure.turnkeyMultiplier; 
+  // 5. DİNAMİK ANAHTAR TESLİM ÇARPANI (Logaritmik Ölçek Ekonomisi)
+  let dynamicMultiplier = selectedStructure.baseMultiplier;
   
-  // 6. Amorti Süresi
+  // Sistem 10 panelden büyükse, maliyet çarpanını sürekli eğimle (logaritmik) düşür.
+  if (panelCount > 10) {
+    // Math.log10 sayesinde sistem büyüdükçe indirim oranı yavaş yavaş artar.
+    // Maksimum %35 toptan alım/proje indirimi olacak şekilde sınırlandırıldı (Math.min).
+    const scaleDiscount = Math.min(0.35, Math.log10(panelCount / 10) * 0.12);
+    dynamicMultiplier = dynamicMultiplier * (1 - scaleDiscount);
+  }
+  
+  // 6. Toplam Maliyet ve Amorti Süresi
+  const estimatedCost = rawPanelsCost * dynamicMultiplier; 
   const yearlySavings = currentBill * 12;
   const roiYears = yearlySavings > 0 ? (estimatedCost / yearlySavings).toFixed(1) : "0.0";
 
@@ -151,7 +155,6 @@ export default function EnergyCalculator() {
         {/* Seçenekler Izgarası */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* YENİ: Kurulum Alanı / Abone Tipi */}
           <div className="md:col-span-2">
             <label className="font-medium text-gray-700 block mb-2 flex items-center gap-2 text-sm">
               <Building2 className="w-4 h-4 text-blue-500" /> Kurulum Alanı (Abone Tipi)
