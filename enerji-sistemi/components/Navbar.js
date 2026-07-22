@@ -79,38 +79,38 @@ export default function Navbar() {
           </div>
 
           {/* Sağ Kısım: Aksiyon Butonları */}
-          <div className="flex items-center gap-4 lg:gap-6">
-  
-  {/* FİYAT TEKLİFİ AL BUTONU */}
-  <Link 
-    href="/teklif" 
-    className="hidden md:flex px-5 py-2.5 text-sm font-bold text-slate-900 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-colors whitespace-nowrap shadow-sm"
-  >
-    Fiyat Teklifi Al
-  </Link>
+            <div className="flex items-center gap-4 lg:gap-6">
+              
+              {/* FİYAT TEKLİFİ AL BUTONU */}
+              <Link 
+                href="/teklif-al" 
+                className="hidden md:flex px-5 py-2.5 text-sm font-bold text-slate-900 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-colors whitespace-nowrap shadow-sm"
+              >
+                Fiyat Teklifi Al
+              </Link>
 
-  {/* YÖNETİCİ GİRİŞİ */}
-  <Link 
-    href="/admin-login" 
-    className="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors whitespace-nowrap" 
-    title="Yönetici Girişi"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-    </svg>
-    <span className="hidden xl:inline">Yönetici</span>
-  </Link>
+              {/* YÖNETİCİ GİRİŞİ */}
+              <Link 
+                href="/admin-login" 
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors whitespace-nowrap" 
+                title="Yönetici Girişi"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                <span className="hidden xl:inline">Yönetici</span>
+              </Link>
 
-  {/* AYIRAÇ ÇİZGİSİ */}
-  <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
+              {/* AYIRAÇ ÇİZGİSİ */}
+              <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
 
-  {/* MÜŞTERİ GİRİŞİ */}
-  <Link 
-    href="/login" 
-    className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
-  >
-    Müşteri Girişi
-  </Link>
+              {/* MÜŞTERİ GİRİŞİ */}
+              <Link 
+                href="/login" 
+                className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
+              >
+                Müşteri Girişi
+              </Link>
 
             </div>
                         
