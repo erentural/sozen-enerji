@@ -48,7 +48,7 @@ export default function AuthPage() {
           setError("E-posta veya şifre hatalı. Lütfen kontrol ediniz.");
         } else {
           // Giriş başarılıysa paneline yönlendir
-          router.push("/"); // Eğer giriş yaptıktan sonra admin veya müşteri paneline gidecekse adresi buraya yaz (Örn: "/dashboard")
+          router.push("/portal"); // Eğer giriş yaptıktan sonra admin veya müşteri paneline gidecekse adresi buraya yaz (Örn: "/dashboard")
           router.refresh(); // Sayfa verilerini günceller
         }
       } catch (err) {
