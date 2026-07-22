@@ -108,7 +108,7 @@ export default function EnergyCalculator() {
           <Calculator className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">Gelişmiş Keşif Hesaplayıcı</h3>
+          <h3 className="text-2xl font-bold text-gray-900">Gelişmiş Enerji Hesaplayıcı</h3>
           <p className="text-gray-500 text-sm">Tarifenize, şehrinize ve projenize özel amorti süresi analizi.</p>
         </div>
       </div>
