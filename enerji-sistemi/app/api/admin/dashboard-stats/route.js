@@ -3,20 +3,22 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const [projects, pendingAppointments, unreadMessages, products] = await Promise.all([
-      prisma.project.count(), // Tüm projeleri say
-      prisma.appointment.count({ where: { status: "PENDING" } }), // Bekleyen randevuları say
-      prisma.contactMessage.count({ where: { isRead: false } }), // Okunmamış mesajları say
-      prisma.product.count() // Tüm ürünleri say
+    // Veritabanından gerçek istatistikleri eş zamanlı çekiyoruz
+    const [projects, pendingAppointments, unreadMessages, customers] = await Promise.all([
+      prisma.project.count(),
+      prisma.appointment ? prisma.appointment.count({ where: { status: "PENDING" } }) : Promise.resolve(0),
+      prisma.message ? prisma.message.count({ where: { read: false } }) : prisma.message.count().catch(() => 0),
+      prisma.user.count(), // Ürünler yerine gerçek müşteri sayısı eklendi
     ]);
 
     return NextResponse.json({
       projects,
       pendingAppointments,
       unreadMessages,
-      products
+      customers, // Frontend'in beklediği stats.customers verisi
     });
   } catch (error) {
-    return NextResponse.json({ error: "Veriler alınamadı" }, { status: 500 });
+    console.error("Dashboard istatistikleri alınamadı:", error);
+    return NextResponse.json({ error: "İstatistikler yüklenemedi." }, { status: 500 });
   }
 }

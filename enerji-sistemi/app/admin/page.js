@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FolderKanban, CalendarDays, Mail, Package, Activity, Zap, ArrowRight, TrendingUp } from "lucide-react";
+import { FolderKanban, CalendarDays, Mail, Users, Activity, Zap, ArrowRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
