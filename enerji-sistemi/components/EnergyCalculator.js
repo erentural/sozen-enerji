@@ -87,6 +87,7 @@ export default function EnergyCalculator() {
               <input 
                 type="number" 
                 min="0"
+                max="150000" 
                 value={bill === 0 ? "" : bill} 
                 onChange={(e) => setBill(e.target.value === "" ? 0 : Number(e.target.value))}
                 className="w-24 text-right font-bold text-[#02529C] text-lg bg-transparent focus:outline-none [&::-webkit-inner-spin-button]:appearance-none"
