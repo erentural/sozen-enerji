@@ -1,107 +1,118 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
-export default function LoginPage() {
+export default function AuthPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLoginMode, setIsLoginMode] = useState(true); // Giriş mi Kayıt mı?
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  
+  // Form verileri
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    password: ""
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (res?.error) {
-      setError("E-posta veya şifre hatalı.");
-      setLoading(false);
+    if (isLoginMode) {
+      // BURAYA MEVCUT GİRİŞ (LOGIN) KODLARIN GELECEK
+      // Örn: signIn("credentials", { email, password })
     } else {
-      // Başarılı girişte rolü anlamak için güncel session verisini çek
-      const sessionResponse = await fetch("/api/auth/session");
-      const sessionData = await sessionResponse.json();
+      // YENİ KAYIT (REGISTER) İŞLEMİ
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData)
+        });
 
-      if (sessionData?.user?.role === "ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/portal");
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error);
+        } else {
+          alert("Kaydınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
+          setIsLoginMode(true); // Başarılı kayıttan sonra giriş ekranına döndür
+        }
+      } catch (err) {
+        setError("Sunucuya bağlanılamadı.");
       }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Sisteme Giriş</h2>
-          <p className="text-gray-500 mt-2">Lütfen bilgilerinizi giriniz</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isLoginMode ? "Sisteme Giriş" : "Yeni Hesap Oluştur"}
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            {isLoginMode ? "Lütfen bilgilerinizi giriniz" : "Hızlıca müşteri kaydınızı tamamlayın"}
+          </p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
+        {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* SADECE KAYIT MODUNDA GÖRÜNECEK ALANLAR */}
+          {!isLoginMode && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">Ad</label>
+                  <input type="text" name="firstName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">Soyad</label>
+                  <input type="text" name="lastName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">Telefon Numarası</label>
+                <input type="tel" name="phone" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+              </div>
+            </>
+          )}
+
+          {/* HER İKİ MODDA DA GÖRÜNECEK ALANLAR */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-posta Adresi
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="E-posta adresiniz"
-              required
-            />
+            <label className="block mb-1 text-sm text-gray-600">E-posta Adresi</label>
+            <input type="email" name="email" required placeholder="E-posta adresiniz" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Şifre
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="••••••••"
-              required
-            />
+            <label className="block mb-1 text-sm text-gray-600">Şifre</label>
+            <input type="password" name="password" required placeholder="••••••••" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex justify-center items-center"
-          >
-            {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+          <button type="submit" className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+            {isLoginMode ? "Giriş Yap" : "Kayıt Ol"}
           </button>
         </form>
-        {/* YENİ EKLENEN KISIM: Ana Sayfaya Dön Butonu */}
-        <div className="mt-6 text-center">
-          <Link 
-            href="/" 
-            className="inline-flex items-center justify-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+
+        <div className="text-center mt-4">
+          <button 
+            type="button" 
+            onClick={() => setIsLoginMode(!isLoginMode)} 
+            className="text-sm text-blue-600 hover:underline"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Ana Sayfaya Dön
-          </Link>
+            {isLoginMode ? "Hesabınız yok mu? Yeni müşteri kaydı oluşturun." : "Zaten hesabınız var mı? Giriş yapın."}
+          </button>
         </div>
-        {/* YENİ EKLENEN KISIM BİTİŞİ */}
+
       </div>
     </div>
   );
