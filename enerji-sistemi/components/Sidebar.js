@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import NotificationBell from "./NotificationBell";
+import { Users, ClipboardList } from "lucide-react";
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -27,6 +28,8 @@ export default function Sidebar() {
     { name: "Randevular", icon: CalendarDays, path: "/admin/randevular" },
     { name: "Kılavuz", icon: BookOpen, path: "/admin/kilavuz" },
     { name: "Ayarlar", icon: Settings, path: "/admin/ayarlar" },
+    { name: "Müşteriler", icon: Users, href: "/admin/musteriler" },
+    { name: "Teklif Talepleri", icon: ClipboardList, href: "/admin/teklifler" },
   ];
 
   return (
