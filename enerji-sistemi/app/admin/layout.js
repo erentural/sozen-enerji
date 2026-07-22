@@ -7,9 +7,14 @@ export default async function AdminLayout({ children }) {
   // Sunucu tarafında kullanıcının oturumunu kontrol ediyoruz
   const session = await getServerSession(authOptions);
 
-  // Oturum yoksa veya kullanıcının rolü ADMIN değilse, direkt login sayfasına at
-  if (!session || session.user?.role !== "ADMIN") {
-    redirect("/login");
+  // 1. DÜZELTME: Eğer hiç oturum yoksa, artık normal login'e değil, gizli ADMIN login sayfasına at
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  // 2. DÜZELTME: Eğer kişi giriş yapmış ama rolü ADMIN değilse (yani yanlışlıkla buraya giren bir müşteriyse), onu ana sayfaya postala
+  if (session.user?.role !== "ADMIN") {
+    redirect("/");
   }
 
   return (
