@@ -52,10 +52,16 @@ export default function EnergyCalculator() {
   // Seçilen panele göre adet hesabı
   const panelCount = Math.ceil((requiredKw * 1000) / panelPower); 
   
-  // Seçilen panelin fiyatına göre toplam donanım maliyeti
+  // 1. Sadece panelin ham maliyeti
   const selectedPanelPrice = panelOptions.find(p => p.power === panelPower)?.price || 4500;
-  const estimatedCost = panelCount * selectedPanelPrice; 
+  const rawPanelsCost = panelCount * selectedPanelPrice; 
   
+  // 2. ANAHTAR TESLİM ÇARPANI (İnvertör, işçilik, konstrüksiyon, kablo ve mühendislik eklendi)
+  // Gerçek projelerde toplam maliyet, ham panel maliyetinin ortalama 2.2 ile 2.4 katı arasındadır.
+  const turnkeyMultiplier = 2.3; 
+  const estimatedCost = rawPanelsCost * turnkeyMultiplier; 
+  
+  // 3. Amorti Hesabı
   const yearlySavings = bill * 12;
   const roiYears = (estimatedCost / yearlySavings).toFixed(1);
 
