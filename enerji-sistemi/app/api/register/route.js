@@ -27,9 +27,9 @@ export async function POST(request) {
       data: {
         name: fullName,
         email,
-        phone,
+        phone, // Artık Prisma bu veriyi tanıyacak!
         password: hashedPassword,
-        role: "CUSTOMER", // Varsayılan müşteri rolü
+        // role satırını silebilirsin, Prisma şemadaki @default(USER) ayarını otomatik kullanır.
       }
     });
 
