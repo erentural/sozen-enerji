@@ -4,37 +4,37 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import NotificationBell from "./NotificationBell";
-import { Users, ClipboardList } from "lucide-react";
 import { 
+  Users, 
+  ClipboardList,
   LayoutDashboard, 
-  Briefcase, 
   CalendarDays, 
   Settings, 
   LogOut,
   FolderKanban,
   Mail,
-  Globe, // Ana sayfa kısayolu için eklendi
-  BookOpen, // Kılavuz için eklendi
+  Globe,
+  BookOpen
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
 
+  // "Ürünler" silindi. "href" olan yerler "path" olarak düzeltildi.
   const menuItems = [
     { name: "Ana Sayfa", icon: LayoutDashboard, path: "/admin" },
     { name: "Mesajlar", icon: Mail, path: "/admin/mesajlar" },
-    { name: "Ürünler", icon: Briefcase, path: "/admin/urunler" },
     { name: "Projeler & İşler", icon: FolderKanban, path: "/admin/projeler" },
     { name: "Randevular", icon: CalendarDays, path: "/admin/randevular" },
     { name: "Kılavuz", icon: BookOpen, path: "/admin/kilavuz" },
+    { name: "Müşteriler", icon: Users, path: "/admin/musteriler" },
+    { name: "Teklif Talepleri", icon: ClipboardList, path: "/admin/teklifler" },
     { name: "Ayarlar", icon: Settings, path: "/admin/ayarlar" },
-    { name: "Müşteriler", icon: Users, href: "/admin/musteriler" },
-    { name: "Teklif Talepleri", icon: ClipboardList, href: "/admin/teklifler" },
   ];
 
   return (
-    <div className="w-64 bg-gray-900 text-white flex flex-col h-screen shrink-0"> {/* shrink-0 ekledik menü daralmasın diye */}
-      {/* Logo ve Bildirim Zili Alanı GÜNCELLENDİ */}
+    <div className="w-64 bg-gray-900 text-white flex flex-col h-screen shrink-0">
+      {/* Logo ve Bildirim Zili Alanı */}
       <div className="h-16 flex items-center justify-between px-6 bg-gray-950 border-b border-gray-800">
         <h1 className="text-xl font-bold text-blue-400">Enerji<span className="text-white">Panel</span></h1>
         
@@ -81,8 +81,7 @@ export default function Sidebar() {
           onClick={() => signOut({ callbackUrl: '/admin-login' })}
           className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
         >
-          <LogOut
-           className="w-5 h-5 mr-3" />
+          <LogOut className="w-5 h-5 mr-3" />
           Çıkış Yap
         </button>
       </div>
