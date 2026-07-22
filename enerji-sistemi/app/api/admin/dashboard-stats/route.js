@@ -12,7 +12,8 @@ export async function GET() {
     try { customers = await prisma.user.count(); } catch (e) {}
     try { unreadMessages = await prisma.message.count(); } catch (e) {}
     
-    // Sadece durumu henüz belli olmayan (bekleyen) randevuları filtreleyerek sayıyoruz
+    // Güvenli Filtreleme: Önce doğrudan veritabanından süzmeyi dene, 
+    // hata alırsan tüm listeyi çekip JavaScript ile sadece bekleyenleri filtrele.
     try { 
       pendingAppointments = await prisma.appointment.count({ 
         where: { 
@@ -22,10 +23,15 @@ export async function GET() {
         } 
       }); 
     } catch (e) { 
-      // Eğer veritabanında status alanı yoksa veya farklı bir sorgu gerekiyorsa güvenli fallback
       try { 
-        pendingAppointments = await prisma.appointment.count(); 
-      } catch (err) {}
+        const allAppointments = await prisma.appointment.findMany();
+        pendingAppointments = allAppointments.filter(app => 
+          !app.status || 
+          ["PENDING", "Beklemede", "bekliyor", "YENI", "new", "PENDING"].includes(app.status)
+        ).length;
+      } catch (err) {
+        pendingAppointments = 0;
+      }
     }
 
     return NextResponse.json({
