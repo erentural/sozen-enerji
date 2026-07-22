@@ -12,9 +12,9 @@ export default async function AdminLayout({ children }) {
     redirect("/admin/login");
   }
 
-  // 2. DÜZELTME: Eğer kişi giriş yapmış ama rolü ADMIN değilse (yani yanlışlıkla buraya giren bir müşteriyse), onu ana sayfaya postala
-  if (session.user?.role !== "ADMIN") {
-    redirect("/");
+  // Oturum yoksa veya kullanıcının rolü ADMIN değilse
+  if (!session || session.user?.role !== "ADMIN") {
+    redirect("/admin-login"); // YENİ YOL BURASI OLDU
   }
 
   return (
