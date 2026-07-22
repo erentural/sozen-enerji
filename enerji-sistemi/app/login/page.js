@@ -5,20 +5,29 @@ import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
   const router = useRouter();
-  const [isLoginMode, setIsLoginMode] = useState(true); // Giriş mi Kayıt mı?
+  const [isLoginMode, setIsLoginMode] = useState(true);
   const [error, setError] = useState("");
   
-  // Form verileri
+  // 1. YENİLİK: Form verilerine "countryCode" eklendi
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    countryCode: "+90", // Varsayılan Türkiye kodu
     phone: "",
     email: "",
     password: ""
   });
 
+  // Standart veri değişimi (Ad, soyad, e-posta, şifre, ülke kodu için)
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 2. YENİLİK: Sadece rakam kabul eden telefon fonksiyonu
+  const handlePhoneChange = (e) => {
+    // Regex ile rakam olmayan (\D) tüm karakterleri sileriz
+    const onlyNumbers = e.target.value.replace(/\D/g, '');
+    setFormData({ ...formData, phone: onlyNumbers });
   };
 
   const handleSubmit = async (e) => {
@@ -27,14 +36,25 @@ export default function AuthPage() {
 
     if (isLoginMode) {
       // BURAYA MEVCUT GİRİŞ (LOGIN) KODLARIN GELECEK
-      // Örn: signIn("credentials", { email, password })
+      // Örn: signIn("credentials", { email: formData.email, password: formData.password })
     } else {
-      // YENİ KAYIT (REGISTER) İŞLEMİ
+      
+      // 3. YENİLİK: Backend'e göndermeden önce ülke kodu ve numarayı birleştiriyoruz
+      const fullPhone = formData.phone ? `${formData.countryCode}${formData.phone}` : "";
+
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phone: fullPhone // Birleştirilmiş hali gönderiliyor (+905551234567 gibi)
+      };
+
       try {
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
@@ -43,7 +63,9 @@ export default function AuthPage() {
           setError(data.error);
         } else {
           alert("Kaydınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
-          setIsLoginMode(true); // Başarılı kayıttan sonra giriş ekranına döndür
+          setIsLoginMode(true);
+          // Formu sıfırlayabilirsin
+          setFormData({ ...formData, password: "", phone: "" });
         }
       } catch (err) {
         setError("Sunucuya bağlanılamadı.");
@@ -67,35 +89,62 @@ export default function AuthPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* SADECE KAYIT MODUNDA GÖRÜNECEK ALANLAR */}
           {!isLoginMode && (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1 text-sm text-gray-600">Ad</label>
-                  <input type="text" name="firstName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                  <input type="text" name="firstName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
                 </div>
                 <div>
                   <label className="block mb-1 text-sm text-gray-600">Soyad</label>
-                  <input type="text" name="lastName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                  <input type="text" name="lastName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
                 </div>
               </div>
+              
+              {/* 4. YENİLİK: Ülke kodu ve Rakam kısıtlamalı telefon alanı */}
               <div>
                 <label className="block mb-1 text-sm text-gray-600">Telefon Numarası</label>
-                <input type="tel" name="phone" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                <div className="flex">
+                  <select 
+                    name="countryCode" 
+                    value={formData.countryCode} 
+                    onChange={handleChange}
+                    className="px-2 py-2 border border-r-0 rounded-l-md bg-gray-50 text-gray-600 focus:outline-none"
+                  >
+                    <option value="+90">+90 (TR)</option>
+                    <option value="+1">+1 (US)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+49">+49 (DE)</option>
+                    <option value="+33">+33 (FR)</option>
+                    <option value="+81">+81 (JP)</option>
+                    <option value="+61">+61 (AU)</option>
+                    <option value="+91">+91 (IN)</option>
+                    <option value="+86">+86 (CN)</option>
+                    <option value="+7">+7 (RU)</option>
+                  </select>
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    value={formData.phone}
+                    onChange={handlePhoneChange} 
+                    maxLength={10} // TR numaraları için başında 0 olmadan 10 hane (Örn: 5551234567)
+                    placeholder="5XX XXX XX XX" 
+                    className="w-full px-3 py-2 border rounded-r-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                  />
+                </div>
               </div>
             </>
           )}
 
-          {/* HER İKİ MODDA DA GÖRÜNECEK ALANLAR */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">E-posta Adresi</label>
-            <input type="email" name="email" required placeholder="E-posta adresiniz" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+            <input type="email" name="email" required placeholder="E-posta adresiniz" onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
           </div>
 
           <div>
             <label className="block mb-1 text-sm text-gray-600">Şifre</label>
-            <input type="password" name="password" required placeholder="••••••••" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+            <input type="password" name="password" required placeholder="••••••••" onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
           </div>
 
           <button type="submit" className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
@@ -107,7 +156,7 @@ export default function AuthPage() {
           <button 
             type="button" 
             onClick={() => setIsLoginMode(!isLoginMode)} 
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-600 hover:underline focus:outline-none"
           >
             {isLoginMode ? "Hesabınız yok mu? Yeni müşteri kaydı oluşturun." : "Zaten hesabınız var mı? Giriş yapın."}
           </button>
