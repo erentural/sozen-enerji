@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
 
 // Projeleri Listeleme
 export async function GET() {
@@ -8,7 +7,7 @@ export async function GET() {
     const projects = await prisma.project.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        customer: true // <--- DÜZELTME: user yerine customer yapıldı
+        customer: true // user yerine customer ilişkisi
       }
     });
     
@@ -19,40 +18,35 @@ export async function GET() {
   }
 }
 
-// Yeni Proje Ekleme (Otomatik Müşteri Kaydı ile)
+// Yeni Proje Ekleme (Güvenlik Kontrollü ve Görsel Destekli)
 export async function POST(request) {
   try {
     const body = await request.json();
-    // Formdan gelen verileri yakalıyoruz (İsim bilgisi geliyorsa onu da alıyoruz)
-    const { title, description, location, progress, customerEmail, customerName } = body;
     
-
-    // 1. Adım: Önce bu e-postaya sahip bir müşteri var mı diye veritabanına bak
-    let user = await prisma.user.findUnique({ 
+    // Formdan gelen verileri yakalıyoruz (imageUrl eklendi)
+    const { title, description, location, progress, customerEmail, customerName, imageUrl } = body;
+    
+    // 1. Adım: Girilen e-postaya sahip bir müşteri var mı diye veritabanını kontrol et
+    const user = await prisma.user.findUnique({ 
       where: { email: customerEmail } 
     });
 
-    // 2. Adım: Eğer müşteri YOKSA, arka planda yeni müşteriyi yarat
+    // 2. Adım: Eğer müşteri YOKSA işlemi anında durdur ve Frontend'e 404 hatası gönder
     if (!user) {
-      // Önce şifreyi NextAuth'un onaylayacağı şifreli formata (hash) çeviriyoruz
-      const hashedPassword = await bcrypt.hash("musteri123", 10);
-
-      user = await prisma.user.create({
-        data: {
-          email: customerEmail,
-          name: customerName || "Yeni Müşteri",
-          password: hashedPassword, // Düz metin yerine şifrelenmiş halini kaydediyoruz
-        }
-      });
+      return NextResponse.json(
+        { error: "Kayıtlı müşteri bulunamadı. Lütfen iş oluşturmadan önce müşterinin sisteme kayıt olduğundan emin olun." },
+        { status: 404 }
+      );
     }
 
-    // 3. Adım: Artık elimizde (eski veya yeni fark etmeksizin) kesinlikle bir müşteri ID'si var. Projeyi rahatça oluştur!
+    // 3. Adım: Müşteri sistemde kayıtlıysa, projeyi oluştur (Görsel dahil)
     const project = await prisma.project.create({
       data: {
         title,
         description,
         location,
         progress: parseInt(progress),
+        imageUrl, // Base64 formatındaki görsel veritabanına yazılıyor
         customerId: user.id 
       }
     });

@@ -100,18 +100,23 @@ export default function AdminProjectsPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        // Limit artırımı gerektirebilir (Base64 verisi büyüktür)
         body: JSON.stringify(formData), 
       });
+
+      // YENİ: Backend'den dönen cevabı (hata mesajları dahil) JSON olarak okuyoruz
+      const data = await res.json(); 
 
       if (res.ok) {
         cancelEdit();
         fetchProjects();
+        alert(editingId ? "Proje başarıyla güncellendi." : "Yeni proje başarıyla atandı.");
       } else {
-        alert("Proje kaydedilirken bir hata oluştu. Görsel boyutu çok büyük olabilir.");
+        // YENİ: Eğer res.ok değilse (örneğin müşteri bulunamadıysa), backend'den gelen hatayı ekrana bas
+        alert(data.error || "Proje kaydedilirken bir hata oluştu.");
       }
     } catch (error) {
       console.error("İşlem başarısız", error);
+      alert("Sunucuya bağlanırken bir hata oluştu.");
     } finally {
       setIsSubmitting(false);
     }
