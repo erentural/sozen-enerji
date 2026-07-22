@@ -114,53 +114,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. TAMAMLANAN PROJELER BÖLÜMÜ (Dinamik Veritabanı Bağlantılı) */}
+  {/* 4. FAALİYET ALANLARIMIZ BÖLÜMÜ (Sabit Projeler) */}
       <section id="faaliyetler" className="py-20 bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Tamamlanan Projelerimiz</h2>
-          
-          {completedProjects.length === 0 ? (
-            <p className="text-center text-gray-500 font-medium">Henüz sergilenecek tamamlanmış bir proje bulunmuyor.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {completedProjects.map((project) => (
-                <div key={project.id} className="bg-white rounded-lg overflow-hidden shadow-sm group cursor-pointer border border-gray-100 flex flex-col">
-                  
-                  {/* Proje Görseli */}
-                  <div className="overflow-hidden h-56 bg-gray-100 flex items-center justify-center relative">
-                    {project.imageUrl ? (
-                      <img 
-                        src={project.imageUrl} 
-                        alt={project.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                      />
-                    ) : (
-                      // Eğer admin bilerek görsel yüklemediyse şık bir boşluk gösterilir
-                      <div className="text-gray-400 flex flex-col items-center">
-                        <FolderKanban className="w-10 h-10 mb-2 opacity-50" />
-                        <span className="text-xs font-semibold">Görsel Bulunmuyor</span>
-                      </div>
-                    )}
-                    
-                    {/* Üzerine gelince çıkan ince detay */}
-                    <div className="absolute inset-0 bg-[#02529C]/0 group-hover:bg-[#02529C]/10 transition-colors duration-300"></div>
-                  </div>
-
-                  {/* Proje Başlığı ve Lokasyonu */}
-                  <div className="p-5 text-center border-t border-gray-100 flex-1 flex flex-col justify-center">
-                    <h4 className="font-bold text-gray-900 text-sm mb-1">{project.title}</h4>
-                    {project.location && (
-                      <p className="text-xs text-gray-500 font-medium">📍 {project.location}</p>
-                    )}
-                  </div>
-                  
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Faaliyet Alanlarımız</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { title: "Modern Ofis Aydınlatması", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" },
+              { title: "Modern Ofis Santrali", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2069&auto=format&fit=crop" },
+              { title: "Güneş Enerjisi Santrali", img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop" },
+              { title: "Fabrika Otomasyonu", img: "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=2070&auto=format&fit=crop" },
+              { title: "Konut Güneş Paneli", img: "https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop" },
+              { title: "Şantiye Altyapısı", img: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2070&auto=format&fit=crop" },
+            ].map((project, i) => (
+              <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm group cursor-pointer border border-gray-100">
+                <div className="overflow-hidden">
+                  <img src={project.img} alt={project.title} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="p-4 text-center border-t border-gray-100">
+                  <h4 className="font-semibold text-gray-800 text-sm">{project.title}</h4>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
-
+      
       {/* YENİ EKLENEN BÖLÜM: ENERJİ HESAPLAYICI */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
