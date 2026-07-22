@@ -106,7 +106,7 @@ export default function EnergyCalculator() {
           <input 
             type="range" 
             min="500" 
-            max="150000" 
+            max="1000000" 
             step="500" 
             value={bill} 
             onChange={(e) => setBill(Number(e.target.value))}
@@ -114,7 +114,7 @@ export default function EnergyCalculator() {
           />
           <div className="flex justify-between text-xs text-gray-400 mt-2 font-medium">
             <span>Kaydırın veya kutuya elinizle yazın</span>
-            <span>Önerilen Max: 150.000 ₺</span>
+            <span>Önerilen Max: 1.000.000 ₺</span>
           </div>
         </div>
 
