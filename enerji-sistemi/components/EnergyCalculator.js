@@ -80,17 +80,22 @@ export default function EnergyCalculator() {
         {/* YENİ: Manuel Giriş Destekli Fatura Ayarı */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <label className="font-medium text-gray-700">Aylık Ortalama Elektrik Faturanız</label>
-            
-            {/* Manuel Input Alanı */}
+            <label className="font-medium text-gray-700">Aylık Ortalama Elektrik Faturanız</label>           
             <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-[#02529C] transition-all">
               <input 
                 type="number" 
                 min="0"
-                max="150000" 
+                max="9999999" 
                 value={bill === 0 ? "" : bill} 
-                onChange={(e) => setBill(e.target.value === "" ? 0 : Number(e.target.value))}
-                className="w-24 text-right font-bold text-[#02529C] text-lg bg-transparent focus:outline-none [&::-webkit-inner-spin-button]:appearance-none"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Girilen değer 7 basamağı geçiyorsa güncellemeyi durdur (yazmayı engelle)
+                  if (val.length > 7) return;
+                  
+                  setBill(val === "" ? 0 : Number(val));
+                }}
+                // 7 haneli sayının rahat sığması için w-24 yerine w-32 kullanıldı
+                className="w-32 text-right font-bold text-[#02529C] text-lg bg-transparent focus:outline-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="0"
               />
               <span className="font-bold text-[#02529C] text-lg">₺</span>
