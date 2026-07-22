@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Her tabloyu ayrı ayrı güvenli şekilde saydırıyoruz ki biri hata verse bile diğerleri çalışsın
     let projects = 0;
     let customers = 0;
     let unreadMessages = 0;
@@ -12,7 +11,22 @@ export async function GET() {
     try { projects = await prisma.project.count(); } catch (e) {}
     try { customers = await prisma.user.count(); } catch (e) {}
     try { unreadMessages = await prisma.message.count(); } catch (e) {}
-    try { pendingAppointments = await prisma.appointment.count(); } catch (e) {}
+    
+    // Sadece durumu henüz belli olmayan (bekleyen) randevuları filtreleyerek sayıyoruz
+    try { 
+      pendingAppointments = await prisma.appointment.count({ 
+        where: { 
+          status: { 
+            in: ["PENDING", "Beklemede", "bekliyor", "YENI", "new"] 
+          } 
+        } 
+      }); 
+    } catch (e) { 
+      // Eğer veritabanında status alanı yoksa veya farklı bir sorgu gerekiyorsa güvenli fallback
+      try { 
+        pendingAppointments = await prisma.appointment.count(); 
+      } catch (err) {}
+    }
 
     return NextResponse.json({
       projects,
