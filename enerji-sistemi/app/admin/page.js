@@ -97,12 +97,12 @@ export default function AdminDashboard() {
           linkText="Gelen Kutusuna Git"
         />
         <StatCard 
-          title="Ürün Envanteri" 
-          value={stats.products} 
-          icon={Package} 
+          title="Müşteriler" 
+          value={stats.customers} 
+          icon={Users} 
           color="green" 
-          link="/admin/urunler"
-          linkText="Kataloğu Düzenle"
+          link="/admin/musteriler"
+          linkText="Müşterileri Yönet"
         />
       </div>
 

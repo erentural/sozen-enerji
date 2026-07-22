@@ -1,15 +1,88 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Search, Plus, Mail, FolderKanban, MoreVertical } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, Search, Plus, Mail, Trash2, X, Calendar } from "lucide-react";
 
 export default function CustomersPage() {
-  // Tasarımı anında görebilmen için geçici örnek veriler ekledim
-  const [customers, setCustomers] = useState([
-    { id: 1, name: "Ali Bülent", email: "ali@ornek.com", projects: 2, date: "2026-07-15" },
-    { id: 2, name: "Eren Tural", email: "eren@ornek.com", projects: 5, date: "2026-06-20" },
-    { id: 3, name: "Sözen İnşaat A.Ş.", email: "info@sozeninsaat.com", projects: 1, date: "2026-07-20" },
-  ]);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Modal (Yeni Müşteri Ekle Penceresi) State'leri
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await fetch("/api/admin/customers");
+      if (res.ok) {
+        const data = await res.json();
+        setCustomers(data);
+      }
+    } catch (error) {
+      console.error("Müşteriler çekilemedi", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Yeni Müşteri Kaydetme Formu Gönderimi
+  const handleAddCustomer = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/admin/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Müşteri başarıyla eklendi!");
+        setIsModalOpen(false);
+        setFormData({ name: "", email: "", password: "" });
+        fetchCustomers();
+      } else {
+        alert(data.error || "Müşteri eklenirken bir hata oluştu.");
+      }
+    } catch (error) {
+      console.error("İşlem başarısız", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Müşteri Silme
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu müşteriyi silmek istediğinize emin misiniz?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/customers/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setCustomers(customers.filter((c) => c.id !== id));
+      } else {
+        alert("Müşteri silinemedi.");
+      }
+    } catch (error) {
+      console.error("Silme hatası:", error);
+    }
+  };
+
+  // Arama Filtresi
+  const filteredCustomers = customers.filter(c => 
+    c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) return <div className="p-8 text-gray-500 font-medium">Müşteriler yükleniyor...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -21,7 +94,10 @@ export default function CustomersPage() {
           <p className="text-gray-500 text-sm mt-1">Sisteme kayıtlı tüm müşterileriniz ve proje sayıları.</p>
         </div>
         
-        <button className="bg-[#02529C] hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#02529C] hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+        >
           <Plus className="w-5 h-5" /> Yeni Müşteri Ekle
         </button>
       </div>
@@ -34,47 +110,122 @@ export default function CustomersPage() {
             <input 
               type="text" 
               placeholder="Müşteri adı veya e-posta ara..." 
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white text-gray-700"
             />
           </div>
         </div>
 
         {/* Müşteri Tablosu */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 text-gray-500 text-sm font-semibold uppercase tracking-wider">
-                <th className="p-4 pl-6">Müşteri / Firma Adı</th>
-                <th className="p-4">E-Posta Adresi</th>
-                <th className="p-4 text-center">Aktif Proje</th>
-                <th className="p-4">Kayıt Tarihi</th>
-                <th className="p-4 text-right pr-6">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {customers.map((c) => (
-                <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group">
-                  <td className="p-4 pl-6 font-bold text-gray-900">{c.name}</td>
-                  <td className="p-4 text-gray-600 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" /> {c.email}
-                  </td>
-                  <td className="p-4 text-center">
-                    <span className="inline-flex items-center justify-center bg-blue-100 text-[#02529C] font-bold px-3 py-1 rounded-full text-xs">
-                      {c.projects} Proje
-                    </span>
-                  </td>
-                  <td className="p-4 text-sm text-gray-500">{c.date}</td>
-                  <td className="p-4 text-right pr-6">
-                    <button className="text-gray-400 hover:text-[#02529C] p-2 rounded-lg transition-colors">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </td>
+        {filteredCustomers.length === 0 ? (
+          <p className="text-gray-500 text-sm py-12 text-center">Kayıtlı müşteri bulunamadı.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-sm font-semibold uppercase tracking-wider">
+                  <th className="p-4 pl-6">Müşteri Adı</th>
+                  <th className="p-4">E-Posta Adresi</th>
+                  <th className="p-4 text-center">Aktif Proje</th>
+                  <th className="p-4">Kayıt Tarihi</th>
+                  <th className="p-4 text-right pr-6">İşlemler</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredCustomers.map((c) => (
+                  <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group">
+                    <td className="p-4 pl-6 font-bold text-gray-900">{c.name || "İsimsiz"}</td>
+                    <td className="p-4 text-gray-600 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" /> {c.email}
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="inline-flex items-center justify-center bg-blue-100 text-[#02529C] font-bold px-3 py-1 rounded-full text-xs">
+                        {c.projects?.length || 0} Proje
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-gray-500 flex items-center gap-1.5 pt-5">
+                      <Calendar className="w-4 h-4 text-gray-400" /> {new Date(c.createdAt).toLocaleDateString("tr-TR")}
+                    </td>
+                    <td className="p-4 text-right pr-6">
+                      <button 
+                        onClick={() => handleDelete(c.id)}
+                        className="text-gray-400 hover:text-red-600 p-2 rounded-lg transition-colors hover:bg-red-50"
+                        title="Müşteriyi Sil"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      {/* Yeni Müşteri Ekle Modal Penceresi */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Müşteri Ekle</h2>
+            
+            <form onSubmit={handleAddCustomer} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Müşteri Adı / Soyadı</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Örn: Ahmet Yılmaz"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">E-Posta Adresi</label>
+                <input 
+                  type="email" 
+                  required
+                  placeholder="ahmet@email.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Giriş Şifresi (Opsiyonel)</label>
+                <input 
+                  type="password" 
+                  placeholder="Boş bırakılırsa 'musteri123' atanır"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-70 shadow-sm"
+                >
+                  {isSubmitting ? "Kaydediliyor..." : "Müşteriyi Kaydet"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
