@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link"; // YENİ: Sayfa geçişleri için eklendi
 import { signIn } from "next-auth/react";
 
 export default function AuthPage() {
@@ -9,24 +10,20 @@ export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [error, setError] = useState("");
   
-  // 1. YENİLİK: Form verilerine "countryCode" eklendi
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    countryCode: "+90", // Varsayılan Türkiye kodu
+    countryCode: "+90",
     phone: "",
     email: "",
     password: ""
   });
 
-  // Standart veri değişimi (Ad, soyad, e-posta, şifre, ülke kodu için)
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 2. YENİLİK: Sadece rakam kabul eden telefon fonksiyonu
   const handlePhoneChange = (e) => {
-    // Regex ile rakam olmayan (\D) tüm karakterleri sileriz
     const onlyNumbers = e.target.value.replace(/\D/g, '');
     setFormData({ ...formData, phone: onlyNumbers });
   };
@@ -36,10 +33,9 @@ export default function AuthPage() {
     setError("");
 
     if (isLoginMode) {
-      // --- GERÇEK GİRİŞ YAPMA (LOGIN) İŞLEMİ ---
       try {
         const res = await signIn("credentials", {
-          redirect: false, // Sayfanın otomatik yenilenmesini engeller, hatayı biz yakalarız
+          redirect: false,
           email: formData.email,
           password: formData.password,
         });
@@ -47,12 +43,40 @@ export default function AuthPage() {
         if (res?.error) {
           setError("E-posta veya şifre hatalı. Lütfen kontrol ediniz.");
         } else {
-          // Giriş başarılıysa paneline yönlendir
-          router.push("/portal"); // Eğer giriş yaptıktan sonra admin veya müşteri paneline gidecekse adresi buraya yaz (Örn: "/dashboard")
-          router.refresh(); // Sayfa verilerini günceller
+          router.push("/portal"); // Müşteri portalının uzantısını buraya yaz
+          router.refresh();
         }
       } catch (err) {
         setError("Giriş yapılırken sunucu tarafında bir hata oluştu.");
+      }
+    } else {
+      const fullPhone = formData.phone ? `${formData.countryCode}${formData.phone}` : "";
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phone: fullPhone
+      };
+
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error);
+        } else {
+          alert("Kaydınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
+          setIsLoginMode(true);
+          setFormData({ ...formData, password: "", phone: "" });
+        }
+      } catch (err) {
+        setError("Sunucuya bağlanılamadı.");
       }
     }
   };
@@ -71,6 +95,7 @@ export default function AuthPage() {
 
         {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded">{error}</div>}
 
+        {/* Enter tuşunun çalışması için form etiketi ve type="submit" önemlidir */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {!isLoginMode && (
@@ -86,7 +111,6 @@ export default function AuthPage() {
                 </div>
               </div>
               
-              {/* 4. YENİLİK: Ülke kodu ve Rakam kısıtlamalı telefon alanı */}
               <div>
                 <label className="block mb-1 text-sm text-gray-600">Telefon Numarası</label>
                 <div className="flex">
@@ -97,22 +121,22 @@ export default function AuthPage() {
                     className="px-2 py-2 border border-r-0 rounded-l-md bg-gray-50 text-gray-600 focus:outline-none"
                   >
                     <option value="+90">+90 (TR)</option>
-                    <option value="+1">+1 (US)</option>
+                    <option value="+1">+1 (ABD)</option>
                     <option value="+44">+44 (UK)</option>
                     <option value="+49">+49 (DE)</option>
                     <option value="+33">+33 (FR)</option>
-                    <option value="+81">+81 (JP)</option>
-                    <option value="+61">+61 (AU)</option>
-                    <option value="+91">+91 (IN)</option>
-                    <option value="+86">+86 (CN)</option>
+                    <option value="+39">+39 (IT)</option>
                     <option value="+7">+7 (RU)</option>
+                    <option value="+81">+81 (JP)</option>
+                    <option value="+86">+86 (CN)</option>
+                    <option value="+91">+91 (IN)</option>
                   </select>
                   <input 
                     type="tel" 
                     name="phone" 
                     value={formData.phone}
                     onChange={handlePhoneChange} 
-                    maxLength={10} // TR numaraları için başında 0 olmadan 10 hane (Örn: 5551234567)
+                    maxLength={10} 
                     placeholder="5XX XXX XX XX" 
                     className="w-full px-3 py-2 border rounded-r-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
                   />
@@ -136,14 +160,25 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <div className="text-center mt-4">
+        <div className="text-center mt-6 space-y-4">
           <button 
             type="button" 
             onClick={() => setIsLoginMode(!isLoginMode)} 
-            className="text-sm text-blue-600 hover:underline focus:outline-none"
+            className="text-sm text-blue-600 hover:underline focus:outline-none block w-full"
           >
             {isLoginMode ? "Hesabınız yok mu? Yeni müşteri kaydı oluşturun." : "Zaten hesabınız var mı? Giriş yapın."}
           </button>
+
+          {/* YENİ: Ana Sayfaya Dön Butonu */}
+          <Link 
+            href="/" 
+            className="inline-flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            Ana Sayfaya Dön
+          </Link>
         </div>
 
       </div>
