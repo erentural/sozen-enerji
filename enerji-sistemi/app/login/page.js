@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -35,40 +36,23 @@ export default function AuthPage() {
     setError("");
 
     if (isLoginMode) {
-      // BURAYA MEVCUT GİRİŞ (LOGIN) KODLARIN GELECEK
-      // Örn: signIn("credentials", { email: formData.email, password: formData.password })
-    } else {
-      
-      // 3. YENİLİK: Backend'e göndermeden önce ülke kodu ve numarayı birleştiriyoruz
-      const fullPhone = formData.phone ? `${formData.countryCode}${formData.phone}` : "";
-
-      const payload = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        phone: fullPhone // Birleştirilmiş hali gönderiliyor (+905551234567 gibi)
-      };
-
+      // --- GERÇEK GİRİŞ YAPMA (LOGIN) İŞLEMİ ---
       try {
-        const res = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+        const res = await signIn("credentials", {
+          redirect: false, // Sayfanın otomatik yenilenmesini engeller, hatayı biz yakalarız
+          email: formData.email,
+          password: formData.password,
         });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.error);
+        if (res?.error) {
+          setError("E-posta veya şifre hatalı. Lütfen kontrol ediniz.");
         } else {
-          alert("Kaydınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
-          setIsLoginMode(true);
-          // Formu sıfırlayabilirsin
-          setFormData({ ...formData, password: "", phone: "" });
+          // Giriş başarılıysa paneline yönlendir
+          router.push("/"); // Eğer giriş yaptıktan sonra admin veya müşteri paneline gidecekse adresi buraya yaz (Örn: "/dashboard")
+          router.refresh(); // Sayfa verilerini günceller
         }
       } catch (err) {
-        setError("Sunucuya bağlanılamadı.");
+        setError("Giriş yapılırken sunucu tarafında bir hata oluştu.");
       }
     }
   };
