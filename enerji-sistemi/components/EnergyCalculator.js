@@ -54,16 +54,22 @@ export default function EnergyCalculator() {
   
   // 1. Sadece panelin ham maliyeti
   const selectedPanelPrice = panelOptions.find(p => p.power === panelPower)?.price || 4500;
-  const rawPanelsCost = panelCount * selectedPanelPrice; 
+  const rawPanelsCost = panelCount * selectedPanelPrice;
+   
   
   // 2. ANAHTAR TESLİM ÇARPANI (İnvertör, işçilik, konstrüksiyon, kablo ve mühendislik eklendi)
   // Gerçek projelerde toplam maliyet, ham panel maliyetinin ortalama 2.2 ile 2.4 katı arasındadır.
-  const turnkeyMultiplier = 2.3; 
-  const estimatedCost = rawPanelsCost * turnkeyMultiplier; 
+  // ÖLÇEK EKONOMİSİ MANTIĞI: Sistem büyüdükçe anahtar teslim çarpanı ucuzlar
+  let turnkeyMultiplier = 2.3; // Standart ev tipi
+  if (panelCount > 20) turnkeyMultiplier = 2.1; // Orta ölçekli ticarethane
+  if (panelCount > 50) turnkeyMultiplier = 1.9; // Fabrika / Endüstriyel
+  
+  const estimatedCost = rawPanelsCost * turnkeyMultiplier;
   
   // 3. Amorti Hesabı
   const yearlySavings = bill * 12;
   const roiYears = (estimatedCost / yearlySavings).toFixed(1);
+  
 
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 transition-colors">
