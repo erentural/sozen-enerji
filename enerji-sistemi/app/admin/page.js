@@ -9,7 +9,7 @@ export default function AdminDashboard() {
     projects: 0,
     pendingAppointments: 0,
     unreadMessages: 0,
-    products: 0,
+    customers: 0,
   });
   const [loading, setLoading] = useState(true);
 
