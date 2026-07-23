@@ -91,5 +91,6 @@ model Message {
   subject   String?  // Konu (Örn: Öneri, Şikayet, Bilgi Talebi)
   message   String   // Mesaj içeriği
   read      Boolean  @default(false)
+  replied   Boolean  @default(false)
   createdAt DateTime @default(now())
 }
