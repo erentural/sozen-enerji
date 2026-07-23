@@ -41,6 +41,7 @@ export default function MessagesPage() {
       if (res.ok) {
         setMessages(messages.filter(m => m.id !== id));
         router.refresh();
+        window.dispatchEvent(new Event("refreshNotifications"));
       }
     } catch (error) {
       console.error("Silme hatası:", error);
@@ -57,11 +58,11 @@ export default function MessagesPage() {
       });
 
       if (res.ok) {
-        // İşlem başarılıysa sadece ilgili mesajın read değerini true yap, sayfayı yenileme
         setMessages(messages.map(m => 
           m.id === id ? { ...m, read: true } : m
         ));
         router.refresh();
+        window.dispatchEvent(new Event("refreshNotifications"));
       }
     } catch (error) {
       console.error("Okundu işaretleme hatası:", error);
@@ -92,9 +93,10 @@ export default function MessagesPage() {
         setMessages(messages.map(m => 
           m.id === selectedMessage.id ? { ...m, replied: true, read: true } : m
         ));
-        router.refresh();
         setIsModalOpen(false);
         alert("Yanıtınız başarıyla müşteriye e-posta olarak iletildi!");
+        router.refresh();
+        window.dispatchEvent(new Event("refreshNotifications"));
       } else {
         alert("İşlem başarısız oldu.");
       }

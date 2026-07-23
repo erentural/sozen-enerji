@@ -27,11 +27,19 @@ export default function NotificationBell() {
     }
   };
 
-  // Sayfa yüklendiğinde ve her 1 dakikada bir yeni bildirimleri kontrol et
+  // Sayfa yüklendiğinde, her 1 dakikada bir VE özel sinyal geldiğinde verileri çek
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000); 
-    return () => clearInterval(interval);
+    
+    // YENİ EKLENEN: Diğer sayfalardan gelen anlık güncelleme sinyalini dinler
+    const handleInstantUpdate = () => fetchNotifications();
+    window.addEventListener("refreshNotifications", handleInstantUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("refreshNotifications", handleInstantUpdate);
+    };
   }, []);
 
   // Menü açıkken dışarı tıklanırsa kapat
@@ -72,11 +80,10 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {/* Açılır Menü (left-0 ile ana içeriğe doğru açılması sağlandı) */}
+      {/* Açılır Menü */}
       {isOpen && (
         <div className="absolute top-14 left-0 w-80 md:w-96 bg-white rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-200">
           
-          {/* Başlık Alanı */}
           <div className="bg-gray-50/80 backdrop-blur-md px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-bold text-gray-900 text-base">Bildirimler</h3>
             {totalCount > 0 && (
@@ -86,7 +93,6 @@ export default function NotificationBell() {
             )}
           </div>
           
-          {/* Liste Alanı */}
           <div className="max-h-[380px] overflow-y-auto custom-scrollbar">
             {loading ? (
               <div className="p-8 text-center text-sm text-gray-500 font-medium">Yükleniyor...</div>
@@ -122,7 +128,6 @@ export default function NotificationBell() {
             )}
           </div>
           
-          {/* Alt Bilgi */}
           <div className="p-3 border-t border-gray-100 bg-gray-50/50">
             <button 
               onClick={() => { setIsOpen(false); fetchNotifications(); }} 
