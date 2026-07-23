@@ -38,7 +38,7 @@ export async function POST(request) {
       // Duruma göre değişen giriş metni
       const introText = isFromCalculator 
         ? `Sözen Enerji <strong>Gelişmiş Enerji Hesaplayıcısı</strong> üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> (${updatedQuote.panelCount} Panel ihtiyacı) analizi mühendislerimiz tarafından incelenmiş ve ön keşif süreci tamamlanmıştır.`
-        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz (Konum: ${updatedQuote.city || "Belirtilmedi"}) mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
+        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
 
       const mailOptions = {
         from: `"Sözen Enerji" <${process.env.EMAIL_USER}>`,
