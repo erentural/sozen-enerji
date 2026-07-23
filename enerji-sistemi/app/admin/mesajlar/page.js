@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Trash2, Search, User, Calendar, Phone, CheckCircle2, MessageSquare, Send, X, Clock } from "lucide-react";
+import { Mail, Trash2, Search, User, Calendar, Phone, CheckCircle2, MessageSquare, Send, X, Clock, Eye } from "lucide-react";
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
@@ -41,6 +41,26 @@ export default function MessagesPage() {
       }
     } catch (error) {
       console.error("Silme hatası:", error);
+    }
+  };
+
+  // YENİ EKLENEN: Sadece Okundu İşaretleme Fonksiyonu
+  const handleMarkAsRead = async (id) => {
+    try {
+      const res = await fetch("/api/admin/messages/mark-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (res.ok) {
+        // İşlem başarılıysa sadece ilgili mesajın read değerini true yap, sayfayı yenileme
+        setMessages(messages.map(m => 
+          m.id === id ? { ...m, read: true } : m
+        ));
+      }
+    } catch (error) {
+      console.error("Okundu işaretleme hatası:", error);
     }
   };
 
@@ -119,11 +139,20 @@ export default function MessagesPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {filteredMessages.map((msg) => (
-              <div key={msg.id} className={`p-6 transition-all flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 ${msg.replied ? 'bg-white hover:bg-gray-50' : 'bg-blue-50/30 hover:bg-blue-50/50'}`}>
+              // MESAJ SATIRI RENKLENDİRMESİ GÜNCELLENDİ
+              <div key={msg.id} className={`p-6 transition-all flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 
+                ${msg.replied ? 'bg-white hover:bg-gray-50' : (msg.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50/50 hover:bg-blue-100/50')}
+              `}>
                 
                 <div className="flex-1 space-y-3 w-full">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="text-lg font-bold text-gray-900">{msg.name}</h3>
+                    <h3 className={`text-lg font-bold ${!msg.read ? 'text-[#02529C]' : 'text-gray-900'}`}>{msg.name}</h3>
+                    
+                    {/* Okunmamışsa Yeni Etiketi */}
+                    {!msg.read && (
+                      <span className="bg-blue-100 text-[#02529C] font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">Yeni</span>
+                    )}
+
                     <span className="bg-gray-100 text-gray-700 font-semibold px-3 py-1 rounded-full text-xs border border-gray-200">
                       {msg.subject || "Genel Mesaj"}
                     </span>
@@ -133,7 +162,7 @@ export default function MessagesPage() {
                     </span>
                   </div>
 
-                  <p className="text-sm text-gray-700 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                  <p className={`text-sm p-4 rounded-xl border border-gray-100 shadow-sm ${!msg.read ? 'bg-white font-medium text-gray-800' : 'bg-white/80 text-gray-600'}`}>
                     "{msg.message}"
                   </p>
 
@@ -154,6 +183,19 @@ export default function MessagesPage() {
                   </span>
                   
                   <div className="flex items-center gap-2">
+                    
+                    {/* YENİ EKLENEN BUTON: Sadece okunmamış mesajlarda görünür */}
+                    {!msg.read && (
+                      <button 
+                        onClick={() => handleMarkAsRead(msg.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm font-bold shadow-sm bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
+                        title="Sadece okundu olarak işaretle"
+                      >
+                        <Eye className="w-4 h-4" /> 
+                        Okundu İşaretle
+                      </button>
+                    )}
+
                     <button 
                       onClick={() => openReplyModal(msg)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm font-bold shadow-sm ${msg.replied ? 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' : 'bg-[#02529C] text-white hover:bg-blue-800'}`}
