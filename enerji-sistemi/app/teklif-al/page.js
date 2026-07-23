@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin, Map } from "lucide-react";
+// YENİ İKONLAR EKLENDİ (Home, ArrowLeft)
+import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin, Map, Home, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function TeklifAlPage() {
@@ -76,7 +77,6 @@ export default function TeklifAlPage() {
         });
         if (res.ok) setIsSuccess(true);
       } else {
-        // YENİ: phone verisi mesaj formuna da eklendi
         const res = await fetch("/api/mesaj", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,33 +98,64 @@ export default function TeklifAlPage() {
     }
   };
 
+  // Yeni Form Doldurma (Sıfırlama) Fonksiyonu
+  const handleResetForm = () => {
+    setIsSuccess(false);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      countryCode: "+90",
+      service: "Genel Proje Talebi",
+      city: "İstanbul",
+      district: "Kadıköy",
+      detailedAddress: "",
+      subject: "Öneri",
+      message: "",
+    });
+  };
+
+  // YENİ PREMIUM BAŞARI EKRANI
   if (isSuccess) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center p-4">
-        <div className="bg-white p-10 rounded-3xl shadow-xl max-w-lg w-full text-center border border-gray-100">
-          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10" />
+      <div className="flex items-center justify-center min-h-[60vh] p-4 bg-gray-50/30">
+        <div className="relative bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 p-8 md:p-12 max-w-lg w-full text-center overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+          
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#02529C] to-blue-400"></div>
+
+          <div className="relative mx-auto w-24 h-24 mb-8">
+            <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-20"></div>
+            <div className="relative flex items-center justify-center w-full h-full bg-green-50 rounded-full ring-8 ring-green-50/50">
+              <CheckCircle2 className="w-12 h-12 text-green-500" strokeWidth={2.5} />
+            </div>
           </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Talebiniz Alındı!</h2>
-          <p className="text-gray-500 text-lg mb-8">
+
+          <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">
+            Talebiniz Alındı!
+          </h2>
+          <p className="text-gray-500 text-base md:text-lg leading-relaxed mb-10 font-medium px-2">
             {formType === "quote" 
               ? "Proje detaylarınız ve konum bilgileriniz keşif ekibimize iletildi. En kısa sürede sizinle iletişime geçeceğiz." 
-              : "Mesajınız yönetim ekibimize iletildi. Geri bildiriminiz için teşekkür ederiz."}
+              : "Mesajınız yönetim ekibimize başarıyla iletildi. İlgili departmanımız en kısa sürede sizinle iletişime geçecektir."}
           </p>
-          <button 
-            onClick={() => setSubmitSuccess(false)} // Veya formu sıfırladığın fonksiyon neyse o
-            className="bg-[#02529C] text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors w-full max-w-xs"
-          >
-            Yeni Bir Form Doldur
-          </button>
 
-          {/* Yeni Eklenen İkinci Buton (İkincil Eylem) */}
-          <Link 
-            href="/" 
-            className="text-gray-500 hover:text-gray-800 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors w-full max-w-xs text-center border border-transparent hover:border-gray-200"
-          >
-            Ana Sayfaya Dön
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <button 
+              onClick={handleResetForm} 
+              className="w-full sm:w-1/2 flex items-center justify-center gap-2 bg-[#02529C] hover:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Yeni Form Doldur
+            </button>
+
+            <Link 
+              href="/" 
+              className="w-full sm:w-1/2 flex items-center justify-center gap-2 bg-white border-2 border-gray-200 hover:border-[#02529C] hover:bg-blue-50 hover:text-[#02529C] text-gray-600 font-bold py-3.5 px-6 rounded-xl transition-all hover:-translate-y-0.5"
+            >
+              <Home className="w-5 h-5" />
+              Ana Sayfaya Dön
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -163,7 +194,7 @@ export default function TeklifAlPage() {
           <div className="p-8 md:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* YENİ: Ortak Alanlara Telefon Eklendi */}
+              {/* Ortak Alanlara Telefon Eklendi */}
               <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50 space-y-6">
                 <h3 className="text-[#02529C] font-bold border-b border-blue-100 pb-2">Kişisel Bilgiler</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
