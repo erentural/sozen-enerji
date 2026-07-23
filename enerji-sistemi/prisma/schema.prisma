@@ -87,7 +87,7 @@ model Message {
   id        String   @id @default(cuid())
   name      String
   email     String
-  phone     String   @default("") 
+  phone     String  
   subject   String?  // Konu (Örn: Öneri, Şikayet, Bilgi Talebi)
   message   String   // Mesaj içeriği
   read      Boolean  @default(false)
