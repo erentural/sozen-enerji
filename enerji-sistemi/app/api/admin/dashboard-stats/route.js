@@ -1,52 +1,39 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Next.js'in bu API yanıtını önbelleğe (cache) almasını engeller
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    let projects = 0;
-    let customers = 0;
-    let unreadMessages = 0;
-    let pendingAppointments = 0;
+    // 1. Aktif Proje Sayısı
+    const projectsCount = await prisma.project.count().catch(() => 0);
 
-    try { projects = await prisma.project.count(); } catch (e) {}
-    try { customers = await prisma.user.count(); } catch (e) {}
-    try { unreadMessages = await prisma.message.count(); } catch (e) {}
-    
-    // Güvenli Filtreleme: Önce doğrudan veritabanından süzmeyi dene, 
-    // hata alırsan tüm listeyi çekip JavaScript ile sadece bekleyenleri filtrele.
-    try { 
-      pendingAppointments = await prisma.appointment.count({ 
-        where: { 
-          status: { 
-            in: ["PENDING", "Beklemede", "bekliyor", "YENI", "new"] 
-          } 
-        } 
-      }); 
-    } catch (e) { 
-      try { 
-        const allAppointments = await prisma.appointment.findMany();
-        pendingAppointments = allAppointments.filter(app => 
-          !app.status || 
-          ["PENDING", "Beklemede", "bekliyor", "YENI", "new", "PENDING"].includes(app.status)
-        ).length;
-      } catch (err) {
-        pendingAppointments = 0;
+    // 2. Bekleyen Randevu / Teklif Talebi Sayısı 
+    // (Propendeki tablonun adına göre model adını kontrol edebilirsin, örn: quote veya appointment)
+    const pendingAppointmentsCount = await prisma.quote.count({
+      where: { status: "PENDING" }
+    }).catch(() => 0);
+
+    // 3. YENİ MESAJ SAYISI (Sadece henüz okunmamış olanlar: read: false)
+    const unreadMessagesCount = await prisma.message.count({
+      where: {
+        read: false
       }
-    }
+    }).catch(() => 0);
+
+    // 4. Müşteri Sayısı
+    const customersCount = await prisma.customer.count().catch(() => 0);
 
     return NextResponse.json({
-      projects,
-      customers,
-      unreadMessages,
-      pendingAppointments,
+      projects: projectsCount,
+      pendingAppointments: pendingAppointmentsCount,
+      unreadMessages: unreadMessagesCount, // Artık sadece okunmamışlar sayılıyor
+      customers: customersCount,
     });
+
   } catch (error) {
-    console.error("Dashboard istatistik hatası:", error);
-    return NextResponse.json({ 
-      projects: 0, 
-      customers: 0, 
-      unreadMessages: 0, 
-      pendingAppointments: 0 
-    });
+    console.error("Dashboard istatistikleri alınırken hata:", error);
+    return NextResponse.json({ error: "İstatistikler yüklenemedi." }, { status: 500 });
   }
 }

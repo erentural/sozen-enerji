@@ -17,7 +17,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/admin/dashboard-stats");
+        // GÜNCELLEME BURADA: cache: 'no-store' eklenerek eski verinin takılı kalması engellendi
+        const res = await fetch("/api/admin/dashboard-stats", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setStats(data);
