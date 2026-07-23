@@ -4,23 +4,29 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, phone, subject, message } = body;
 
-    // Gelen öneri/şikayet verisini Message tablosuna kaydet
+    // Zorunlu alanların kontrolü
+    if (!name || !email || !phone || !message) {
+      return NextResponse.json({ error: "Lütfen tüm zorunlu alanları doldurun." }, { status: 400 });
+    }
+
+    // Veritabanına kayıt işlemi
     const newMessage = await prisma.message.create({
-    data: {
-    name,
-    email,
-    phone, // 2. Veritabanına kayıt işlemine 'phone' eklendi
-    subject,
-    message,
-    read: false,
-  }
-});
+      data: {
+        name,
+        email,
+        phone, // Artık telefon hatasız şekilde kaydediliyor
+        subject: subject || "Genel Mesaj",
+        message,
+        read: false,
+        replied: false,
+      },
+    });
 
-    return NextResponse.json({ success: true, data: newMessage }, { status: 201 });
+    return NextResponse.json({ success: true, message: newMessage });
   } catch (error) {
     console.error("Mesaj kaydedilirken hata:", error);
-    return NextResponse.json({ error: "Mesajınız gönderilemedi." }, { status: 500 });
+    return NextResponse.json({ error: "Mesaj kaydedilemedi." }, { status: 500 });
   }
 }
