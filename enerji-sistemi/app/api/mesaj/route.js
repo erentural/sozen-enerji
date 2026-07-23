@@ -8,14 +8,15 @@ export async function POST(request) {
 
     // Gelen öneri/şikayet verisini Message tablosuna kaydet
     const newMessage = await prisma.message.create({
-      data: {
-        name,
-        email,
-        subject,
-        message,
-        read: false,
-      },
-    });
+    data: {
+    name,
+    email,
+    phone, // 2. Veritabanına kayıt işlemine 'phone' eklendi
+    subject,
+    message,
+    read: false,
+  }
+});
 
     return NextResponse.json({ success: true, data: newMessage }, { status: 201 });
   } catch (error) {
