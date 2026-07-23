@@ -3,56 +3,37 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // 1. Okunmamış mesajları getir (En yeni 3 adet)
-    const unreadMessages = await prisma.contactMessage.findMany({
-      where: { isRead: false },
+    // 1. Okunmamış mesajları yeni "Message" tablosundan getir
+    const messages = await prisma.message.findMany({
+      where: { read: false },
       orderBy: { createdAt: 'desc' },
       take: 3
-    });
+    }).catch(() => []); // Tablo yoksa veya hata verirse boş dizi dön
 
-    // 2. Bekleyen randevuları getir (En yeni 3 adet)
-    const pendingAppointments = await prisma.appointment.findMany({
-      where: { status: 'PENDING' },
+    // 2. Bekleyen randevuları getir (Tüm bekleyen statülerini kapsar)
+    const appointments = await prisma.appointment.findMany({
+      where: { status: { in: ['PENDING', 'Beklemede', 'bekliyor', 'YENI'] } },
       orderBy: { createdAt: 'desc' },
       take: 3
-    });
+    }).catch(() => []);
 
-    // 3. Verileri ortak bir bildirim formatında birleştir
-    const notifications = [
-      ...unreadMessages.map(m => ({
-        id: `msg-${m.id}`,
-        type: 'message',
-        title: 'Yeni Mesaj',
-        desc: `${m.name} size bir mesaj gönderdi.`,
-        date: m.createdAt,
-        link: '/admin/mesajlar'
-      })),
-      ...pendingAppointments.map(a => ({
-        id: `app-${a.id}`,
-        type: 'appointment',
-        title: 'Randevu Talebi',
-        desc: `Yeni bir randevu onayı bekliyor.`,
-        date: a.createdAt,
-        link: '/admin/randevular'
-      }))
-    ];
+    // 3. YENİ: Bekleyen Teklif Taleplerini getir
+    const quotes = await prisma.quoteRequest.findMany({
+      where: { status: 'YENI' },
+      orderBy: { createdAt: 'desc' },
+      take: 4
+    }).catch(() => []);
 
-    // Tarihe göre en yeniden eskiye sırala ve en güncel 5 tanesini al
-    const sortedNotifications = notifications
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-
-    // Toplam okunmamış/bekleyen sayısını hesapla
-    const totalCount = await prisma.contactMessage.count({ where: { isRead: false } }) + 
-                       await prisma.appointment.count({ where: { status: 'PENDING' } });
-
+    // Frontend tarafı artık doğrudan bu 3 diziyi bekliyor
     return NextResponse.json({
-      count: totalCount,
-      items: sortedNotifications
+      messages,
+      appointments,
+      quotes
     });
 
   } catch (error) {
     console.error("Bildirimler alınırken hata:", error);
-    return NextResponse.json({ error: "Bildirimler alınamadı." }, { status: 500 });
+    // Hata durumunda uygulamanın çökmemesi için boş diziler döndürüyoruz
+    return NextResponse.json({ messages: [], appointments: [], quotes: [] }, { status: 500 });
   }
 }
