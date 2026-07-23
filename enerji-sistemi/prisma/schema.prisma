@@ -70,6 +70,7 @@ model Appointment {
 model QuoteRequest {
   id         String   @id @default(cuid())
   name       String
+  email      String?
   phone      String
   service    String   // Örn: Çatı GES Kurulumu, Fabrika vb.
   bill       Float?   // Hesaplayıcıdan gelen fatura tutarı
@@ -78,6 +79,7 @@ model QuoteRequest {
   panelCount Int?     // Gereken panel adedi
   roiYears   String?  // Amorti süresi
   status     String   @default("YENI") // YENI, GORUSULDU, KAPANDI
+  priceOffer Float?
   createdAt  DateTime @default(now())
 }
 

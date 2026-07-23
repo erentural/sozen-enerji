@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, phone, service, bill, region, city, panelCount, roiYears } = body;
+    const { name, email, phone, service, bill, region, city, panelCount, roiYears } = body;
 
-    // Gelen verileri veritabanına (QuoteRequest tablosuna) kaydet
     const newQuote = await prisma.quoteRequest.create({
       data: {
         name,
+        email, // Mail adresi eklendi
         phone,
-        service, // Örn: Müstakil Ev - Çatı GES
+        service,
         bill: Number(bill),
         region,
         city,

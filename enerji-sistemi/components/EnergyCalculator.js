@@ -12,7 +12,7 @@ export default function EnergyCalculator() {
 
   // Modal ve Form State'leri
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", phone: "" });
+  const [formData, setFormData] = useState({ name: "", phone: "", email: "", countryCode: "+90" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -75,8 +75,9 @@ export default function EnergyCalculator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
+         name: formData.name,
+          email: formData.email, // Eklendi
+          phone: `${formData.countryCode} ${formData.phone}`, // Ülke kodu ile birleştirildi
           service: `${selectedStructure.name} - GES Kurulumu`,
           bill: currentBill,
           region: regionsData[region].name,
@@ -269,43 +270,68 @@ export default function EnergyCalculator() {
                   <p className="text-gray-500 text-sm mt-1">Hesaplanan verilerinizle birlikte size özel fiyat çalışması yapabilmemiz için bilgilerinizi girin.</p>
                 </div>
 
-                <form onSubmit={handleQuoteSubmit} className="space-y-5">
+                <form onSubmit={handleQuoteSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Adınız Soyadınız / Firma Adı</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">Adınız Soyadınız / Firma Adı</label>
                     <input 
                       type="text" 
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Örn: Ahmet Yılmaz"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
+                      placeholder="Örn: Eren Tural"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Telefon Numaranız</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">E-Posta Adresiniz</label>
                     <input 
-                      type="tel" 
+                      type="email" 
                       required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="Örn: 0555 123 4567"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="Örn: eren@sirket.com"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">Telefon Numaranız</label>
+                    <div className="flex gap-2">
+                      <select 
+                        value={formData.countryCode}
+                        onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                        className="px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors font-medium text-gray-700"
+                      >
+                        <option value="+90">+90 (TR)</option>
+                        <option value="+1">+1 (US)</option>
+                        <option value="+44">+44 (UK)</option>
+                        <option value="+49">+49 (DE)</option>
+                        <option value="+994">+994 (AZ)</option>
+                      </select>
+                      <input 
+                        type="tel" 
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="555 123 4567"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
+                      />
+                    </div>
                   </div>
 
                   {/* Özet Bilgi Kutusu */}
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-2">
                     <p className="text-xs font-bold text-[#02529C] mb-1">Gönderilecek Keşif Verileri:</p>
                     <p className="text-xs text-blue-800 font-medium">
-                      {city} • {selectedStructure.name} • {panelCount} Panel İhtiyacı
+                      {city} • {selectedStructure?.name} • {panelCount} Panel İhtiyacı
                     </p>
                   </div>
 
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mt-2"
+                    className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mt-2"
                   >
                     {isSubmitting ? "Gönderiliyor..." : "Teklif Talebini Gönder"}
                   </button>
