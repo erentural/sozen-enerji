@@ -6,7 +6,6 @@ import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin, Map } from "l
 export default function TeklifAlPage() {
   const [formType, setFormType] = useState("quote");
   
-  // Örnek: İllere göre ilçeler veritabanı (Gerçek projede tüm ilçeler eklenebilir)
   const turkeyData = {
     "Adana": ["Seyhan", "Yüreğir", "Çukurova", "Sarıçam", "Ceyhan", "Kozan"],
     "Ankara": ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut", "Sincan", "Altındağ", "Gölbaşı"],
@@ -18,11 +17,10 @@ export default function TeklifAlPage() {
     "Kocaeli": ["İzmit", "Gebze", "Gölcük", "Körfez", "Derince", "Kartepe", "Darıca", "Çayırova"],
     "Mersin": ["Akdeniz", "Mezitli", "Yenişehir", "Toroslar", "Tarsus", "Erdemli", "Silifke"],
     "Trabzon": ["Ortahisar", "Akçaabat", "Araklı", "Of", "Yomra", "Arsin", "Sürmene"],
-    // Not: Diğer illeri boş ilçe dizisi ile tanımlayalım, kullanıcı dilerse manuel yazabilir
     "Diğer": ["Merkez"]
   };
 
- const cities = [
+  const cities = [
     "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
   ];
 
@@ -33,8 +31,8 @@ export default function TeklifAlPage() {
     countryCode: "+90",
     service: "Genel Proje Talebi",
     city: "İstanbul",
-    district: "Kadıköy", // İlçe
-    detailedAddress: "", // Açık Adres
+    district: "Kadıköy",
+    detailedAddress: "",
     subject: "Öneri",
     message: "",
   });
@@ -42,7 +40,6 @@ export default function TeklifAlPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Şehir değiştiğinde ilçeyi otomatik olarak o şehrin ilk ilçesi yap
   useEffect(() => {
     if (turkeyData[formData.city]) {
       setFormData(prev => ({ ...prev, district: turkeyData[formData.city][0] }));
@@ -57,7 +54,6 @@ export default function TeklifAlPage() {
 
     try {
       if (formType === "quote") {
-        // --- 1. FİYAT TEKLİFİ GÖNDERİMİ ---
         const fullLocation = `${formData.city} / ${formData.district}`;
         const fullMessage = `Adres Detayı: ${formData.detailedAddress}\n\nProje Notu: ${formData.message}`;
 
@@ -71,22 +67,22 @@ export default function TeklifAlPage() {
             service: formData.service,
             bill: 0,
             region: "Türkiye",
-            city: fullLocation, // Şehir ve ilçe birleştirildi (Örn: İstanbul / Kadıköy)
-            message: fullMessage, // Açık adres mesajın içine eklendi
+            city: fullLocation,
+            message: fullMessage,
             panelCount: 0,
             roiYears: "0",
           }),
         });
         if (res.ok) setIsSuccess(true);
       } else {
-        // --- 2. ÖNERİ / ŞİKAYET GÖNDERİMİ ---
-       const res = await fetch("/api/mesaj", {
+        // YENİ: phone verisi mesaj formuna da eklendi
+        const res = await fetch("/api/mesaj", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
-            phone: `${formData.countryCode} ${formData.phone}`, // YENİ: Telefon birleştirilerek eklendi
+            phone: `${formData.countryCode} ${formData.phone}`,
             subject: formData.subject,
             message: formData.message,
           }),
@@ -132,7 +128,6 @@ export default function TeklifAlPage() {
     <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
-        {/* Üst Başlık */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-gray-900 mb-3">Bizimle İletişime Geçin</h1>
           <p className="text-gray-500 text-lg">Projeniz için detaylı keşif talebi oluşturabilir veya görüşlerinizi iletebilirsiniz.</p>
@@ -140,7 +135,6 @@ export default function TeklifAlPage() {
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
           
-          {/* Sekme Seçici */}
           <div className="flex border-b border-gray-100">
             <button
               onClick={() => setFormType("quote")}
@@ -160,11 +154,10 @@ export default function TeklifAlPage() {
             </button>
           </div>
 
-          {/* Form Alanı */}
           <div className="p-8 md:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Ortak Alanlar (Kişisel Bilgiler) */}
+              {/* YENİ: Ortak Alanlara Telefon Eklendi */}
               <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50 space-y-6">
                 <h3 className="text-[#02529C] font-bold border-b border-blue-100 pb-2">Kişisel Bilgiler</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -188,8 +181,6 @@ export default function TeklifAlPage() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white shadow-sm"
                     />
                   </div>
-                  
-                  {/* YENİ: Telefon Alanı artık şarta bağlı değil, her sekmede görünecek (md:col-span-2 ile tam genişlik verdik) */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-bold text-gray-700 mb-2">Telefon Numaranız *</label>
                     <div className="flex gap-2">
@@ -217,11 +208,10 @@ export default function TeklifAlPage() {
                       />
                     </div>
                   </div>
-                  
                 </div>
               </div>
 
-              {/* Fiyat Teklifi Özel Alanları (Konum & Proje) */}
+              {/* Fiyat Teklifi Özel Alanları */}
               {formType === "quote" && (
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
                   <h3 className="text-gray-800 font-bold border-b border-gray-200 pb-2 flex items-center gap-2">
@@ -229,7 +219,6 @@ export default function TeklifAlPage() {
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* İl Seçimi */}
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">İl *</label>
                       <select 
@@ -243,7 +232,6 @@ export default function TeklifAlPage() {
                       </select>
                     </div>
 
-                    {/* İlçe Seçimi */}
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">İlçe *</label>
                       {turkeyData[formData.city] && turkeyData[formData.city].length > 0 ? (
@@ -269,7 +257,6 @@ export default function TeklifAlPage() {
                     </div>
                   </div>
 
-                  {/* Detaylı Açık Adres */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                       <Map className="w-4 h-4 text-gray-400" /> Açık Adres *
@@ -285,7 +272,6 @@ export default function TeklifAlPage() {
                     <p className="text-xs text-gray-400 mt-1.5 ml-1">Keşif ekiplerimizin tam konumu bulabilmesi için lütfen açık adresi detaylı yazınız.</p>
                   </div>
 
-                  {/* Proje Türü */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Proje Türü *</label>
                     <select 
@@ -319,13 +305,12 @@ export default function TeklifAlPage() {
                 </div>
               )}
 
-              {/* Ortak Metin Alanı (Proje Notu / Mesaj) */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   {formType === "quote" ? "Eklemek İstediğiniz Notlar (Opsiyonel)" : "Mesajınız *"}
                 </label>
                 <textarea 
-                  required={formType === "message"} // Teklifte opsiyonel, mesajda zorunlu
+                  required={formType === "message"} 
                   rows={4}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
