@@ -80,12 +80,13 @@ export default function TeklifAlPage() {
         if (res.ok) setIsSuccess(true);
       } else {
         // --- 2. ÖNERİ / ŞİKAYET GÖNDERİMİ ---
-        const res = await fetch("/api/mesaj", {
+       const res = await fetch("/api/mesaj", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
+            phone: `${formData.countryCode} ${formData.phone}`, // YENİ: Telefon birleştirilerek eklendi
             subject: formData.subject,
             message: formData.message,
           }),
@@ -187,35 +188,36 @@ export default function TeklifAlPage() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white shadow-sm"
                     />
                   </div>
-                  {formType === "quote" && (
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Telefon Numaranız *</label>
-                      <div className="flex gap-2">
-                        <select 
-                          value={formData.countryCode}
-                          onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                          className="px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white font-medium shadow-sm"
-                        >
-                          <option value="+90">+90</option>
-                          <option value="+1">+1</option>
-                          <option value="+44">+44</option>
-                          <option value="+49">+49</option>
-                        </select>
-                        <input 
-                          type="tel" 
-                          required
-                          maxLength="10"
-                          value={formData.phone}
-                          onChange={(e) => {
-                            const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-                            if (onlyNums.length <= 10) setFormData({ ...formData, phone: onlyNums });
-                          }}
-                          placeholder="555 123 4567"
-                          className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white shadow-sm"
-                        />
-                      </div>
+                  
+                  {/* YENİ: Telefon Alanı artık şarta bağlı değil, her sekmede görünecek (md:col-span-2 ile tam genişlik verdik) */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Telefon Numaranız *</label>
+                    <div className="flex gap-2">
+                      <select 
+                        value={formData.countryCode}
+                        onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                        className="px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white font-medium shadow-sm"
+                      >
+                        <option value="+90">+90</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                        <option value="+49">+49</option>
+                      </select>
+                      <input 
+                        type="tel" 
+                        required
+                        maxLength="10"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                          if (onlyNums.length <= 10) setFormData({ ...formData, phone: onlyNums });
+                        }}
+                        placeholder="555 123 4567"
+                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white shadow-sm"
+                      />
                     </div>
-                  )}
+                  </div>
+                  
                 </div>
               </div>
 
