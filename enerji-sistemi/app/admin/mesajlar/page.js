@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Mail, Trash2, Search, User, Calendar, Phone, CheckCircle2, MessageSquare, Send, X, Clock, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function MessagesPage() {
+  const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +40,7 @@ export default function MessagesPage() {
       const res = await fetch(`/api/admin/messages?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setMessages(messages.filter(m => m.id !== id));
+        router.refresh();
       }
     } catch (error) {
       console.error("Silme hatası:", error);
@@ -58,6 +61,7 @@ export default function MessagesPage() {
         setMessages(messages.map(m => 
           m.id === id ? { ...m, read: true } : m
         ));
+        router.refresh();
       }
     } catch (error) {
       console.error("Okundu işaretleme hatası:", error);
@@ -88,6 +92,7 @@ export default function MessagesPage() {
         setMessages(messages.map(m => 
           m.id === selectedMessage.id ? { ...m, replied: true, read: true } : m
         ));
+        router.refresh();
         setIsModalOpen(false);
         alert("Yanıtınız başarıyla müşteriye e-posta olarak iletildi!");
       } else {

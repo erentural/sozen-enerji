@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin, Map } from "lucide-react";
+import Link from "next/link";
 
 export default function TeklifAlPage() {
   const [formType, setFormType] = useState("quote");
@@ -111,14 +112,19 @@ export default function TeklifAlPage() {
               : "Mesajınız yönetim ekibimize iletildi. Geri bildiriminiz için teşekkür ederiz."}
           </p>
           <button 
-            onClick={() => {
-              setIsSuccess(false);
-              setFormData({ ...formData, name: "", email: "", phone: "", message: "", detailedAddress: "" });
-            }}
-            className="bg-[#02529C] text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-800 transition-colors"
+            onClick={() => setSubmitSuccess(false)} // Veya formu sıfırladığın fonksiyon neyse o
+            className="bg-[#02529C] text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors w-full max-w-xs"
           >
             Yeni Bir Form Doldur
           </button>
+
+          {/* Yeni Eklenen İkinci Buton (İkincil Eylem) */}
+          <Link 
+            href="/" 
+            className="text-gray-500 hover:text-gray-800 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors w-full max-w-xs text-center border border-transparent hover:border-gray-200"
+          >
+            Ana Sayfaya Dön
+          </Link>
         </div>
       </div>
     );
