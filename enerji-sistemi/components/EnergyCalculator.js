@@ -278,7 +278,7 @@ export default function EnergyCalculator() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Örn: Eren Tural"
+                      placeholder="Örn: Ahmet Yılmaz veya ABC Enerji A.Ş."
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
                     />
                   </div>
@@ -290,7 +290,7 @@ export default function EnergyCalculator() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="Örn: eren@sirket.com"
+                      placeholder="Örn: ahmet@sirket.com"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
                     />
                   </div>
