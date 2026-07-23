@@ -6,29 +6,32 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // 1. Aktif Proje Sayısı
+    // 1. Aktif Projeler (Project tablosu)
+    // Eğer sadece devam edenleri saymak istersen { where: { isCompleted: false } } eklenebilir.
     const projectsCount = await prisma.project.count().catch(() => 0);
 
-    // 2. Bekleyen Randevu / Teklif Talebi Sayısı 
-    // (Propendeki tablonun adına göre model adını kontrol edebilirsin, örn: quote veya appointment)
-    const pendingAppointmentsCount = await prisma.quote.count({
+    // 2. Bekleyen Randevular (Appointment tablosu)
+    // schema.prisma'daki AppointmentStatus enum'una göre "PENDING" olanlar
+    const pendingAppointmentsCount = await prisma.appointment.count({
       where: { status: "PENDING" }
     }).catch(() => 0);
 
-    // 3. YENİ MESAJ SAYISI (Sadece henüz okunmamış olanlar: read: false)
+    // 3. Yeni Mesajlar (Message tablosu)
+    // Sadece okunmamış mesajlar (read: false)
     const unreadMessagesCount = await prisma.message.count({
-      where: {
-        read: false
-      }
+      where: { read: false }
     }).catch(() => 0);
 
-    // 4. Müşteri Sayısı
-    const customersCount = await prisma.customer.count().catch(() => 0);
+    // 4. Müşteriler (User tablosu)
+    // Customer tablosu yerine, Role'ü "USER" olan kullanıcılar sayılıyor
+    const customersCount = await prisma.user.count({
+      where: { role: "USER" }
+    }).catch(() => 0);
 
     return NextResponse.json({
       projects: projectsCount,
       pendingAppointments: pendingAppointmentsCount,
-      unreadMessages: unreadMessagesCount, // Artık sadece okunmamışlar sayılıyor
+      unreadMessages: unreadMessagesCount,
       customers: customersCount,
     });
 
