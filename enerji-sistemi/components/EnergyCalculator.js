@@ -312,8 +312,16 @@ export default function EnergyCalculator() {
                       <input 
                         type="tel" 
                         required
+                        maxLength="10"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e) => {
+                          const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                          
+                          // 10 haneyi geçmemesini JavaScript ile de garantiye al
+                          if (onlyNums.length <= 10) {
+                            setFormData({ ...formData, phone: onlyNums });
+                          }
+                        }}
                         placeholder="555 123 4567"
                         className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white transition-colors"
                       />
