@@ -29,16 +29,16 @@ export async function POST(request) {
         },
       });
 
-      // Müşterinin talebinin nereden geldiğini anlıyoruz (Hesaplayıcı mı yoksa Genel Form mu?)
+      // Müşterinin talebinin nereden geldiğini anlıyoruz
       const isFromCalculator = updatedQuote.panelCount && updatedQuote.panelCount > 0;
       
-      // Proje adını formattaki gereksiz notlardan temizleyelim (örneğin "Çatı GES Kurulumu (Detay: ...)")
+      // Proje adını formattaki gereksiz notlardan temizleyelim
       const cleanServiceName = updatedQuote.service.split('(')[0].trim();
 
       // Duruma göre değişen giriş metni
       const introText = isFromCalculator 
         ? `Sözen Enerji <strong>Gelişmiş Enerji Hesaplayıcısı</strong> üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> (${updatedQuote.panelCount} Panel ihtiyacı) analizi mühendislerimiz tarafından incelenmiş ve ön keşif süreci tamamlanmıştır.`
-        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
+        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz (Konum: ${updatedQuote.city || "Belirtilmedi"}) mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
 
       const mailOptions = {
         from: `"Sözen Enerji" <${process.env.EMAIL_USER}>`,
@@ -60,7 +60,24 @@ export async function POST(request) {
               <p style="margin: 0; color: #374151; line-height: 1.6; white-space: pre-wrap;">${messageToCustomer}</p>
             </div>
             
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+            <!-- YENİ EKLENEN İLETİŞİM ALANI -->
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin-top: 25px; border: 1px solid #bae6fd;">
+              <p style="margin: 0 0 10px 0; color: #0369a1; font-weight: bold; font-size: 15px;">Bize Ulaşın</p>
+              <p style="margin: 0 0 6px 0; font-size: 13px; color: #0f172a;">
+                <strong style="display: inline-block; width: 65px;">📞 Telefon:</strong> 
+                <a href="tel:4440123" style="color: #02529C; text-decoration: none; font-weight: bold;">444 0 123</a>
+              </p>
+              <p style="margin: 0 0 6px 0; font-size: 13px; color: #0f172a;">
+                <strong style="display: inline-block; width: 65px;">✉️ E-Posta:</strong> 
+                <a href="mailto:info@sozen-enerji.com" style="color: #02529C; text-decoration: none;">info@sozen-enerji.com</a>
+              </p>
+              <p style="margin: 0; font-size: 13px; color: #0f172a; line-height: 1.4;">
+                <strong style="display: inline-block; width: 65px; vertical-align: top;">📍 Adres:</strong> 
+                <span style="display: inline-block; width: calc(100% - 70px);">Sanayi Mahallesi, Enerji Caddesi No: 42, İstanbul / Türkiye</span>
+              </p>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
             <p style="font-size: 12px; color: #9ca3af; line-height: 1.5;">
               Bu teklif bilgilendirme amaçlıdır. Keşif randevusu oluşturmak ve detayları görüşmek için bizimle iletişime geçebilirsiniz.<br/>
               <strong style="color: #02529C;">Sözen Enerji Yönetim Sistemi</strong>
