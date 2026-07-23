@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, MessageSquare, Send, CheckCircle2 } from "lucide-react";
+import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin } from "lucide-react";
 
 export default function TeklifAlPage() {
   // formType: "quote" (Fiyat Teklifi) veya "message" (Öneri/Şikayet)
   const [formType, setFormType] = useState("quote");
   
+  // Türkiye'nin 81 ili
+  const cities = [
+    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     countryCode: "+90",
     service: "Genel Proje Talebi",
+    city: "İstanbul", // YENİ: Varsayılan şehir eklendi
     subject: "Öneri",
     message: "",
   });
@@ -34,11 +40,10 @@ export default function TeklifAlPage() {
             name: formData.name,
             email: formData.email,
             phone: `${formData.countryCode} ${formData.phone}`,
-            // Hesaplayıcıdan gelmediği için varsayılan değerleri gönderiyoruz
             service: `${formData.service} (Detay: ${formData.message})`,
             bill: 0,
-            region: "Belirtilmedi",
-            city: "Belirtilmedi",
+            region: "Türkiye", // Bölgeyi genel tutuyoruz
+            city: formData.city, // YENİ: Formdan gelen gerçek şehir bilgisi eklendi
             panelCount: 0,
             roiYears: "0",
           }),
@@ -184,12 +189,29 @@ export default function TeklifAlPage() {
                         />
                       </div>
                     </div>
+                    
+                    {/* YENİ: Şehir Seçim Alanı */}
                     <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-gray-400" /> Proje Şehri *
+                      </label>
+                      <select 
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white text-gray-700 font-medium cursor-pointer"
+                      >
+                        {cities.map((city) => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2">
                       <label className="block text-sm font-bold text-gray-700 mb-2">Proje Türü</label>
                       <select 
                         value={formData.service}
                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white text-gray-700"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white text-gray-700 cursor-pointer"
                       >
                         <option value="Genel Proje Talebi">Genel Proje Talebi</option>
                         <option value="Çatı GES Kurulumu">Çatı GES Kurulumu</option>
@@ -208,7 +230,7 @@ export default function TeklifAlPage() {
                   <select 
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white text-gray-700"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 focus:bg-white text-gray-700 cursor-pointer"
                   >
                     <option value="Öneri">Öneri</option>
                     <option value="Şikayet">Şikayet</option>
