@@ -67,12 +67,27 @@ model Appointment {
   updatedAt   DateTime          @updatedAt
 }
 
-model ContactMessage {
+model QuoteRequest {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String
+  service    String   // Örn: Çatı GES Kurulumu, Fabrika vb.
+  bill       Float?   // Hesaplayıcıdan gelen fatura tutarı
+  region     String?  // Bölge
+  city       String?  // Şehir
+  panelCount Int?     // Gereken panel adedi
+  roiYears   String?  // Amorti süresi
+  status     String   @default("YENI") // YENI, GORUSULDU, KAPANDI
+  createdAt  DateTime @default(now())
+}
+
+model Message {
   id        String   @id @default(cuid())
   name      String
-  email     String?  
-  phone     String   @default("")  
-  message   String
-  isRead    Boolean  @default(false)
+  email     String
+  phone     String   @default("") 
+  subject   String?  // Konu (Örn: Öneri, Şikayet, Bilgi Talebi)
+  message   String   // Mesaj içeriği
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }

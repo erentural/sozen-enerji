@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { ClipboardList, Clock, CheckCircle2, Phone, ChevronRight, FolderKanban, Trash2, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ClipboardList, Clock, CheckCircle2, Phone, Trash2, Search, MapPin, Sun, Banknote } from "lucide-react";
 
 export default function LeadsPage() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Örnek talepler (Veritabanı bağlantısı yapılana kadar güvenli liste)
-  const [leads, setLeads] = useState([
-    { id: 1, name: "Mehmet Demir", phone: "0555 123 4567", service: "Çatı GES Kurulumu", status: "YENI", date: "2 saat önce" },
-    { id: 2, name: "ABC Tekstil Fabrikası", phone: "0850 987 6543", service: "Endüstriyel Pano", status: "GORUSULDU", date: "Dün" },
-    { id: 3, name: "Ayşe Yılmaz", phone: "0532 111 2233", service: "Konut Elektrik", status: "KAPANDI", date: "3 gün önce" },
-  ]);
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Bu talebi silmek istediğinize emin misiniz?")) return;
-    setLeads(leads.filter(lead => lead.id !== id));
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    try {
+      const res = await fetch("/api/admin/teklifler");
+      if (res.ok) {
+        const data = await res.json();
+        setLeads(data);
+      }
+    } catch (error) {
+      console.error("Teklifler çekilemedi", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu teklif talebini silmek istediğinize emin misiniz?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/teklifler?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setLeads(leads.filter(lead => lead.id !== id));
+      } else {
+        alert("Silme işlemi başarısız oldu.");
+      }
+    } catch (error) {
+      console.error("Silme hatası:", error);
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -28,18 +51,21 @@ export default function LeadsPage() {
   };
 
   const filteredLeads = leads.filter(l => 
-    l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.service.toLowerCase().includes(searchTerm.toLowerCase())
+    l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l.service?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l.city?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) return <div className="p-8 text-gray-500 font-medium">Teklif talepleri yükleniyor...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <ClipboardList className="w-8 h-8 text-[#FFC107]" /> Teklif Talepleri
+            <ClipboardList className="w-8 h-8 text-[#FFC107]" /> Teklif Talepleri & Keşifler
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Web sitesinden gelen keşif ve fiyat taleplerini yönetin.</p>
+          <p className="text-gray-500 text-sm mt-1">Web sitesi hesaplayıcısından ve teklif formundan gelen potansiyel müşteri talepleri.</p>
         </div>
       </div>
 
@@ -50,7 +76,7 @@ export default function LeadsPage() {
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="İsim veya hizmet ara..." 
+              placeholder="İsim, hizmet veya şehir ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white text-gray-700"
@@ -59,28 +85,40 @@ export default function LeadsPage() {
         </div>
 
         {filteredLeads.length === 0 ? (
-          <p className="text-gray-500 text-sm py-12 text-center">Görüntülenecek talep bulunmuyor.</p>
+          <p className="text-gray-500 text-sm py-12 text-center">Henüz gelen bir teklif talebi bulunmuyor.</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {filteredLeads.map((lead) => (
-              <div key={lead.id} className="p-6 hover:bg-blue-50/20 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div key={lead.id} className="p-6 hover:bg-blue-50/20 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
                     <h3 className="text-lg font-bold text-gray-900">{lead.name}</h3>
                     <span className={`flex items-center px-3 py-1 text-xs font-bold rounded-full border ${getStatusStyle(lead.status)}`}>
                       {lead.status === "YENI" ? <Clock className="w-3.5 h-3.5 mr-1" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
-                      {lead.status === "YENI" ? "Yeni Talep" : lead.status === "GORUSULDU" ? "Dönüş Yapıldı" : "Tamamlandı"}
+                      {lead.status === "YENI" ? "Yeni Talep" : "İşlemde"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 font-medium">
                     <span className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-gray-400" /> {lead.phone}</span>
-                    <span className="flex items-center gap-1.5"><FolderKanban className="w-4 h-4 text-gray-400" /> {lead.service}</span>
+                    <span className="flex items-center gap-1.5 font-bold text-[#02529C]"><ClipboardList className="w-4 h-4" /> {lead.service}</span>
+                    {lead.city && (
+                      <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gray-400" /> {lead.city}</span>
+                    )}
+                    {lead.bill && (
+                      <span className="flex items-center gap-1.5 text-green-700 font-semibold"><Banknote className="w-4 h-4" /> Fatura: {lead.bill.toLocaleString("tr-TR")} ₺</span>
+                    )}
+                    {lead.panelCount && (
+                      <span className="flex items-center gap-1.5 text-blue-800"><Sun className="w-4 h-4" /> {lead.panelCount} Panel</span>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-4 sm:pt-0 border-gray-100">
-                  <span className="text-xs font-semibold text-gray-400 hidden md:block">{lead.date}</span>
+                <div className="flex items-center gap-4 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-gray-100">
+                  <span className="text-xs font-semibold text-gray-400 hidden lg:block">
+                    {new Date(lead.createdAt).toLocaleDateString("tr-TR")}
+                  </span>
                   <button 
                     onClick={() => handleDelete(lead.id)}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
