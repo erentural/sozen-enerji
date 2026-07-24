@@ -37,8 +37,8 @@ export async function POST(request) {
 
       // Duruma göre değişen giriş metni
       const introText = isFromCalculator 
-        ? `Sözen Enerji <strong>Gelişmiş Enerji Hesaplayıcısı</strong> üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> (${updatedQuote.panelCount} Panel ihtiyacı) analizi mühendislerimiz tarafından incelenmiş ve ön keşif süreci tamamlanmıştır.`
-        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz (Konum: <strong>${updatedQuote.city || "Belirtilmedi"}</strong>) mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
+        ? `Sözen Enerji <strong>Gelişmiş Enerji Hesaplayıcısı</strong> üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> (${updatedQuote.panelCount} Panel ihtiyacı) analizi mühendislerimiz tarafından incelenmiş ve ön inceleme süreci tamamlanmıştır.`
+        : `Sözen Enerji web sitesi üzerinden oluşturduğunuz <strong>${cleanServiceName}</strong> talebiniz mühendislerimiz tarafından detaylı bir şekilde incelenmiştir.`;
 
       // YENİ ŞIK HTML MAİL TASARIMI
       const emailHtml = `
@@ -107,11 +107,11 @@ export async function POST(request) {
                             </tr>
                             <tr>
                                 <td width="25" valign="top">✉️</td>
-                                <td valign="top"><strong>E-Posta:</strong> <a href="mailto:info@sozen-enerji.com" style="color: #3b82f6; text-decoration: none;">info@sozen-enerji.com</a></td>
+                                <td valign="top"><strong>E-Posta:</strong> <a href="mailto:info@sozenenerji.com" style="color: #3b82f6; text-decoration: none;">info@sozen-enerji.com</a></td>
                             </tr>
                             <tr>
                                 <td width="25" valign="top">📍</td>
-                                <td valign="top"><strong>Adres:</strong> Sanayi Mahallesi, Enerji Caddesi No: 42, İstanbul / Türkiye</td>
+                                <td valign="top"><strong>Adres:</strong> Yaşardoğu, Şehit Tuncay Karataş Bulvarı No:40, 55050 İlkadım / Samsun</td>
                             </tr>
                         </table>
                         

@@ -316,11 +316,13 @@ export default function TeklifAlPage() {
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white text-gray-700 shadow-sm"
                     >
-                      <option value="Genel Proje Talebi">Genel Proje Talebi</option>
                       <option value="Çatı GES Kurulumu">Çatı GES Kurulumu</option>
                       <option value="Arazi Tipi GES">Arazi Tipi GES</option>
                       <option value="Endüstriyel Kurulum">Endüstriyel Kurulum</option>
                       <option value="Tarımsal Sulama GES">Tarımsal Sulama GES</option>
+                      <option value="Hibrit Enerji Sistemleri">Hibrit Enerji Sistemleri</option>
+                      <option value="Enerji Depolama Sistemleri">Enerji Depolama Sistemleri</option>
+                      <option value="Diğer">Diğer</option>
                     </select>
                   </div>
                 </div>
