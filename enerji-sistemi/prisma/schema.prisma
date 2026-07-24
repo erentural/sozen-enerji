@@ -25,7 +25,7 @@ model User {
   email         String        @unique
   phone         String?       // YENİ: Telefon numarasını ekledik (opsiyonel olması için sonuna ? koyduk)
   password      String        
-  role          Role          @default(USER)
+  role          String        @default("USER") // "ADMIN" veya "USER"
   projects      Project[]
   appointments  Appointment[]
   createdAt     DateTime      @default(now())

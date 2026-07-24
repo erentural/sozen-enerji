@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Search, Plus, Mail, Trash2, X, Calendar, AlertTriangle, AlertCircle } from "lucide-react";
+import { Users, Search, Plus, Mail, Trash2, X, Calendar, AlertTriangle, AlertCircle, ShieldAlert } from "lucide-react";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Yeni Müşteri Ekle Modal State'leri
+  // Yeni Müşteri/Admin Ekle Modal State'leri (YENİ: role eklendi)
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "USER" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // YENİ: Silme Onayı ve Hata Modalı State'leri
+  // Silme Onayı ve Hata Modalı State'leri
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
@@ -52,10 +52,10 @@ export default function CustomersPage() {
 
       if (res.ok) {
         setIsModalOpen(false);
-        setFormData({ name: "", email: "", password: "" });
+        setFormData({ name: "", email: "", password: "", role: "USER" });
         fetchCustomers();
       } else {
-        setErrorMessage(data.error || "Müşteri eklenirken bir hata oluştu.");
+        setErrorMessage(data.error || "Kayıt sırasında bir hata oluştu.");
         setErrorModalOpen(true);
       }
     } catch (error) {
@@ -65,13 +65,11 @@ export default function CustomersPage() {
     }
   };
 
-  // 1. Aşama: Silme butonuna basıldığında onay modalını aç
   const initiateDelete = (customer) => {
     setCustomerToDelete(customer);
     setDeleteModalOpen(true);
   };
 
-  // 2. Aşama: Onay modalında "Evet, Sil" dendiğinde çalışacak fonksiyon
   const confirmDelete = async () => {
     if (!customerToDelete) return;
     setIsSubmitting(true);
@@ -85,9 +83,8 @@ export default function CustomersPage() {
         setDeleteModalOpen(false);
         setCustomerToDelete(null);
       } else {
-        // Hata varsa silme modalını kapat ve hata modalını (Akıllı Uyarı) aç
         setDeleteModalOpen(false);
-        setErrorMessage(data.error || "Müşteri silinemedi.");
+        setErrorMessage(data.error || "Kullanıcı silinemedi.");
         setErrorModalOpen(true);
       }
     } catch (error) {
@@ -105,23 +102,23 @@ export default function CustomersPage() {
     c.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="p-8 text-gray-500 font-medium">Müşteriler yükleniyor...</div>;
+  if (loading) return <div className="p-8 text-gray-500 font-medium">Kullanıcılar yükleniyor...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-8 h-8 text-[#02529C]" /> Müşteri Yönetimi (CRM)
+            <Users className="w-8 h-8 text-[#02529C]" /> Müşteri & Kullanıcı Yönetimi
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Sisteme kayıtlı tüm müşterileriniz ve proje sayıları.</p>
+          <p className="text-gray-500 text-sm mt-1">Sisteme kayıtlı müşterilerinizi ve yöneticileri buradan yönetin.</p>
         </div>
         
         <button 
           onClick={() => setIsModalOpen(true)}
           className="bg-[#02529C] hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
-          <Plus className="w-5 h-5" /> Yeni Müşteri Ekle
+          <Plus className="w-5 h-5" /> Yeni Ekle
         </button>
       </div>
 
@@ -131,7 +128,7 @@ export default function CustomersPage() {
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Müşteri adı veya e-posta ara..." 
+              placeholder="İsim veya e-posta ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white text-gray-700"
@@ -140,15 +137,15 @@ export default function CustomersPage() {
         </div>
 
         {filteredCustomers.length === 0 ? (
-          <p className="text-gray-500 text-sm py-12 text-center">Kayıtlı müşteri bulunamadı.</p>
+          <p className="text-gray-500 text-sm py-12 text-center">Kayıtlı kullanıcı bulunamadı.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-sm font-semibold uppercase tracking-wider">
-                  <th className="p-4 pl-6">Müşteri Adı</th>
+                  <th className="p-4 pl-6">Ad Soyad</th>
                   <th className="p-4">E-Posta Adresi</th>
-                  <th className="p-4 text-center">Aktif Proje</th>
+                  <th className="p-4 text-center">Durum / Proje</th>
                   <th className="p-4">Kayıt Tarihi</th>
                   <th className="p-4 text-right pr-6">İşlemler</th>
                 </tr>
@@ -156,23 +153,31 @@ export default function CustomersPage() {
               <tbody className="divide-y divide-gray-100">
                 {filteredCustomers.map((c) => (
                   <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group">
-                    <td className="p-4 pl-6 font-bold text-gray-900">{c.name || "İsimsiz"}</td>
-                    <td className="p-4 text-gray-600 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-400" /> {c.email}
+                    <td className="p-4 pl-6 font-bold text-gray-900 flex items-center gap-2">
+                      {c.name || "İsimsiz"}
+                      {/* Yönetici Etiketi */}
+                      {c.role === "ADMIN" && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] uppercase font-black px-2 py-0.5 rounded flex items-center gap-1">
+                          <ShieldAlert className="w-3 h-3" /> YÖNETİCİ
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-gray-600">
+                      <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {c.email}</div>
                     </td>
                     <td className="p-4 text-center">
-                      <span className="inline-flex items-center justify-center bg-blue-100 text-[#02529C] font-bold px-3 py-1 rounded-full text-xs">
-                        {c.projects?.length || 0} Proje
+                      <span className={`inline-flex items-center justify-center font-bold px-3 py-1 rounded-full text-xs ${c.role === 'ADMIN' ? 'bg-amber-50 text-amber-600' : 'bg-blue-100 text-[#02529C]'}`}>
+                        {c.role === "ADMIN" ? "Yetkili Personel" : `${c.projects?.length || 0} Proje`}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-gray-500 flex items-center gap-1.5 pt-5">
-                      <Calendar className="w-4 h-4 text-gray-400" /> {new Date(c.createdAt).toLocaleDateString("tr-TR")}
+                    <td className="p-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-1.5 pt-1"><Calendar className="w-4 h-4 text-gray-400" /> {new Date(c.createdAt).toLocaleDateString("tr-TR")}</div>
                     </td>
                     <td className="p-4 text-right pr-6">
                       <button 
                         onClick={() => initiateDelete(c)}
                         className="text-gray-400 hover:text-red-600 p-2 rounded-lg transition-colors hover:bg-red-50"
-                        title="Müşteriyi Sil"
+                        title="Sil"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -185,17 +190,39 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* 1. YENİ MÜŞTERİ EKLE MODALI */}
+      {/* YENİ EKLE MODALI (Rol Seçeneği Eklendi) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1 rounded-lg">
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Müşteri Ekle</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Kullanıcı Ekle</h2>
+            
             <form onSubmit={handleAddCustomer} className="space-y-4">
+              {/* HESAP TÜRÜ SEÇİMİ */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Müşteri Adı / Soyadı</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Hesap Türü (Yetki)</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, role: "USER"})}
+                    className={`flex-1 py-2 text-sm font-bold border rounded-lg transition-colors ${formData.role === "USER" ? "bg-[#02529C] text-white border-[#02529C]" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    Müşteri
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, role: "ADMIN"})}
+                    className={`flex-1 py-2 text-sm font-bold border rounded-lg transition-colors ${formData.role === "ADMIN" ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    Sistem Yöneticisi
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Ad Soyad</label>
                 <input 
                   type="text" required placeholder="Örn: Ahmet Yılmaz" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -219,8 +246,8 @@ export default function CustomersPage() {
                 />
               </div>
               <div className="pt-2">
-                <button type="submit" disabled={isSubmitting} className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-70 shadow-sm">
-                  {isSubmitting ? "Kaydediliyor..." : "Müşteriyi Kaydet"}
+                <button type="submit" disabled={isSubmitting} className={`w-full text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-70 shadow-sm ${formData.role === 'ADMIN' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-[#02529C] hover:bg-blue-800'}`}>
+                  {isSubmitting ? "Kaydediliyor..." : "Kullanıcıyı Kaydet"}
                 </button>
               </div>
             </form>
@@ -228,16 +255,16 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* 2. SİLME ONAY MODALI */}
+      {/* SİLME ONAY MODALI */}
       {deleteModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Müşteriyi Sil</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Kullanıcıyı Sil</h3>
             <p className="text-sm text-gray-500 mb-6">
-              <strong className="text-gray-800">{customerToDelete?.name}</strong> isimli müşteriyi silmek istediğinize emin misiniz?
+              <strong className="text-gray-800">{customerToDelete?.name}</strong> isimli kullanıcıyı silmek istediğinize emin misiniz?
             </p>
             <div className="flex gap-3">
               <button 
@@ -258,7 +285,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* 3. AKILLI HATA / UYARI MODALI */}
+      {/* AKILLI HATA / UYARI MODALI */}
       {errorModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border-t-4 border-red-500 animate-in zoom-in-95 duration-200">

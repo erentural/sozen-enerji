@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
-// Tüm müşterileri veritabanından çek
+// Tüm kullanıcıları/müşterileri veritabanından çek
 export async function GET() {
   try {
     const customers = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        projects: true, // Müşterinin aktif projelerini sayabilmek için dahil ediyoruz
+        projects: true, 
       },
     });
     return NextResponse.json(customers);
@@ -18,11 +18,12 @@ export async function GET() {
   }
 }
 
-// Yeni müşteri ekle
+// Yeni müşteri veya yönetici ekle
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, email, password } = body;
+    // YENİ EKLENEN: role değişkeni formdan alınıyor
+    const { name, email, password, role } = body;
 
     // E-posta benzersizlik kontrolü
     const existingUser = await prisma.user.findUnique({
@@ -31,7 +32,7 @@ export async function POST(request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Bu e-posta adresine sahip bir müşteri zaten kayıtlı." },
+        { error: "Bu e-posta adresine sahip bir kullanıcı zaten kayıtlı." },
         { status: 400 }
       );
     }
@@ -45,13 +46,14 @@ export async function POST(request) {
         name,
         email,
         password: hashedPassword,
+        role: role || "USER", // YENİ: Forma göre "ADMIN" veya "USER" kaydedilir
       },
       include: { projects: true },
     });
 
     return NextResponse.json({ success: true, customer: newUser }, { status: 201 });
   } catch (error) {
-    console.error("Müşteri eklenirken hata:", error);
-    return NextResponse.json({ error: "Müşteri eklenemedi." }, { status: 500 });
+    console.error("Kullanıcı eklenirken hata:", error);
+    return NextResponse.json({ error: "Kullanıcı eklenemedi." }, { status: 500 });
   }
 }
