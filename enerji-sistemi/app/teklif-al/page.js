@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// YENİ İKONLAR EKLENDİ (Home, ArrowLeft)
 import { ClipboardList, MessageSquare, Send, CheckCircle2, MapPin, Map, Home, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -31,7 +30,8 @@ export default function TeklifAlPage() {
     email: "",
     phone: "",
     countryCode: "+90",
-    service: "Genel Proje Talebi",
+    service: "Çatı GES Kurulumu", // Başlangıç değeri menüyle uyumlu hale getirildi
+    otherServiceDetail: "", // YENİ: Diğer seçeneği için detay alanı eklendi
     city: "İstanbul",
     district: "Kadıköy",
     detailedAddress: "",
@@ -58,6 +58,11 @@ export default function TeklifAlPage() {
       if (formType === "quote") {
         const fullLocation = `${formData.city} / ${formData.district}`;
         const fullMessage = `Adres Detayı: ${formData.detailedAddress}\n\nProje Notu: ${formData.message}`;
+        
+        // YENİ: Eğer 'Diğer' seçildiyse, girilen detayı hizmet adının yanına ekle
+        const finalService = formData.service === "Diğer" 
+          ? `Diğer - ${formData.otherServiceDetail}` 
+          : formData.service;
 
         const res = await fetch("/api/teklif", {
           method: "POST",
@@ -66,7 +71,7 @@ export default function TeklifAlPage() {
             name: formData.name,
             email: formData.email,
             phone: `${formData.countryCode} ${formData.phone}`,
-            service: formData.service,
+            service: finalService, // Güncellenmiş servis adı gönderiliyor
             bill: 0,
             region: "Türkiye",
             city: fullLocation,
@@ -98,7 +103,6 @@ export default function TeklifAlPage() {
     }
   };
 
-  // Yeni Form Doldurma (Sıfırlama) Fonksiyonu
   const handleResetForm = () => {
     setIsSuccess(false);
     setFormData({
@@ -106,7 +110,8 @@ export default function TeklifAlPage() {
       email: "",
       phone: "",
       countryCode: "+90",
-      service: "Genel Proje Talebi",
+      service: "Çatı GES Kurulumu",
+      otherServiceDetail: "", // Sıfırlama işlemine dahil edildi
       city: "İstanbul",
       district: "Kadıköy",
       detailedAddress: "",
@@ -115,7 +120,6 @@ export default function TeklifAlPage() {
     });
   };
 
-  // YENİ PREMIUM BAŞARI EKRANI
   if (isSuccess) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] p-4 bg-gray-50/30">
@@ -194,7 +198,6 @@ export default function TeklifAlPage() {
           <div className="p-8 md:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Ortak Alanlara Telefon Eklendi */}
               <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50 space-y-6">
                 <h3 className="text-[#02529C] font-bold border-b border-blue-100 pb-2">Kişisel Bilgiler</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -248,7 +251,6 @@ export default function TeklifAlPage() {
                 </div>
               </div>
 
-              {/* Fiyat Teklifi Özel Alanları */}
               {formType === "quote" && (
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
                   <h3 className="text-gray-800 font-bold border-b border-gray-200 pb-2 flex items-center gap-2">
@@ -309,26 +311,45 @@ export default function TeklifAlPage() {
                     <p className="text-xs text-gray-400 mt-1.5 ml-1">Keşif ekiplerimizin tam konumu bulabilmesi için lütfen açık adresi detaylı yazınız.</p>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Proje Türü *</label>
-                    <select 
-                      value={formData.service}
-                      onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white text-gray-700 shadow-sm"
-                    >
-                      <option value="Çatı GES Kurulumu">Çatı GES Kurulumu</option>
-                      <option value="Arazi Tipi GES">Arazi Tipi GES</option>
-                      <option value="Endüstriyel Kurulum">Endüstriyel Kurulum</option>
-                      <option value="Tarımsal Sulama GES">Tarımsal Sulama GES</option>
-                      <option value="Hibrit Enerji Sistemleri">Hibrit Enerji Sistemleri</option>
-                      <option value="Enerji Depolama Sistemleri">Enerji Depolama Sistemleri</option>
-                      <option value="Diğer">Diğer</option>
-                    </select>
+                  {/* YENİ: Proje Türü Seçimi ve Şartlı Input */}
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Proje Türü *</label>
+                      <select 
+                        value={formData.service}
+                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-white text-gray-700 shadow-sm"
+                      >
+                        <option value="Çatı GES Kurulumu">Çatı GES Kurulumu</option>
+                        <option value="Arazi Tipi GES">Arazi Tipi GES</option>
+                        <option value="Endüstriyel Kurulum">Endüstriyel Kurulum</option>
+                        <option value="Tarımsal Sulama GES">Tarımsal Sulama GES</option>
+                        <option value="Hibrit Enerji Sistemleri">Hibrit Enerji Sistemleri</option>
+                        <option value="Enerji Depolama Sistemleri">Enerji Depolama Sistemleri</option>
+                        <option value="Diğer">Diğer</option>
+                      </select>
+                    </div>
+
+                    {/* Proje türü 'Diğer' seçilirse açılacak açıklama alanı */}
+                    {formData.service === "Diğer" && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <label className="block text-sm font-bold text-gray-700 mb-2 text-[#02529C]">
+                          Lütfen istediğiniz proje türünü kısaca açıklayınız *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.otherServiceDetail}
+                          onChange={(e) => setFormData({ ...formData, otherServiceDetail: e.target.value })}
+                          placeholder="Örn: Güneş paneli temizlik ve bakım hizmeti..."
+                          className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-blue-50/50 shadow-sm transition-all"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Öneri/Şikayet Özel Alanları */}
               {formType === "message" && (
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                   <label className="block text-sm font-bold text-gray-700 mb-2">Konu *</label>
