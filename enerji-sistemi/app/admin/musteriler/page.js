@@ -1,17 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Search, Plus, Mail, Trash2, X, Calendar } from "lucide-react";
+import { Users, Search, Plus, Mail, Trash2, X, Calendar, AlertTriangle, AlertCircle } from "lucide-react";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Modal (Yeni Müşteri Ekle Penceresi) State'leri
+  // Yeni Müşteri Ekle Modal State'leri
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // YENİ: Silme Onayı ve Hata Modalı State'leri
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchCustomers();
@@ -31,7 +37,6 @@ export default function CustomersPage() {
     }
   };
 
-  // Yeni Müşteri Kaydetme Formu Gönderimi
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -46,12 +51,12 @@ export default function CustomersPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Müşteri başarıyla eklendi!");
         setIsModalOpen(false);
         setFormData({ name: "", email: "", password: "" });
         fetchCustomers();
       } else {
-        alert(data.error || "Müşteri eklenirken bir hata oluştu.");
+        setErrorMessage(data.error || "Müşteri eklenirken bir hata oluştu.");
+        setErrorModalOpen(true);
       }
     } catch (error) {
       console.error("İşlem başarısız", error);
@@ -60,23 +65,41 @@ export default function CustomersPage() {
     }
   };
 
-  // Müşteri Silme
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bu müşteriyi silmek istediğinize emin misiniz?")) return;
+  // 1. Aşama: Silme butonuna basıldığında onay modalını aç
+  const initiateDelete = (customer) => {
+    setCustomerToDelete(customer);
+    setDeleteModalOpen(true);
+  };
+
+  // 2. Aşama: Onay modalında "Evet, Sil" dendiğinde çalışacak fonksiyon
+  const confirmDelete = async () => {
+    if (!customerToDelete) return;
+    setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/admin/customers/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/customers/${customerToDelete.id}`, { method: "DELETE" });
+      const data = await res.json();
+      
       if (res.ok) {
-        setCustomers(customers.filter((c) => c.id !== id));
+        setCustomers(customers.filter((c) => c.id !== customerToDelete.id));
+        setDeleteModalOpen(false);
+        setCustomerToDelete(null);
       } else {
-        alert("Müşteri silinemedi.");
+        // Hata varsa silme modalını kapat ve hata modalını (Akıllı Uyarı) aç
+        setDeleteModalOpen(false);
+        setErrorMessage(data.error || "Müşteri silinemedi.");
+        setErrorModalOpen(true);
       }
     } catch (error) {
       console.error("Silme hatası:", error);
+      setDeleteModalOpen(false);
+      setErrorMessage("Sistemsel bir bağlantı hatası oluştu.");
+      setErrorModalOpen(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Arama Filtresi
   const filteredCustomers = customers.filter(c => 
     c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -103,7 +126,6 @@ export default function CustomersPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Arama Çubuğu */}
         <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -117,7 +139,6 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Müşteri Tablosu */}
         {filteredCustomers.length === 0 ? (
           <p className="text-gray-500 text-sm py-12 text-center">Kayıtlı müşteri bulunamadı.</p>
         ) : (
@@ -149,7 +170,7 @@ export default function CustomersPage() {
                     </td>
                     <td className="p-4 text-right pr-6">
                       <button 
-                        onClick={() => handleDelete(c.id)}
+                        onClick={() => initiateDelete(c)}
                         className="text-gray-400 hover:text-red-600 p-2 rounded-lg transition-colors hover:bg-red-50"
                         title="Müşteriyi Sil"
                       >
@@ -164,61 +185,41 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* Yeni Müşteri Ekle Modal Penceresi */}
+      {/* 1. YENİ MÜŞTERİ EKLE MODALI */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1 rounded-lg"
-            >
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1 rounded-lg">
               <X className="w-5 h-5" />
             </button>
-
             <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Müşteri Ekle</h2>
-            
             <form onSubmit={handleAddCustomer} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Müşteri Adı / Soyadı</label>
                 <input 
-                  type="text" 
-                  required
-                  placeholder="Örn: Ahmet Yılmaz"
-                  value={formData.name}
+                  type="text" required placeholder="Örn: Ahmet Yılmaz" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">E-Posta Adresi</label>
                 <input 
-                  type="email" 
-                  required
-                  placeholder="ahmet@email.com"
-                  value={formData.email}
+                  type="email" required placeholder="ahmet@email.com" value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Giriş Şifresi (Opsiyonel)</label>
                 <input 
-                  type="password" 
-                  placeholder="Boş bırakılırsa 'musteri123' atanır"
-                  value={formData.password}
+                  type="password" placeholder="Boş bırakılırsa 'musteri123' atanır" value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
                 />
               </div>
-
               <div className="pt-2">
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-70 shadow-sm"
-                >
+                <button type="submit" disabled={isSubmitting} className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-70 shadow-sm">
                   {isSubmitting ? "Kaydediliyor..." : "Müşteriyi Kaydet"}
                 </button>
               </div>
@@ -226,6 +227,58 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
+
+      {/* 2. SİLME ONAY MODALI */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Müşteriyi Sil</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              <strong className="text-gray-800">{customerToDelete?.name}</strong> isimli müşteriyi silmek istediğinize emin misiniz?
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl transition-colors"
+              >
+                İptal Et
+              </button>
+              <button 
+                onClick={confirmDelete}
+                disabled={isSubmitting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition-colors disabled:opacity-70"
+              >
+                {isSubmitting ? "Siliniyor..." : "Evet, Sil"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. AKILLI HATA / UYARI MODALI */}
+      {errorModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border-t-4 border-red-500 animate-in zoom-in-95 duration-200">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            </div>
+            <h3 className="text-lg font-black text-gray-900 mb-2">İşlem Durduruldu</h3>
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed bg-red-50 p-4 rounded-xl border border-red-100">
+              {errorMessage}
+            </p>
+            <button 
+              onClick={() => setErrorModalOpen(false)}
+              className="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-xl transition-colors"
+            >
+              Anladım
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
