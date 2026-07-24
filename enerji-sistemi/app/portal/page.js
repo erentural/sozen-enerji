@@ -23,8 +23,12 @@ export default function CustomerPortal() {
   const [newAppt, setNewAppt] = useState({ subject: "", date: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mesaj Formu State'leri
-  const [messageForm, setMessageForm] = useState({ subject: "Proje Hakkında Soru", message: "" });
+  // Mesaj Formu State'leri (YENİ: otherSubjectDetail eklendi)
+  const [messageForm, setMessageForm] = useState({ 
+    subject: "Proje Hakkında Soru", 
+    otherSubjectDetail: "", 
+    message: "" 
+  });
   const [isSending, setIsSending] = useState(false);
   const [messageSuccess, setMessageSuccess] = useState(false);
 
@@ -58,15 +62,36 @@ export default function CustomerPortal() {
     }
   };
 
-  // Randevu Gönderme Fonksiyonu
+  // Randevu Gönderme Fonksiyonu (MESAİ SAATİ KONTROLÜ EKLENDİ)
   const handleApptSubmit = async (e) => {
     e.preventDefault();
     
     const secilenTarih = new Date(newAppt.date);
     const suAn = new Date();
     
+    // 1. Geçmiş Tarih Kontrolü
     if (secilenTarih < suAn) {
       alert("Hata: Geçmiş bir tarihe veya saate randevu talebi oluşturamazsınız!");
+      return;
+    }
+
+    // 2. Mesai Günleri ve Saatleri Kontrolü (Pzt-Cmt, 08:30 - 18:30)
+    const gun = secilenTarih.getDay(); // 0: Pazar, 1: Pazartesi ... 6: Cumartesi
+    const saat = secilenTarih.getHours();
+    const dakika = secilenTarih.getMinutes();
+    
+    // Zamanı sadece dakika cinsinden hesaplayıp aralık kontrolü yapıyoruz
+    const toplamDakika = (saat * 60) + dakika;
+    const mesaiBaslangic = (8 * 60) + 30; // 08:30 (510)
+    const mesaiBitis = (18 * 60) + 30; // 18:30 (1110)
+
+    if (gun === 0) {
+      alert("Hata: Pazar günleri hizmet verememekteyiz. Lütfen Pazartesi - Cumartesi arası bir gün seçiniz.");
+      return;
+    }
+
+    if (toplamDakika < mesaiBaslangic || toplamDakika > mesaiBitis) {
+      alert("Hata: Randevu talepleri sadece mesai saatlerimiz içinde (08:30 - 18:30) oluşturulabilir. Lütfen bu aralıkta bir saat seçiniz.");
       return;
     }
 
@@ -85,7 +110,7 @@ export default function CustomerPortal() {
       if (res.ok) {
         setShowForm(false);
         setNewAppt({ subject: "", date: "" });
-        fetchCustomerData(); // Listeyi yenile
+        fetchCustomerData(); 
         window.dispatchEvent(new Event("notificationsUpdated"));
         alert("Randevu talebiniz başarıyla iletildi!");
       } else {
@@ -106,22 +131,26 @@ export default function CustomerPortal() {
     setIsSending(true);
 
     try {
+      // YENİ: Eğer 'Diğer Konular' seçildiyse kullanıcının yazdığı detayı ekle
+      const finalSubject = messageForm.subject === "Diğer Konular"
+        ? `PORTAL: Diğer - ${messageForm.otherSubjectDetail}`
+        : `PORTAL: ${messageForm.subject}`;
+
       const res = await fetch("/api/mesaj", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: session?.user?.name || "Müşteri",
           email: session?.user?.email || "",
-          phone: "Sistemde Kayıtlı", // Session'da telefon yoksa varsayılan
-          subject: `PORTAL: ${messageForm.subject}`, 
+          phone: "Sistemde Kayıtlı", 
+          subject: finalSubject, 
           message: messageForm.message,
         }),
       });
 
       if (res.ok) {
         setMessageSuccess(true);
-        setMessageForm({ ...messageForm, message: "" });
-        // 3 saniye sonra başarı mesajını gizle
+        setMessageForm({ subject: "Proje Hakkında Soru", otherSubjectDetail: "", message: "" });
         setTimeout(() => setMessageSuccess(false), 3000);
       }
     } catch (error) {
@@ -146,7 +175,6 @@ export default function CustomerPortal() {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
 
-    // 1. KURUMSAL ÜST BİLGİ (HEADER) ALANI
     doc.setFillColor(2, 82, 156); 
     doc.rect(0, 0, pageWidth, 40, 'F');
     doc.setTextColor(255, 255, 255);
@@ -157,7 +185,6 @@ export default function CustomerPortal() {
     doc.setFont("helvetica", "normal");
     doc.text("Guvenilir Elektrik ve Yenilenebilir Enerji Cozumleri", 14, 32);
 
-    // 2. RAPOR BAŞLIĞI VE ÇİZGİ
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
@@ -165,7 +192,6 @@ export default function CustomerPortal() {
     doc.setDrawColor(200, 200, 200);
     doc.line(14, 60, pageWidth - 14, 60);
 
-    // 3. PROJE VE MÜŞTERİ BİLGİLERİ
     doc.setFontSize(11);
     doc.setTextColor(100, 100, 100);
     doc.text("Musteri Bilgileri", 14, 70);
@@ -191,7 +217,6 @@ export default function CustomerPortal() {
     doc.setFont("helvetica", "normal");
     doc.text(`%${project.progress} Tamamlandi`, 138, 85);
 
-    // 4. TABLO TASARIMI
     autoTable(doc, {
       startY: 95,
       head: [['Proje Aciklamasi', 'Baslangic Tarihi', 'Ilerleme']],
@@ -213,7 +238,6 @@ export default function CustomerPortal() {
       alternateRowStyles: { fillColor: [245, 248, 250] },
     });
 
-    // 5. ALT BİLGİ
     const finalY = doc.lastAutoTable.finalY || 120;
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
@@ -284,7 +308,6 @@ export default function CustomerPortal() {
                 {data.projects.map((project) => (
                   <div key={project.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group flex flex-col sm:flex-row">
                     
-                    {/* Proje Görseli (Eğer veritabanında imageUrl yoksa placeholder gösterir) */}
                     <div className="w-full sm:w-1/3 h-48 sm:h-auto relative bg-gray-50 overflow-hidden shrink-0 border-b sm:border-b-0 sm:border-r border-gray-100">
                       {project.imageUrl ? (
                         <img 
@@ -303,7 +326,6 @@ export default function CustomerPortal() {
                       </div>
                     </div>
 
-                    {/* Proje Detayları ve İlerleme Çubuğu */}
                     <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start mb-2">
@@ -332,7 +354,6 @@ export default function CustomerPortal() {
                           </div>
                         </div>
 
-                        {/* PDF İndirme Butonu */}
                         <div className="flex justify-end pt-4 border-t border-gray-100">
                           <button 
                             onClick={() => generatePDF(project)} 
@@ -430,7 +451,7 @@ export default function CustomerPortal() {
               )}
             </div>
 
-            {/* 2. Yönetime Mesaj Gönder Widget'ı */}
+            {/* 2. Yönetime Mesaj Gönder Widget'ı (GÜNCELLENDİ) */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
               
@@ -447,16 +468,32 @@ export default function CustomerPortal() {
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="space-y-3 relative z-10">
-                  <select 
-                    value={messageForm.subject}
-                    onChange={(e) => setMessageForm({...messageForm, subject: e.target.value})}
-                    className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50"
-                  >
-                    <option value="Proje Hakkında Soru">Proje Hakkında Soru</option>
-                    <option value="Teknik Destek">Teknik Destek</option>
-                    <option value="Ek Talep">Ek Talep / Revizyon</option>
-                    <option value="Diğer">Diğer Konular</option>
-                  </select>
+                  <div className="flex flex-col gap-3">
+                    <select 
+                      value={messageForm.subject}
+                      onChange={(e) => setMessageForm({...messageForm, subject: e.target.value})}
+                      className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50"
+                    >
+                      <option value="Proje Hakkında Soru">Proje Hakkında Soru</option>
+                      <option value="Teknik Destek">Teknik Destek</option>
+                      <option value="Ek Talep">Ek Talep / Revizyon</option>
+                      <option value="Diğer Konular">Diğer Konular</option>
+                    </select>
+
+                    {/* YENİ: "Diğer Konular" Seçildiğinde Açılan Kutu */}
+                    {messageForm.subject === "Diğer Konular" && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <input
+                          type="text"
+                          required
+                          value={messageForm.otherSubjectDetail}
+                          onChange={(e) => setMessageForm({ ...messageForm, otherSubjectDetail: e.target.value })}
+                          placeholder="Lütfen konuyu kısaca belirtiniz..."
+                          className="w-full text-sm font-medium px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-blue-50/50 shadow-sm transition-all"
+                        />
+                      </div>
+                    )}
+                  </div>
                   
                   <textarea 
                     required
@@ -507,7 +544,6 @@ export default function CustomerPortal() {
         </div>
       </main>
 
-      {/* Progress bar animasyonu için gerekli global CSS eklentisi */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           100% { background-position: 40px 0; }
