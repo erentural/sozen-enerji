@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   try {
-    const { id } = params;
+    // 1. ID'yi güvenli bir şekilde al (Next.js 15 uyumluluğu için await ekledik)
+    const params = await context.params;
+    let id = params?.id;
 
-    // 1. Müşteriyi ve ona bağlı tüm ilişkili kayıtları (projeler ve randevular) bul
+    // Yedek Plan: URL üzerinden ID'yi alma
+    if (!id) {
+      const url = new URL(request.url);
+      id = url.searchParams.get("id") || url.pathname.split('/').pop();
+    }
+
+    // URL'de hiçbir şekilde ID yoksa direkt işlemi durdur
+    if (!id) {
+      return NextResponse.json({ error: "Silinecek müşterinin ID'si bulunamadı." }, { status: 400 });
+    }
+
+    // 2. Veritabanından Müşteriyi Bul
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -18,21 +31,21 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Müşteri bulunamadı." }, { status: 404 });
     }
 
-    // 2. Akıllı Güvenlik Kontrolü: Eğer müşteriye ait en az 1 proje veya randevu varsa silmeyi durdur
-    if (user.projects.length > 0 || user.appointments.length > 0) {
+    // 3. Akıllı Güvenlik Kontrolü
+    if ((user.projects?.length > 0) || (user.appointments?.length > 0)) {
       return NextResponse.json({
-        error: "Bu müşteriye ait aktif projeler veya randevular bulunmaktadır. Silme işlemi yapabilmek için öncelikle müşterinin projelerini ve randevularını sistemden kaldırmalısınız."
-      }, { status: 400 });
+        error: "Bu müşteriye ait aktif projeler veya randevular bulunmaktadır. Silmek için öncelikle müşterinin projelerini ve randevularını sistemden kaldırmalısınız."
+      }, { status: 400 }); 
     }
 
-    // 3. Hiçbir bağ yoksa güvenle sil
+    // 4. Hiçbir bağ yoksa güvenle sil
     await prisma.user.delete({
       where: { id }
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Müşteri silinirken hata:", error);
+    console.error("Müşteri silinirken backend hatası:", error);
     return NextResponse.json({ error: "Müşteri silinirken sistemsel bir hata oluştu." }, { status: 500 });
   }
 }
