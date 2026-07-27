@@ -4,23 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import NotificationBell from "./NotificationBell";
-import { useTheme } from "@/app/admin/ThemeContext"; // YENİ: Temayı içeri aktarıyoruz
+import { useTheme } from "@/app/admin/ThemeContext";
 import { 
-  Users, 
-  ClipboardList,
-  LayoutDashboard, 
-  CalendarDays, 
-  Settings, 
-  LogOut,
-  FolderKanban,
-  Mail,
-  Globe,
-  BookOpen
+  Users, ClipboardList, LayoutDashboard, CalendarDays, 
+  Settings, LogOut, FolderKanban, Mail, Globe, BookOpen
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { currentTheme } = useTheme(); // YENİ: Vurgu rengini alıyoruz
+  const { currentTheme } = useTheme(); 
 
   const menuItems = [
     { name: "Ana Sayfa", icon: LayoutDashboard, path: "/admin" },
@@ -34,20 +26,17 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen shrink-0 transition-colors duration-300">
+    <div className="w-64 bg-white dark:bg-slate-950/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800/80 flex flex-col h-screen shrink-0 transition-colors duration-300">
       
-      {/* Logo ve Bildirim Zili Alanı */}
-      <div className="h-16 flex items-center justify-between px-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <h1 className="text-xl font-bold flex items-center gap-1">
+      <div className="h-16 flex items-center justify-between px-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
+        <h1 className="text-xl font-black flex items-center gap-1">
           <span className={currentTheme.text}>Enerji</span>
-          <span className="text-slate-900 dark:text-white transition-colors">Panel</span>
+          {/* dark:text-white yerine dark:text-slate-200 kullanıldı */}
+          <span className="text-slate-900 dark:text-slate-200 transition-colors">Panel</span>
         </h1>
-        
-        {/* ZİLİ BURAYA EKLEDİK */}
         <NotificationBell />
       </div>
 
-      {/* Menü Linkleri */}
       <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-1">
           {menuItems.map((item) => {
@@ -60,8 +49,9 @@ export default function Sidebar() {
                   href={item.path}
                   className={`flex items-center px-6 py-3 text-sm font-bold transition-all duration-200 ${
                     isActive 
-                      ? `${currentTheme.bg} text-white shadow-md border-r-4 border-slate-900 dark:border-white` 
-                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                      ? `${currentTheme.bg} text-white shadow-md border-r-4 border-slate-900 dark:border-slate-300` 
+                      // Hover durumunda da beyaz yerine slate-200'e gidiyor
+                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-3" />
@@ -73,18 +63,17 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Alt Bölüm: Siteye Dön ve Çıkış Yap */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-1 transition-colors duration-300">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 space-y-1 transition-colors duration-300">
         <Link 
           href="/"
-          className="flex items-center w-full px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-colors"
+          className="flex items-center w-full px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 rounded-xl transition-colors"
         >
           <Globe className="w-5 h-5 mr-3" />
-          Ana Sayfa
+          Siteye Git
         </Link>
         <button 
           onClick={() => signOut({ callbackUrl: '/admin-login' })}
-          className="flex items-center w-full px-4 py-2.5 text-sm font-bold text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
+          className="flex items-center w-full px-4 py-2.5 text-sm font-bold text-rose-500 dark:text-rose-400/90 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
         >
           <LogOut className="w-5 h-5 mr-3" />
           Çıkış Yap

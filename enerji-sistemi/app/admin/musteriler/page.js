@@ -131,7 +131,7 @@ export default function CustomersPage() {
       {/* Sayfa Başlığı ve Aksiyon Butonları */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 transition-colors">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-200 flex items-center gap-3 transition-colors">
             <Users className={`w-8 h-8 ${currentTheme.text}`} /> Müşteri & Personel Yönetimi
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors">Sisteme kayıtlı müşterilerinizi ve yöneticileri buradan yönetin.</p>
@@ -155,10 +155,10 @@ export default function CustomersPage() {
       </div>
 
       {/* Tablo Kartı */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+      <div className="bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/80 overflow-hidden transition-colors duration-300">
         
         {/* Arama */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-700/80 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input 
@@ -166,7 +166,7 @@ export default function CustomersPage() {
               placeholder="İsim, e-posta veya telefon ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-1 ${currentTheme.focus} bg-white dark:bg-slate-800 text-slate-700 dark:text-white text-sm font-medium transition-colors`}
+              className={`w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-1 ${currentTheme.focus} bg-white dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors`}
             />
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function CustomersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-700 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider transition-colors">
+                <tr className="border-b border-slate-100 dark:border-slate-700/80 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider transition-colors">
                   <th className="p-4 pl-6">Ad Soyad</th>
                   <th className="p-4">İletişim Bilgileri</th>
                   <th className="p-4 text-center">Durum / Proje</th>
@@ -188,7 +188,7 @@ export default function CustomersPage() {
               <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
                 {filteredCustomers.map((c) => (
                   <tr key={c.id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group ${isCompact ? "text-sm" : "text-base"}`}>
-                    <td className={`pl-6 font-bold text-slate-900 dark:text-white transition-colors flex items-center gap-2 ${isCompact ? 'py-3' : 'py-5'}`}>
+                    <td className={`pl-6 font-bold text-slate-900 dark:text-slate-200 transition-colors flex items-center gap-2 ${isCompact ? 'py-3' : 'py-5'}`}>
                       {c.name || "İsimsiz"}
                       {c.role === "ADMIN" && (
                         <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[10px] uppercase font-black px-2 py-0.5 rounded-md flex items-center gap-1 border border-amber-200 dark:border-amber-800 transition-colors">
@@ -233,8 +233,8 @@ export default function CustomersPage() {
 
       {/* DİNAMİK EKLEME MODALI */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative animate-in fade-in zoom-in duration-200 border border-slate-100 dark:border-slate-700 transition-colors">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
+          <div className="bg-white dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative animate-in fade-in zoom-in duration-200 border border-slate-100 dark:border-slate-700/80 transition-colors">
             
             <button onClick={() => setIsModalOpen(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 p-1.5 rounded-full transition-colors">
               <X className="w-5 h-5" />
@@ -245,7 +245,7 @@ export default function CustomersPage() {
                 {modalType === 'ADMIN' ? <ShieldPlus className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white transition-colors">
+                <h2 className="text-xl font-black text-slate-900 dark:text-slate-200 transition-colors">
                   {modalType === 'ADMIN' ? 'Yeni Yönetici Ekle' : 'Yeni Müşteri Ekle'}
                 </h2>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 transition-colors">
@@ -262,7 +262,7 @@ export default function CustomersPage() {
                 <input 
                   type="text" required placeholder="Örn: Ahmet Yılmaz" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
+                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
                 />
               </div>
               
@@ -272,7 +272,7 @@ export default function CustomersPage() {
                   <select 
                     value={formData.countryCode}
                     onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                    className={`px-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-white text-sm font-bold focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
+                    className={`px-3 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 text-sm font-bold focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
                   >
                     <option value="+90">+90</option>
                     <option value="+1">+1</option>
@@ -289,7 +289,7 @@ export default function CustomersPage() {
                       const onlyNums = e.target.value.replace(/[^0-9]/g, '');
                       if (onlyNums.length <= 10) setFormData({ ...formData, phone: onlyNums });
                     }}
-                    className={`flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
+                    className={`flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
                   />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function CustomersPage() {
                 <input 
                   type="email" required placeholder="ornek@email.com" value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
+                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
                 />
               </div>
 
@@ -310,7 +310,7 @@ export default function CustomersPage() {
                   placeholder={modalType === 'ADMIN' ? "Boş bırakılırsa 'admin123' atanır" : "Boş bırakılırsa 'musteri123' atanır"} 
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
+                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 transition-colors ${modalType === 'ADMIN' ? 'focus:ring-amber-500 focus:border-amber-500' : currentTheme.focus}`}
                 />
               </div>
 
@@ -332,19 +332,19 @@ export default function CustomersPage() {
 
       {/* SİLME ONAYI MODALI */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-700">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-700/80">
             <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-rose-600 dark:text-rose-500" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 transition-colors">Kullanıcıyı Sil</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-200 mb-2 transition-colors">Kullanıcıyı Sil</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 transition-colors">
               <strong className="text-slate-800 dark:text-slate-200">{customerToDelete?.name}</strong> isimli kullanıcıyı silmek istediğinize emin misiniz?
             </p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setDeleteModalOpen(false)}
-                className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-colors"
+                className="flex-1 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-colors"
               >
                 İptal Et
               </button>
@@ -362,18 +362,18 @@ export default function CustomersPage() {
 
       {/* HATA MODALI */}
       {errorModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border-t-4 border-rose-500 animate-in zoom-in-95 duration-200">
             <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-rose-100 dark:bg-rose-900/30 mb-4 transition-colors">
               <AlertCircle className="h-7 w-7 text-rose-600 dark:text-rose-500" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 transition-colors">İşlem Durduruldu</h3>
+            <h3 className="text-lg font-black text-slate-900 dark:text-slate-200 mb-2 transition-colors">İşlem Durduruldu</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-6 leading-relaxed bg-rose-50 dark:bg-rose-900/20 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30 font-medium transition-colors">
               {errorMessage}
             </p>
             <button 
               onClick={() => setErrorModalOpen(false)}
-              className="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold py-3.5 rounded-xl transition-colors"
+              className="w-full bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-bold py-3.5 rounded-xl transition-colors"
             >
               Anladım
             </button>

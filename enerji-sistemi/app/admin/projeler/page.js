@@ -157,7 +157,7 @@ export default function AdminProjectsPage() {
     <div className="p-8 max-w-7xl font-sans transition-colors duration-300">
       
       {/* Sayfa Başlığı */}
-      <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3 transition-colors">
+      <h1 className="text-3xl font-black text-slate-900 dark:text-slate-200 mb-8 flex items-center gap-3 transition-colors">
         <FolderKanban className={`w-8 h-8 ${currentTheme.text}`} /> Projeler ve İş Takibi
       </h1>
       
@@ -165,11 +165,11 @@ export default function AdminProjectsPage() {
         
         {/* SOL KOLON: Form */}
         <div className="lg:col-span-1">
-          <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-sm border p-6 sticky top-8 transition-colors duration-300 ${
-            editingId ? `${currentTheme.border} shadow-lg ring-1 ${currentTheme.focus.replace('focus:', '')}` : 'border-slate-100 dark:border-slate-700'
+          <div className={`bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl shadow-sm border p-6 sticky top-8 transition-colors duration-300 ${
+            editingId ? `${currentTheme.border} shadow-lg ring-1 ${currentTheme.focus.replace('focus:', '')}` : 'border-slate-100 dark:border-slate-700/80'
           }`}>
             <div className="flex justify-between items-center mb-6">
-              <h2 className={`text-lg font-black flex items-center transition-colors ${editingId ? currentTheme.text : 'text-slate-900 dark:text-white'}`}>
+              <h2 className={`text-lg font-black flex items-center transition-colors ${editingId ? currentTheme.text : 'text-slate-900 dark:text-slate-200'}`}>
                 {editingId ? <Edit2 className="w-5 h-5 mr-2" /> : <Plus className={`w-5 h-5 mr-2 ${currentTheme.text}`} />}
                 {editingId ? "Projeyi Güncelle" : "Yeni İş / Proje Ata"}
               </h2>
@@ -182,17 +182,17 @@ export default function AdminProjectsPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 border-b border-slate-100 dark:border-slate-700 pb-2 transition-colors">
+                <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 border-b border-slate-100 dark:border-slate-700/80 pb-2 transition-colors">
                   Proje Detayları
                 </p>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-black text-slate-600 dark:text-slate-300 mb-1 transition-colors">İşin Adı</label>
-                    <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Örn: Çatı GES Kurulumu" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required />
+                    <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Örn: Çatı GES Kurulumu" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required />
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-600 dark:text-slate-300 mb-1 transition-colors">Kısa Açıklama</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} rows="2" placeholder="Yapılacak işlemler..." className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} resize-none transition-colors`} required></textarea>
+                    <textarea name="description" value={formData.description} onChange={handleChange} rows="2" placeholder="Yapılacak işlemler..." className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} resize-none transition-colors`} required></textarea>
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-600 dark:text-slate-300 mb-1 transition-colors">Proje Lokasyonu / Adresi</label>
@@ -202,7 +202,7 @@ export default function AdminProjectsPage() {
                       placeholder="Örn: İstanbul, Levent Ofis"
                       value={formData.location} 
                       onChange={handleChange}
-                      className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`}
+                      className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`}
                     />
                   </div>
                   
@@ -212,7 +212,7 @@ export default function AdminProjectsPage() {
                     
                     {!formData.imageUrl ? (
                       <div className="flex items-center justify-center w-full mt-1">
-                        <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-slate-200 dark:border-slate-700 border-dashed rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-slate-200 dark:border-slate-700/80 border-dashed rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors">
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <ImageIcon className="w-6 h-6 mb-2 text-slate-400 dark:text-slate-500" />
                             <p className="mb-1 text-xs text-slate-500 dark:text-slate-400 font-bold">Yüklemek için tıklayın</p>
@@ -223,7 +223,7 @@ export default function AdminProjectsPage() {
                       </div>
                     ) : (
                       <div className="relative mt-2">
-                        <img src={formData.imageUrl} alt="Önizleme" className="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
+                        <img src={formData.imageUrl} alt="Önizleme" className="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm" />
                         <button 
                           type="button" 
                           onClick={removeImage}
@@ -241,7 +241,6 @@ export default function AdminProjectsPage() {
                       <span>İlerleme Yüzdesi (%)</span>
                       <span className={`${currentTheme.text} font-bold`}>%{formData.progress}</span>
                     </label>
-                    {/* Native range input teması için currentTheme rengine adapte olmasını sağlayan küçük stil eklentisi */}
                     <input 
                       type="range" 
                       name="progress" 
@@ -256,17 +255,17 @@ export default function AdminProjectsPage() {
               </div>
 
               <div className={editingId ? "opacity-50 pointer-events-none" : ""}>
-                <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 border-b border-slate-100 dark:border-slate-700 pb-2 mt-6 transition-colors">
+                <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 border-b border-slate-100 dark:border-slate-700/80 pb-2 mt-6 transition-colors">
                   Müşteri Bilgileri {editingId && "(Değiştirilemez)"}
                 </p>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-black text-slate-600 dark:text-slate-300 mb-1 transition-colors">Müşteri Adı / Firma</label>
-                    <input type="text" name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Örn: Ahmet Yılmaz" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required={!editingId} />
+                    <input type="text" name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Örn: Ahmet Yılmaz" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required={!editingId} />
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-600 dark:text-slate-300 mb-1 transition-colors">Müşteri E-posta</label>
-                    <input type="email" name="customerEmail" value={formData.customerEmail} onChange={handleChange} placeholder="ahmet@email.com" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required={!editingId} />
+                    <input type="email" name="customerEmail" value={formData.customerEmail} onChange={handleChange} placeholder="ahmet@email.com" className={`w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-1 ${currentTheme.focus} transition-colors`} required={!editingId} />
                   </div>
                 </div>
               </div>
@@ -280,25 +279,25 @@ export default function AdminProjectsPage() {
 
         {/* SAĞ KOLON: Proje Listesi */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8 transition-colors duration-300">
-            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center transition-colors">
+          <div className="bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/80 p-6 md:p-8 transition-colors duration-300">
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-200 mb-6 flex items-center transition-colors">
               <Activity className={`w-6 h-6 mr-3 ${currentTheme.text}`} /> Devam Eden İşler
             </h2>
 
             {projects.length === 0 ? (
-              <p className="text-slate-500 dark:text-slate-400 text-sm py-12 text-center border-2 border-slate-100 dark:border-slate-700 border-dashed rounded-2xl transition-colors">Aktif bir proje bulunmuyor.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm py-12 text-center border-2 border-slate-100 dark:border-slate-700/80 border-dashed rounded-2xl transition-colors">Aktif bir proje bulunmuyor.</p>
             ) : (
               <div className="space-y-4">
                 {projects.map((project) => (
                   <div key={project.id} className={`border rounded-2xl p-5 relative group transition-colors ${
                     editingId === project.id 
                       ? `${currentTheme.border} bg-slate-50 dark:bg-slate-900/50` 
-                      : 'border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
+                      : 'border-slate-100 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-500'
                   }`}>
                     
                     {/* Sağ Üst Düzenle/Sil İkonları */}
                     <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      <button onClick={() => handleEditClick(project)} className={`p-2 text-slate-400 ${currentTheme.text.replace('text-', 'hover:text-')} hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm`} title="Düzenle">
+                      <button onClick={() => handleEditClick(project)} className={`p-2 text-slate-400 ${currentTheme.text.replace('text-', 'hover:text-')} hover:bg-slate-100 dark:hover:bg-slate-700/80 rounded-lg transition-colors bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm`} title="Düzenle">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(project.id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm" title="Projeyi Sil">
@@ -310,14 +309,14 @@ export default function AdminProjectsPage() {
                       {/* Varsa Proje Görseli */}
                       {project.imageUrl && (
                         <div className="shrink-0">
-                          <img src={project.imageUrl} alt={project.title} className="w-full sm:w-36 h-36 object-cover rounded-xl border border-slate-100 dark:border-slate-700" />
+                          <img src={project.imageUrl} alt={project.title} className="w-full sm:w-36 h-36 object-cover rounded-xl border border-slate-100 dark:border-slate-700/80" />
                         </div>
                       )}
                       
                       <div className="flex-1">
                         <div className="flex items-start md:items-center gap-3 mb-2 flex-col md:flex-row pr-16 md:pr-20">
-                          <h3 className="font-black text-slate-900 dark:text-white text-lg transition-colors">{project.title}</h3>
-                          <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition-colors">
+                          <h3 className="font-black text-slate-900 dark:text-slate-200 text-lg transition-colors">{project.title}</h3>
+                          <span className="bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 text-xs px-3 py-1 rounded-full font-bold border border-slate-200 dark:border-slate-600/50 transition-colors">
                             {project.customer?.name || "Bilinmiyor"} 
                           </span>
                         </div>
@@ -335,19 +334,19 @@ export default function AdminProjectsPage() {
                             <span>Tamamlanma Durumu</span>
                             <span className={currentTheme.text}>%{project.progress}</span>
                           </div>
-                          <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 transition-colors">
+                          <div className="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 transition-colors">
                             <div className={`${currentTheme.bg} h-2.5 rounded-full transition-all duration-700 ease-out`} style={{ width: `${project.progress}%` }}></div>
                           </div>
                         </div>
 
-                        <div className="flex justify-end border-t border-slate-100 dark:border-slate-700 pt-4 mt-2 transition-colors">
+                        <div className="flex justify-end border-t border-slate-100 dark:border-slate-700/80 pt-4 mt-2 transition-colors">
                          <button 
                             onClick={() => handleNotify(project.id)}
                             disabled={sendingEmailId === project.id}
                             className={`flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm ${
                               sendingEmailId === project.id 
                                 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed' 
-                                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800'
+                                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800/50'
                             }`}
                           >
                             <Send className={`w-3.5 h-3.5 ${sendingEmailId === project.id ? 'animate-pulse' : ''}`} /> 

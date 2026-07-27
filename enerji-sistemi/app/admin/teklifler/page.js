@@ -91,10 +91,10 @@ export default function LeadsPage() {
   // Dinamik Durum Rozetleri (Dark Mode Uyumlu)
   const getStatusStyle = (status) => {
     switch(status) {
-      case "YENI": return "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800";
-      case "GORUSULDU": return "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-      case "KAPANDI": return "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800";
-      default: return "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700";
+      case "YENI": return "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50";
+      case "GORUSULDU": return "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50";
+      case "KAPANDI": return "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50";
+      default: return "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/50";
     }
   };
 
@@ -112,17 +112,18 @@ export default function LeadsPage() {
       {/* Sayfa Başlığı */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 transition-colors">
+          {/* text-white yerine göz yormayan text-slate-200 */}
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-200 flex items-center gap-3 transition-colors">
             <ClipboardList className={`w-8 h-8 ${currentTheme.text}`} /> Teklif Talepleri & Keşifler
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors">Web sitesi hesaplayıcısından ve teklif formundan gelen potansiyel müşteri talepleri.</p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+      <div className="bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/80 overflow-hidden transition-colors duration-300">
         
         {/* Arama Alanı */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-700/80 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input 
@@ -130,7 +131,7 @@ export default function LeadsPage() {
               placeholder="İsim, hizmet veya şehir ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-1 ${currentTheme.focus} bg-white dark:bg-slate-800 text-slate-700 dark:text-white text-sm font-medium transition-colors`}
+              className={`w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-1 ${currentTheme.focus} bg-white dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors`}
             />
           </div>
         </div>
@@ -144,13 +145,13 @@ export default function LeadsPage() {
                 
                 <div className="flex-1 space-y-2.5">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white transition-colors">{lead.name}</h3>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-200 transition-colors">{lead.name}</h3>
                     <span className={`flex items-center px-3 py-1 text-xs font-bold rounded-full border transition-colors ${getStatusStyle(lead.status)}`}>
                       {lead.status === "YENI" ? <Clock className="w-3.5 h-3.5 mr-1" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
                       {lead.status === "YENI" ? "Yeni Talep" : "Onaylandı & İletildi"}
                     </span>
                     {lead.priceOffer && (
-                      <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 text-xs rounded-full border border-emerald-200 dark:border-emerald-800 transition-colors">
+                      <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 text-xs rounded-full border border-emerald-200 dark:border-emerald-800/50 transition-colors">
                         Verilen Fiyat: {lead.priceOffer.toLocaleString("tr-TR")} ₺
                       </span>
                     )}
@@ -180,10 +181,10 @@ export default function LeadsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0 border-slate-100 dark:border-slate-700 transition-colors">
+                <div className="flex items-center gap-4 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0 border-slate-100 dark:border-slate-700/50 transition-colors">
                   <span className="text-xs font-bold text-slate-400 dark:text-slate-500 hidden sm:block text-right transition-colors">
                     {new Date(lead.createdAt).toLocaleDateString("tr-TR", { day: '2-digit', month: '2-digit', year: 'numeric' })} <br/>
-                    <span className="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md mt-1 inline-block transition-colors">
+                    <span className="text-[10px] bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-md mt-1 inline-block transition-colors">
                       {new Date(lead.createdAt).toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </span>
@@ -215,8 +216,8 @@ export default function LeadsPage() {
 
       {/* TEKLİF ONAYLAMA & MAİL MODALI */}
       {isModalOpen && selectedLead && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative animate-in fade-in zoom-in duration-200 border border-slate-100 dark:border-slate-700 transition-colors">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors">
+          <div className="bg-white dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative animate-in fade-in zoom-in duration-200 border border-slate-100 dark:border-slate-700/80 transition-colors">
             
             <button 
               onClick={() => setIsModalOpen(false)}
@@ -225,12 +226,13 @@ export default function LeadsPage() {
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1 flex items-center gap-2 transition-colors">
+            {/* text-white yerine göz yormayan text-slate-200 */}
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-200 mb-1 flex items-center gap-2 transition-colors">
               <Mail className={`w-6 h-6 ${currentTheme.text}`} /> Müşteriye Teklif İlet
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium transition-colors">Fiyatı belirleyin ve müşteriye iletilecek notunuzu yazın.</p>
             
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 transition-colors">
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/80 mb-6 transition-colors">
               <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 transition-colors">Müşteri: <span className={currentTheme.text}>{selectedLead.name}</span></p>
               <p className="text-sm text-slate-600 dark:text-slate-400 font-medium transition-colors">Alıcı: {selectedLead.email || "E-posta girilmemiş"}</p>
               <p className="text-sm text-slate-600 dark:text-slate-400 font-medium transition-colors">Talep: {selectedLead.service} ({selectedLead.panelCount} Panel)</p>
@@ -245,7 +247,7 @@ export default function LeadsPage() {
                   placeholder="Örn: 150000"
                   value={offerData.price}
                   onChange={(e) => setOfferData({ ...offerData, price: e.target.value })}
-                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 ${currentTheme.focus} font-bold ${currentTheme.text} bg-white dark:bg-slate-900/50 transition-colors`}
+                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-1 ${currentTheme.focus} font-bold ${currentTheme.text} bg-white dark:bg-slate-900/50 transition-colors`}
                 />
               </div>
 
@@ -257,7 +259,7 @@ export default function LeadsPage() {
                   placeholder="Sayın müşterimiz, sistem gereksinimleriniz incelenmiş olup projeniz için..."
                   value={offerData.message}
                   onChange={(e) => setOfferData({ ...offerData, message: e.target.value })}
-                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 ${currentTheme.focus} text-sm resize-none bg-white dark:bg-slate-900/50 text-slate-800 dark:text-white transition-colors`}
+                  className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-1 ${currentTheme.focus} text-sm resize-none bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 transition-colors`}
                 ></textarea>
               </div>
 
