@@ -23,7 +23,7 @@ export default function CustomerPortal() {
   const [newAppt, setNewAppt] = useState({ subject: "", date: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mesaj Formu State'leri (YENİ: otherSubjectDetail eklendi)
+  // Mesaj Formu State'leri
   const [messageForm, setMessageForm] = useState({ 
     subject: "Proje Hakkında Soru", 
     otherSubjectDetail: "", 
@@ -32,7 +32,6 @@ export default function CustomerPortal() {
   const [isSending, setIsSending] = useState(false);
   const [messageSuccess, setMessageSuccess] = useState(false);
 
-  // Takvimin geçmişi seçmesini engellemek için şu anki zamanı hesapla
   const getLocalMinDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -62,28 +61,24 @@ export default function CustomerPortal() {
     }
   };
 
-  // Randevu Gönderme Fonksiyonu (MESAİ SAATİ KONTROLÜ EKLENDİ)
   const handleApptSubmit = async (e) => {
     e.preventDefault();
     
     const secilenTarih = new Date(newAppt.date);
     const suAn = new Date();
     
-    // 1. Geçmiş Tarih Kontrolü
     if (secilenTarih < suAn) {
       alert("Hata: Geçmiş bir tarihe veya saate randevu talebi oluşturamazsınız!");
       return;
     }
 
-    // 2. Mesai Günleri ve Saatleri Kontrolü (Pzt-Cmt, 08:30 - 18:30)
-    const gun = secilenTarih.getDay(); // 0: Pazar, 1: Pazartesi ... 6: Cumartesi
+    const gun = secilenTarih.getDay(); 
     const saat = secilenTarih.getHours();
     const dakika = secilenTarih.getMinutes();
     
-    // Zamanı sadece dakika cinsinden hesaplayıp aralık kontrolü yapıyoruz
     const toplamDakika = (saat * 60) + dakika;
-    const mesaiBaslangic = (8 * 60) + 30; // 08:30 (510)
-    const mesaiBitis = (18 * 60) + 30; // 18:30 (1110)
+    const mesaiBaslangic = (8 * 60) + 30; 
+    const mesaiBitis = (18 * 60) + 30; 
 
     if (gun === 0) {
       alert("Hata: Pazar günleri hizmet verememekteyiz. Lütfen Pazartesi - Cumartesi arası bir gün seçiniz.");
@@ -125,13 +120,11 @@ export default function CustomerPortal() {
     }
   };
 
-  // Yönetime Mesaj Gönderme Fonksiyonu
   const handleSendMessage = async (e) => {
     e.preventDefault();
     setIsSending(true);
 
     try {
-      // YENİ: Eğer 'Diğer Konular' seçildiyse kullanıcının yazdığı detayı ekle
       const finalSubject = messageForm.subject === "Diğer Konular"
         ? `PORTAL: Diğer - ${messageForm.otherSubjectDetail}`
         : `PORTAL: ${messageForm.subject}`;
@@ -171,54 +164,84 @@ export default function CustomerPortal() {
       .replace(/ü/g, 'u').replace(/Ü/g, 'U');
   };
 
+  // ----- YENİ VE PROFESYONEL PDF MOTORU -----
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
 
+    // 1. KURUMSAL ÜST BİLGİ (HEADER)
+    // Lacivert Arka Plan
     doc.setFillColor(2, 82, 156); 
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, pageWidth, 35, 'F');
+    // Altın/Amber Çizgi Vurgusu
+    doc.setFillColor(255, 193, 7); 
+    doc.rect(0, 35, pageWidth, 2, 'F');
+    
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("SOZEN ENERJI", 14, 24);
-    doc.setFontSize(10);
+    doc.text("SOZEN ENERJI", 14, 22);
+    
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text("Guvenilir Elektrik ve Yenilenebilir Enerji Cozumleri", 14, 32);
+    doc.text("Guvenilir Elektrik ve Yenilenebilir Enerji Cozumleri", 14, 28);
 
-    doc.setTextColor(40, 40, 40);
+    // 2. RAPOR BAŞLIĞI
+    doc.setTextColor(30, 41, 59); // Koyu Gri (Slate 800)
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("PROJE DURUM RAPORU", 14, 55);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, 60, pageWidth - 14, 60);
+    doc.text("PROJE DURUM RAPORU", 14, 52);
 
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Musteri Bilgileri", 14, 70);
-    doc.text("Proje Bilgileri", 110, 70);
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
+    // 3. MODERN BİLGİ KARTLARI (GRID)
+    // Sol Kart: Müşteri Bilgileri Arka Planı
+    doc.setFillColor(248, 250, 252); // Çok Açık Gri (Slate 50)
+    doc.setDrawColor(226, 232, 240); // İnce Çerçeve Rengi
+    doc.roundedRect(14, 60, 88, 35, 3, 3, 'FD'); 
     
+    // Sağ Kart: Proje Bilgileri Arka Planı
+    doc.roundedRect(108, 60, 88, 35, 3, 3, 'FD'); 
+
+    // Sol Kart İçeriği
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139); // Soluk Gri Başlık
     doc.setFont("helvetica", "bold");
-    doc.text("Ad Soyad:", 14, 78);
+    doc.text("MUSTERI BILGILERI", 18, 68);
+
+    doc.setTextColor(15, 23, 42); // Siyahımsı Metin
+    doc.text("Ad Soyad:", 18, 77);
     doc.setFont("helvetica", "normal");
-    doc.text(temizleTR(session?.user?.name || "Musteri"), 35, 78);
-    doc.setFont("helvetica", "bold");
-    doc.text("Rapor Tarihi:", 14, 85);
-    doc.setFont("helvetica", "normal");
-    doc.text(new Date().toLocaleDateString("tr-TR"), 38, 85);
+    doc.text(temizleTR(session?.user?.name || "Musteri"), 42, 77);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Proje Adi:", 110, 78);
+    doc.text("Tarih:", 18, 85);
     doc.setFont("helvetica", "normal");
-    doc.text(temizleTR(project.title), 132, 78);
-    doc.setFont("helvetica", "bold");
-    doc.text("Guncel Durum:", 110, 85);
-    doc.setFont("helvetica", "normal");
-    doc.text(`%${project.progress} Tamamlandi`, 138, 85);
+    doc.text(new Date().toLocaleDateString("tr-TR"), 42, 85);
 
+    // Sağ Kart İçeriği
+    doc.setTextColor(100, 116, 139); 
+    doc.setFont("helvetica", "bold");
+    doc.text("PROJE BILGILERI", 112, 68);
+
+    doc.setTextColor(15, 23, 42); 
+    doc.text("Proje Adi:", 112, 77);
+    doc.setFont("helvetica", "normal");
+    
+    const safeTitle = temizleTR(project.title);
+    const displayTitle = safeTitle.length > 30 ? safeTitle.substring(0, 27) + "..." : safeTitle;
+    doc.text(displayTitle, 136, 77);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Durum:", 112, 85);
+    
+    // İlerleme metni lacivert vurgulu
+    doc.setTextColor(2, 82, 156); 
+    doc.setFont("helvetica", "bold");
+    doc.text(`%${project.progress} Tamamlandi`, 136, 85);
+    
+    // 4. CLEAN UI (FERAH) VERİ TABLOSU
     autoTable(doc, {
-      startY: 95,
+      startY: 105,
       head: [['Proje Aciklamasi', 'Baslangic Tarihi', 'Ilerleme']],
       body: [
         [
@@ -227,26 +250,44 @@ export default function CustomerPortal() {
           `%${project.progress}`
         ],
       ],
-      theme: 'grid',
-      headStyles: { fillColor: [2, 82, 156], textColor: 255, fontStyle: 'bold', halign: 'center' },
-      styles: { fontSize: 10, cellPadding: 8, textColor: [60, 60, 60] },
+      theme: 'plain', // Ağır renkleri kaldırır, sadelik verir
+      styles: { 
+        font: 'helvetica',
+        fontSize: 10, 
+        cellPadding: 6, 
+        textColor: [51, 65, 85] 
+      },
+      headStyles: { 
+        fillColor: [255, 255, 255], 
+        textColor: [2, 82, 156], // Başlıklar Lacivert
+        fontStyle: 'bold', 
+        lineWidth: { bottom: 0.5 }, // Sadece alt çizgi
+        lineColor: [200, 200, 200] 
+      },
+      bodyStyles: {
+        lineWidth: { bottom: 0.5 }, 
+        lineColor: [241, 245, 249]
+      },
       columnStyles: {
         0: { cellWidth: 'auto' },
         1: { cellWidth: 40, halign: 'center' },
-        2: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },
+        2: { cellWidth: 30, halign: 'center', fontStyle: 'bold', textColor: [2, 82, 156] },
       },
-      alternateRowStyles: { fillColor: [245, 248, 250] },
     });
 
-    const finalY = doc.lastAutoTable.finalY || 120;
-    doc.setFontSize(9);
-    doc.setTextColor(150, 150, 150);
-    doc.text("Bu belge Sozen Enerji sistemleri tarafindan otomatik olarak uretilmistir.", 14, finalY + 20);
-    doc.text("Herhangi bir sorunuz icin: destek@sozen-enerji.com | 444 0 123", 14, finalY + 25);
+    // 5. KURUMSAL ALT BİLGİ (FOOTER)
+    const finalY = doc.lastAutoTable.finalY || 130;
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184); // Soluk Açık Gri
+    doc.setFont("helvetica", "normal");
+    
+    doc.text("Bu belge Sozen Enerji CRM sistemi tarafindan otomatik olarak uretilmistir.", pageWidth / 2, pageHeight - 20, { align: 'center' });
+    doc.text("Destek: destek@sozen-enerji.com | Musteri Hizmetleri: 444 0 123", pageWidth / 2, pageHeight - 15, { align: 'center' });
 
     const dosyaIsmi = `SozenEnerji_${temizleTR(project.title).replace(/\s+/g, '_')}_Raporu.pdf`;
     doc.save(dosyaIsmi);
   };
+  // ------------------------------------------
 
   if (status === "loading" || loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Yükleniyor...</div>;
@@ -451,7 +492,7 @@ export default function CustomerPortal() {
               )}
             </div>
 
-            {/* 2. Yönetime Mesaj Gönder Widget'ı (GÜNCELLENDİ) */}
+            {/* 2. Yönetime Mesaj Gönder Widget'ı */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
               
@@ -480,7 +521,6 @@ export default function CustomerPortal() {
                       <option value="Diğer Konular">Diğer Konular</option>
                     </select>
 
-                    {/* YENİ: "Diğer Konular" Seçildiğinde Açılan Kutu */}
                     {messageForm.subject === "Diğer Konular" && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                         <input
