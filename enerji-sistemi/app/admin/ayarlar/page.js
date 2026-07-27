@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Building2, Bell, Shield, Save, CheckCircle2, Mail, Phone, MapPin, Palette, Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "../ThemeContext"; // YENİ: Global Temayı İçeri Aktarıyoruz
+import { User, Building2, Bell, Shield, Save, CheckCircle2, Palette, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "../ThemeContext";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -13,7 +13,6 @@ export default function AdminSettingsPage() {
   const [companyForm, setCompanyForm] = useState({ companyName: "", supportEmail: "", phone: "", address: "" });
   const [notificationForm, setNotificationForm] = useState({ emailOnAppointment: true, emailOnMessage: true, emailOnQuote: true, smsAlerts: false });
 
-  // YENİ: Global Tema yöneticisinden verileri çekiyoruz
   const { themeForm, handleThemeChange, currentTheme } = useTheme();
 
   useEffect(() => {
@@ -34,14 +33,14 @@ export default function AdminSettingsPage() {
     fetchSettings();
   }, []);
 
+  // TÜM SEKMELER İÇİN ORTAK KAYDETME FONKSİYONU
   const handleSave = async (e) => {
     e.preventDefault();
     
-    // 1. Backend hazır olmasa bile arayüzde (UI) anında başarı mesajını gösteriyoruz
+    // API hazır olmasa bile arayüzde anında başarı mesajını gösteriyoruz
     setSuccessMessage("Değişiklikler başarıyla kaydedildi!");
     setTimeout(() => setSuccessMessage(""), 3000);
 
-    // 2. Arka plan API'sine veriyi göndermeyi deniyoruz
     try {
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
@@ -74,6 +73,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* SOL MENÜ / SEKMELER */}
         <div className="lg:col-span-4 space-y-2">
           <div className="bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-1 transition-colors">
             <button onClick={() => setActiveTab("profile")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "profile" ? `${currentTheme.bg} text-white shadow-md` : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}><User className="w-5 h-5" /> Profil ve Güvenlik</button>
@@ -83,9 +83,11 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
+        {/* SAĞ İÇERİK ALANI */}
         <div className="lg:col-span-8">
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
             
+            {/* 1. PROFİL VE GÜVENLİK */}
             {activeTab === "profile" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div><h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Profil ve Güvenlik</h2></div>
@@ -113,6 +115,7 @@ export default function AdminSettingsPage() {
               </form>
             )}
 
+            {/* 2. KURUMSAL BİLGİLER */}
             {activeTab === "company" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div><h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Kurumsal Bilgiler</h2></div>
@@ -143,6 +146,7 @@ export default function AdminSettingsPage() {
               </form>
             )}
 
+            {/* 3. BİLDİRİM TERCİHLERİ */}
             {activeTab === "notifications" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div><h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Bildirim Tercihleri</h2></div>
@@ -167,6 +171,7 @@ export default function AdminSettingsPage() {
               </form>
             )}
 
+            {/* 4. GÖRÜNÜM VE TEMA */}
             {activeTab === "theme" && (
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div><h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Görünüm ve Tema</h2></div>
