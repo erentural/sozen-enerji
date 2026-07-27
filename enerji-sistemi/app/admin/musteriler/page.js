@@ -1,19 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Search, Plus, Mail, Trash2, X, Calendar, AlertTriangle, AlertCircle, ShieldAlert } from "lucide-react";
+import { Users, Search, Plus, Mail, Trash2, X, Calendar, AlertTriangle, AlertCircle, ShieldAlert, Phone } from "lucide-react";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Yeni Müşteri/Admin Ekle Modal State'leri (YENİ: role eklendi)
+  // YENİ: formData içine phone eklendi
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "USER" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", password: "", role: "USER" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Silme Onayı ve Hata Modalı State'leri
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
@@ -52,7 +51,8 @@ export default function CustomersPage() {
 
       if (res.ok) {
         setIsModalOpen(false);
-        setFormData({ name: "", email: "", password: "", role: "USER" });
+        // Form sıfırlanırken phone da sıfırlanıyor
+        setFormData({ name: "", email: "", phone: "", password: "", role: "USER" });
         fetchCustomers();
       } else {
         setErrorMessage(data.error || "Kayıt sırasında bir hata oluştu.");
@@ -99,7 +99,8 @@ export default function CustomersPage() {
 
   const filteredCustomers = customers.filter(c => 
     c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.phone?.includes(searchTerm)
   );
 
   if (loading) return <div className="p-8 text-gray-500 font-medium">Kullanıcılar yükleniyor...</div>;
@@ -128,7 +129,7 @@ export default function CustomersPage() {
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="İsim veya e-posta ara..." 
+              placeholder="İsim, e-posta veya telefon ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white text-gray-700"
@@ -144,7 +145,7 @@ export default function CustomersPage() {
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-sm font-semibold uppercase tracking-wider">
                   <th className="p-4 pl-6">Ad Soyad</th>
-                  <th className="p-4">E-Posta Adresi</th>
+                  <th className="p-4">İletişim Bilgileri</th>
                   <th className="p-4 text-center">Durum / Proje</th>
                   <th className="p-4">Kayıt Tarihi</th>
                   <th className="p-4 text-right pr-6">İşlemler</th>
@@ -155,7 +156,6 @@ export default function CustomersPage() {
                   <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group">
                     <td className="p-4 pl-6 font-bold text-gray-900 flex items-center gap-2">
                       {c.name || "İsimsiz"}
-                      {/* Yönetici Etiketi */}
                       {c.role === "ADMIN" && (
                         <span className="bg-amber-100 text-amber-700 text-[10px] uppercase font-black px-2 py-0.5 rounded flex items-center gap-1">
                           <ShieldAlert className="w-3 h-3" /> YÖNETİCİ
@@ -163,7 +163,11 @@ export default function CustomersPage() {
                       )}
                     </td>
                     <td className="p-4 text-gray-600">
-                      <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {c.email}</div>
+                      <div className="flex flex-col gap-1">
+                        <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {c.email}</span>
+                        {/* Tabloya Telefon Eklendi */}
+                        <span className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-3.5 h-3.5 text-gray-400" /> {c.phone || "Belirtilmemiş"}</span>
+                      </div>
                     </td>
                     <td className="p-4 text-center">
                       <span className={`inline-flex items-center justify-center font-bold px-3 py-1 rounded-full text-xs ${c.role === 'ADMIN' ? 'bg-amber-50 text-amber-600' : 'bg-blue-100 text-[#02529C]'}`}>
@@ -190,7 +194,6 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* YENİ EKLE MODALI (Rol Seçeneği Eklendi) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
@@ -200,7 +203,6 @@ export default function CustomersPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Kullanıcı Ekle</h2>
             
             <form onSubmit={handleAddCustomer} className="space-y-4">
-              {/* HESAP TÜRÜ SEÇİMİ */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Hesap Türü (Yetki)</label>
                 <div className="flex gap-2">
@@ -222,15 +224,26 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Ad Soyad</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Ad Soyad *</label>
                 <input 
                   type="text" required placeholder="Örn: Ahmet Yılmaz" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
                 />
               </div>
+              
+              {/* YENİ: Telefon Numarası Girişi */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">E-Posta Adresi</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon Numarası *</label>
+                <input 
+                  type="tel" required placeholder="Örn: 0555 555 5555" value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">E-Posta Adresi *</label>
                 <input 
                   type="email" required placeholder="ahmet@email.com" value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -255,7 +268,6 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* SİLME ONAY MODALI */}
       {deleteModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in zoom-in-95 duration-200">
@@ -285,7 +297,6 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* AKILLI HATA / UYARI MODALI */}
       {errorModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border-t-4 border-red-500 animate-in zoom-in-95 duration-200">
@@ -305,7 +316,6 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
