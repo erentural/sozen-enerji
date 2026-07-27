@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { CheckCircle2, ChevronRight } from "lucide-react"; 
-import Link from "next/link"; // Link bileşenini ekledik
+import { CheckCircle2, ChevronRight, Image as ImageIcon } from "lucide-react"; 
+import Link from "next/link"; 
 
 export default function TamamlananProjelerPage() {
   const [completedProjects, setCompletedProjects] = useState([]);
   
-  // NOT: Modal kullanmayacağımız için selectedProject state'ini tamamen sildik.
-
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -24,13 +22,6 @@ export default function TamamlananProjelerPage() {
     };
     fetchProjects();
   }, []);
-
-  const placeholderImages = [
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=2070&auto=format&fit=crop"
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans relative">
@@ -54,20 +45,32 @@ export default function TamamlananProjelerPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {completedProjects.map((project, i) => (
+            {completedProjects.map((project) => (
               
-              // DİKKAT: Buradaki <div> etiketini <Link> olarak değiştirdik ve href ekledik!
               <Link 
                 key={project.id} 
-                href={`/projeler/${project.id}`} // Tıklanan projenin kendi sayfasına gider
+                href={`/projeler/${project.id}`} 
                 className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-gray-100 cursor-pointer flex flex-col"
               >
-                <div className="overflow-hidden relative h-64">
-                  <img src={placeholderImages[i % placeholderImages.length]} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                {/* GÜNCELLENEN KISIM: Gerçek Proje Görseli Gösterimi */}
+                <div className="overflow-hidden relative h-64 bg-gray-100">
+                  {project.imageUrl ? (
+                    <img 
+                      src={project.imageUrl} 
+                      alt={project.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-300 group-hover:scale-105 transition-transform duration-700">
+                      <ImageIcon className="w-12 h-12 mb-2" />
+                      <span className="text-xs font-medium">Görsel Eklenmemiş</span>
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" /> Teslim Edildi
                   </div>
                 </div>
+                
                 <div className="p-6 flex-1 flex flex-col">
                   <h4 className="font-bold text-gray-900 text-xl mb-3">{project.title}</h4>
                   <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-3">{project.description}</p>
@@ -83,7 +86,6 @@ export default function TamamlananProjelerPage() {
         )}
       </div>
 
-      {/* NOT: Ekranın en altındaki o uzun Modal kodlarını tamamen sildik çünkü artık ayrı sayfaya gidiyoruz. */}
     </div>
   );
 }
