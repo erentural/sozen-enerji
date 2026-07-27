@@ -153,7 +153,19 @@ export default function CustomerPortal() {
     }
   };
 
-  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU -----
+  // --- TÜRKÇE KARAKTER DÜZELTİCİ ---
+  const temizleTR = (text) => {
+    if (!text) return "";
+    return String(text)
+      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+      .replace(/ş/g, 's').replace(/Ş/g, 'S')
+      .replace(/ı/g, 'i').replace(/İ/g, 'I')
+      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+      .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+      .replace(/ü/g, 'u').replace(/Ü/g, 'U');
+  };
+
+  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU (TÜRKÇE KARAKTER KORUMALI) -----
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
@@ -168,20 +180,19 @@ export default function CustomerPortal() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("SÖZEN ENERJİ", 14, 22);
+    doc.text(temizleTR("SÖZEN ENERJİ"), 14, 22);
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri", 14, 28);
+    doc.text(temizleTR("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri"), 14, 28);
 
     // 2. RAPOR BAŞLIĞI
     doc.setTextColor(30, 41, 59); 
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("PROJE DURUM RAPORU", 14, 52);
+    doc.text(temizleTR("PROJE DURUM RAPORU"), 14, 52);
 
     // 3. MODERN VE DETAYLI BİLGİ KARTLARI (GRID)
-    // Kart boyutları (height) artırıldı (35'ten 48'e)
     doc.setFillColor(248, 250, 252); 
     doc.setDrawColor(226, 232, 240); 
     doc.roundedRect(14, 60, 88, 48, 3, 3, 'FD'); 
@@ -191,22 +202,22 @@ export default function CustomerPortal() {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139); 
     doc.setFont("helvetica", "bold");
-    doc.text("MÜŞTERİ BİLGİLERİ", 18, 68);
+    doc.text(temizleTR("MÜŞTERİ BİLGİLERİ"), 18, 68);
 
     doc.setTextColor(15, 23, 42); 
     doc.text("Ad Soyad:", 18, 77);
     doc.setFont("helvetica", "normal");
-    const safeName = session?.user?.name || "Müşteri";
-    doc.text(safeName.length > 22 ? safeName.substring(0,22) + "..." : safeName, 42, 77);
+    const safeName = session?.user?.name || "Musteri";
+    doc.text(temizleTR(safeName.length > 22 ? safeName.substring(0,22) + "..." : safeName), 42, 77);
 
     doc.setFont("helvetica", "bold");
     doc.text("E-Posta:", 18, 85);
     doc.setFont("helvetica", "normal");
     const safeEmail = session?.user?.email || "Belirtilmedi";
-    doc.text(safeEmail.length > 22 ? safeEmail.substring(0,22) + "..." : safeEmail, 42, 85);
+    doc.text(temizleTR(safeEmail.length > 22 ? safeEmail.substring(0,22) + "..." : safeEmail), 42, 85);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Müşteri No:", 18, 93);
+    doc.text("Musteri No:", 18, 93);
     doc.setFont("helvetica", "normal");
     doc.text(session?.user?.id ? session.user.id.substring(0,8).toUpperCase() : "SZN-001", 42, 93);
 
@@ -218,37 +229,37 @@ export default function CustomerPortal() {
     // --- Sağ Kart: Proje Bilgileri ---
     doc.setTextColor(100, 116, 139); 
     doc.setFont("helvetica", "bold");
-    doc.text("PROJE BİLGİLERİ", 112, 68);
+    doc.text(temizleTR("PROJE BİLGİLERİ"), 112, 68);
 
     doc.setTextColor(15, 23, 42); 
-    doc.text("Proje Adı:", 112, 77);
+    doc.text("Proje Adi:", 112, 77);
     doc.setFont("helvetica", "normal");
     const safeTitle = project.title || "";
-    doc.text(safeTitle.length > 22 ? safeTitle.substring(0, 22) + "..." : safeTitle, 136, 77);
+    doc.text(temizleTR(safeTitle.length > 22 ? safeTitle.substring(0, 22) + "..." : safeTitle), 136, 77);
 
     doc.setFont("helvetica", "bold");
     doc.text("Konum:", 112, 85);
     doc.setFont("helvetica", "normal");
     const safeLoc = project.location || "Belirtilmedi";
-    doc.text(safeLoc.length > 22 ? safeLoc.substring(0, 22) + "..." : safeLoc, 136, 85);
+    doc.text(temizleTR(safeLoc.length > 22 ? safeLoc.substring(0, 22) + "..." : safeLoc), 136, 85);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Başlangıç:", 112, 93);
+    doc.text("Baslangic:", 112, 93);
     doc.setFont("helvetica", "normal");
     doc.text(new Date(project.createdAt).toLocaleDateString("tr-TR"), 136, 93);
 
     doc.setFont("helvetica", "bold");
     doc.text("Durum:", 112, 101);
     doc.setTextColor(2, 82, 156); 
-    doc.text(`%${project.progress} Tamamlandı`, 136, 101);
+    doc.text(temizleTR(`%${project.progress} Tamamlandi`), 136, 101);
     
     // 4. CLEAN UI (FERAH) VERİ TABLOSU
     autoTable(doc, {
       startY: 115,
-      head: [['Proje Açıklaması', 'Başlangıç Tarihi', 'İlerleme']],
+      head: [[temizleTR('Proje Açıklaması'), temizleTR('Başlangıç Tarihi'), temizleTR('İlerleme')]],
       body: [
         [
-          project.description || "-", 
+          temizleTR(project.description || "-"), 
           new Date(project.createdAt).toLocaleDateString("tr-TR"), 
           `%${project.progress}`
         ],
@@ -284,11 +295,10 @@ export default function CustomerPortal() {
     doc.setTextColor(148, 163, 184); 
     doc.setFont("helvetica", "normal");
     
-    doc.text("Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir.", pageWidth / 2, pageHeight - 20, { align: 'center' });
-    doc.text("Destek: destek@sozen-enerji.com | Müşteri Hizmetleri: 444 0 123", pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text(temizleTR("Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir."), pageWidth / 2, pageHeight - 20, { align: 'center' });
+    doc.text(temizleTR("Destek: destek@sozen-enerji.com | Müşteri Hizmetleri: 444 0 123"), pageWidth / 2, pageHeight - 15, { align: 'center' });
 
-    // Bilgisayara kaydederken dosya isminde hata çıkmaması için özel karakterler temizlenir
-    const safeFileName = (project.title || "Proje").replace(/[^a-zA-Z0-9]/g, '_');
+    const safeFileName = temizleTR(project.title || "Proje").replace(/[^a-zA-Z0-9]/g, '_');
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
   // ------------------------------------------
