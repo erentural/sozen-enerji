@@ -165,7 +165,7 @@ export default function CustomerPortal() {
       .replace(/ü/g, 'u').replace(/Ü/g, 'U');
   };
 
-  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU (TÜRKÇE KARAKTER KORUMALI) -----
+  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU (TÜRKÇE KARAKTER KORUMALI & TAM METİN) -----
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
@@ -195,8 +195,10 @@ export default function CustomerPortal() {
     // 3. MODERN VE DETAYLI BİLGİ KARTLARI (GRID)
     doc.setFillColor(248, 250, 252); 
     doc.setDrawColor(226, 232, 240); 
-    doc.roundedRect(14, 60, 88, 48, 3, 3, 'FD'); 
-    doc.roundedRect(108, 60, 88, 48, 3, 3, 'FD'); 
+    
+    // ÇÖZÜM: Kart yüksekliklerini 48'den 65'e çıkardık ki alt satıra inen uzun metinler sığabilsin
+    doc.roundedRect(14, 60, 88, 65, 3, 3, 'FD'); 
+    doc.roundedRect(108, 60, 88, 65, 3, 3, 'FD'); 
 
     // --- Sol Kart: Müşteri Bilgileri ---
     doc.setFontSize(9);
@@ -208,23 +210,24 @@ export default function CustomerPortal() {
     doc.text("Ad Soyad:", 18, 77);
     doc.setFont("helvetica", "normal");
     const safeName = session?.user?.name || "Musteri";
-    doc.text(temizleTR(safeName.length > 22 ? safeName.substring(0,22) + "..." : safeName), 42, 77);
+    // ÇÖZÜM: maxWidth eklenerek uzun isimlerin alt satıra atılması sağlandı
+    doc.text(temizleTR(safeName), 42, 77, { maxWidth: 55 }); 
 
     doc.setFont("helvetica", "bold");
-    doc.text("E-Posta:", 18, 85);
+    doc.text("E-Posta:", 18, 89);
     doc.setFont("helvetica", "normal");
     const safeEmail = session?.user?.email || "Belirtilmedi";
-    doc.text(temizleTR(safeEmail.length > 22 ? safeEmail.substring(0,22) + "..." : safeEmail), 42, 85);
+    doc.text(temizleTR(safeEmail), 42, 89, { maxWidth: 55 });
 
     doc.setFont("helvetica", "bold");
-    doc.text("Musteri No:", 18, 93);
+    doc.text("Musteri No:", 18, 101);
     doc.setFont("helvetica", "normal");
-    doc.text(session?.user?.id ? session.user.id.substring(0,8).toUpperCase() : "SZN-001", 42, 93);
+    doc.text(session?.user?.id ? session.user.id.substring(0,8).toUpperCase() : "SZN-001", 42, 101);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Rapor Tarihi:", 18, 101);
+    doc.text("Rapor Tarihi:", 18, 113);
     doc.setFont("helvetica", "normal");
-    doc.text(new Date().toLocaleDateString("tr-TR"), 42, 101);
+    doc.text(new Date().toLocaleDateString("tr-TR"), 42, 113);
 
     // --- Sağ Kart: Proje Bilgileri ---
     doc.setTextColor(100, 116, 139); 
@@ -235,27 +238,29 @@ export default function CustomerPortal() {
     doc.text("Proje Adi:", 112, 77);
     doc.setFont("helvetica", "normal");
     const safeTitle = project.title || "";
-    doc.text(temizleTR(safeTitle.length > 22 ? safeTitle.substring(0, 22) + "..." : safeTitle), 136, 77);
+    // ÇÖZÜM: Kısıtlama silindi, tam metin yazıldı ve maxWidth ile sınırı aşarsa alt satıra inmesi söylendi
+    doc.text(temizleTR(safeTitle), 136, 77, { maxWidth: 55 });
 
     doc.setFont("helvetica", "bold");
-    doc.text("Konum:", 112, 85);
+    doc.text("Konum:", 112, 89);
     doc.setFont("helvetica", "normal");
     const safeLoc = project.location || "Belirtilmedi";
-    doc.text(temizleTR(safeLoc.length > 22 ? safeLoc.substring(0, 22) + "..." : safeLoc), 136, 85);
+    // ÇÖZÜM: Tam metin eklendi
+    doc.text(temizleTR(safeLoc), 136, 89, { maxWidth: 55 });
 
     doc.setFont("helvetica", "bold");
-    doc.text("Baslangic:", 112, 93);
+    doc.text("Baslangic:", 112, 101);
     doc.setFont("helvetica", "normal");
-    doc.text(new Date(project.createdAt).toLocaleDateString("tr-TR"), 136, 93);
+    doc.text(new Date(project.createdAt).toLocaleDateString("tr-TR"), 136, 101);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Durum:", 112, 101);
+    doc.text("Durum:", 112, 113);
     doc.setTextColor(2, 82, 156); 
-    doc.text(temizleTR(`%${project.progress} Tamamlandi`), 136, 101);
+    doc.text(temizleTR(`%${project.progress} Tamamlandi`), 136, 113);
     
     // 4. CLEAN UI (FERAH) VERİ TABLOSU
     autoTable(doc, {
-      startY: 115,
+      startY: 135, // Kartlar uzadığı için tablonun başlama noktası (Y ekseni) 115'ten 135'e çekildi
       head: [[temizleTR('Proje Açıklaması'), temizleTR('Başlangıç Tarihi'), temizleTR('İlerleme')]],
       body: [
         [
