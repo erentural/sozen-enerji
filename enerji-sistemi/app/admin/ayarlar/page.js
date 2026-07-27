@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, Building2, Bell, Shield, Save, CheckCircle2, Mail, Phone, MapPin } from "lucide-react";
+import { User, Building2, Bell, Shield, Save, CheckCircle2, Mail, Phone, MapPin, Palette, Sun, Moon, Monitor } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -28,6 +28,12 @@ export default function AdminSettingsPage() {
     smsAlerts: false,
   });
 
+  const [themeForm, setThemeForm] = useState({
+    mode: "light", // light, dark, system
+    accent: "blue", // blue, amber, emerald
+    compactMode: false,
+  });
+
   const handleSave = (e) => {
     e.preventDefault();
     setSuccessMessage("Değişiklikler başarıyla kaydedildi!");
@@ -42,7 +48,7 @@ export default function AdminSettingsPage() {
         <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
           <Shield className="w-8 h-8 text-[#02529C]" /> Sistem Ayarları
         </h1>
-        <p className="text-slate-500 text-sm mt-1">Yönetici profili, kurumsal bilgiler ve bildirim tercihlerinizi buradan yönetin.</p>
+        <p className="text-slate-500 text-sm mt-1">Yönetici profili, kurumsal bilgiler, bildirimler ve tema tercihlerinizi buradan yönetin.</p>
       </div>
 
       {/* Başarı Mesajı */}
@@ -91,6 +97,17 @@ export default function AdminSettingsPage() {
             >
               <Bell className="w-5 h-5" /> Bildirim Tercihleri
             </button>
+
+            <button
+              onClick={() => setActiveTab("theme")}
+              className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${
+                activeTab === "theme"
+                  ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <Palette className="w-5 h-5" /> Görünüm ve Tema
+            </button>
           </div>
         </div>
 
@@ -98,7 +115,7 @@ export default function AdminSettingsPage() {
         <div className="lg:col-span-8">
           <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
             
-            {/* 1. SEKME: PROFİLLER VE GÜVENLİK */}
+            {/* 1. SEKME: PROFİL VE GÜVENLİK */}
             {activeTab === "profile" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div>
@@ -290,6 +307,101 @@ export default function AdminSettingsPage() {
                     className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
                   >
                     <Save className="w-4 h-4" /> Tercihleri Kaydet
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* 4. SEKME: GÖRÜNÜM VE TEMA */}
+            {activeTab === "theme" && (
+              <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 mb-1">Görünüm ve Tema</h2>
+                  <p className="text-xs text-slate-400 font-medium">Yönetim paneli arayüz temasını ve renk modunu özelleştirin.</p>
+                </div>
+
+                <div className="h-px bg-slate-100 w-full"></div>
+
+                <div className="space-y-6">
+                  {/* Tema Modu Seçimi */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Panel Tema Modu</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { id: "light", label: "Aydınlık", icon: Sun },
+                        { id: "dark", label: "Karanlık", icon: Moon },
+                        { id: "system", label: "Sistem", icon: Monitor },
+                      ].map((item) => {
+                        const IconComponent = item.icon;
+                        const isSelected = themeForm.mode === item.id;
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => setThemeForm({ ...themeForm, mode: item.id })}
+                            className={`cursor-pointer p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
+                              isSelected
+                                ? "border-[#02529C] bg-blue-50/50 text-[#02529C]"
+                                : "border-slate-100 bg-slate-50/50 text-slate-600 hover:border-slate-200"
+                            }`}
+                          >
+                            <IconComponent className="w-6 h-6" />
+                            <span className="text-xs font-bold">{item.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Vurgu Rengi Seçimi */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Kurumsal Vurgu Rengi</label>
+                    <div className="flex gap-4">
+                      {[
+                        { id: "blue", name: "Sözen Mavi", bg: "bg-[#02529C]" },
+                        { id: "amber", name: "Enerji Sarı", bg: "bg-amber-500" },
+                        { id: "emerald", name: "Yeşil Enerji", bg: "bg-emerald-600" },
+                      ].map((color) => (
+                        <button
+                          key={color.id}
+                          type="button"
+                          onClick={() => setThemeForm({ ...themeForm, accent: color.id })}
+                          className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                            themeForm.accent === color.id
+                              ? "border-slate-900 bg-slate-900 text-white"
+                              : "border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
+                          }`}
+                        >
+                          <span className={`w-3.5 h-3.5 rounded-full ${color.bg}`}></span>
+                          {color.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Kompakt Görünüm Toggle */}
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
+                    <div>
+                      <h4 className="text-sm font-black text-slate-900 mb-0.5">Kompakt Tablo Görünümü</h4>
+                      <p className="text-xs text-slate-500 font-medium">Veri listelerinde daha az boşluk bırakarak ekrana daha fazla içerik sığdır.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                      <input
+                        type="checkbox"
+                        checked={themeForm.compactMode}
+                        onChange={(e) => setThemeForm({ ...themeForm, compactMode: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#02529C]"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <button
+                    type="submit"
+                    className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
+                  >
+                    <Save className="w-4 h-4" /> Temayı Kaydet
                   </button>
                 </div>
               </form>
