@@ -42,11 +42,14 @@ export default function ProjeDetayPage() {
 
       {/* Üst Banner / Görsel Alanı */}
       <div className="relative h-[450px] bg-slate-900">
+        
+        {/* DEĞİŞİKLİK BURADA: Veritabanından gelen resmi kullanıyoruz, resim yoksa yedeği gösteriyoruz */}
         <img 
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" 
+          src={project.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"} 
           alt={project.title}
           className="w-full h-full object-cover opacity-60"
         />
+        
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
         
         <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -112,12 +115,9 @@ export default function ProjeDetayPage() {
               <MapPin className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Operasyon Bölgesi</p>
-                
-                {/* DEĞİŞİKLİK BURADA: Artık veritabanından gelen location değerini yazdırıyoruz */}
                 <p className="text-sm font-bold text-gray-900">
                   {project.location || "Adres Belirtilmedi"}
                 </p>
-                
               </div>
             </div>
 
