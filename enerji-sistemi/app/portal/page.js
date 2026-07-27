@@ -153,104 +153,107 @@ export default function CustomerPortal() {
     }
   };
 
-  const temizleTR = (text) => {
-    if (!text) return "";
-    return text
-      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
-      .replace(/ş/g, 's').replace(/Ş/g, 'S')
-      .replace(/ı/g, 'i').replace(/İ/g, 'I')
-      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-      .replace(/ç/g, 'c').replace(/Ç/g, 'C')
-      .replace(/ü/g, 'u').replace(/Ü/g, 'U');
-  };
-
-  // ----- YENİ VE PROFESYONEL PDF MOTORU -----
+  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU -----
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
 
     // 1. KURUMSAL ÜST BİLGİ (HEADER)
-    // Lacivert Arka Plan
     doc.setFillColor(2, 82, 156); 
     doc.rect(0, 0, pageWidth, 35, 'F');
-    // Altın/Amber Çizgi Vurgusu
     doc.setFillColor(255, 193, 7); 
     doc.rect(0, 35, pageWidth, 2, 'F');
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("SOZEN ENERJI", 14, 22);
+    doc.text("SÖZEN ENERJİ", 14, 22);
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text("Guvenilir Elektrik ve Yenilenebilir Enerji Cozumleri", 14, 28);
+    doc.text("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri", 14, 28);
 
     // 2. RAPOR BAŞLIĞI
-    doc.setTextColor(30, 41, 59); // Koyu Gri (Slate 800)
+    doc.setTextColor(30, 41, 59); 
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.text("PROJE DURUM RAPORU", 14, 52);
 
-    // 3. MODERN BİLGİ KARTLARI (GRID)
-    // Sol Kart: Müşteri Bilgileri Arka Planı
-    doc.setFillColor(248, 250, 252); // Çok Açık Gri (Slate 50)
-    doc.setDrawColor(226, 232, 240); // İnce Çerçeve Rengi
-    doc.roundedRect(14, 60, 88, 35, 3, 3, 'FD'); 
-    
-    // Sağ Kart: Proje Bilgileri Arka Planı
-    doc.roundedRect(108, 60, 88, 35, 3, 3, 'FD'); 
+    // 3. MODERN VE DETAYLI BİLGİ KARTLARI (GRID)
+    // Kart boyutları (height) artırıldı (35'ten 48'e)
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(226, 232, 240); 
+    doc.roundedRect(14, 60, 88, 48, 3, 3, 'FD'); 
+    doc.roundedRect(108, 60, 88, 48, 3, 3, 'FD'); 
 
-    // Sol Kart İçeriği
+    // --- Sol Kart: Müşteri Bilgileri ---
     doc.setFontSize(9);
-    doc.setTextColor(100, 116, 139); // Soluk Gri Başlık
-    doc.setFont("helvetica", "bold");
-    doc.text("MUSTERI BILGILERI", 18, 68);
-
-    doc.setTextColor(15, 23, 42); // Siyahımsı Metin
-    doc.text("Ad Soyad:", 18, 77);
-    doc.setFont("helvetica", "normal");
-    doc.text(temizleTR(session?.user?.name || "Musteri"), 42, 77);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Tarih:", 18, 85);
-    doc.setFont("helvetica", "normal");
-    doc.text(new Date().toLocaleDateString("tr-TR"), 42, 85);
-
-    // Sağ Kart İçeriği
     doc.setTextColor(100, 116, 139); 
     doc.setFont("helvetica", "bold");
-    doc.text("PROJE BILGILERI", 112, 68);
+    doc.text("MÜŞTERİ BİLGİLERİ", 18, 68);
 
     doc.setTextColor(15, 23, 42); 
-    doc.text("Proje Adi:", 112, 77);
+    doc.text("Ad Soyad:", 18, 77);
     doc.setFont("helvetica", "normal");
-    
-    const safeTitle = temizleTR(project.title);
-    const displayTitle = safeTitle.length > 30 ? safeTitle.substring(0, 27) + "..." : safeTitle;
-    doc.text(displayTitle, 136, 77);
+    const safeName = session?.user?.name || "Müşteri";
+    doc.text(safeName.length > 22 ? safeName.substring(0,22) + "..." : safeName, 42, 77);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Durum:", 112, 85);
-    
-    // İlerleme metni lacivert vurgulu
-    doc.setTextColor(2, 82, 156); 
+    doc.text("E-Posta:", 18, 85);
+    doc.setFont("helvetica", "normal");
+    const safeEmail = session?.user?.email || "Belirtilmedi";
+    doc.text(safeEmail.length > 22 ? safeEmail.substring(0,22) + "..." : safeEmail, 42, 85);
+
     doc.setFont("helvetica", "bold");
-    doc.text(`%${project.progress} Tamamlandi`, 136, 85);
+    doc.text("Müşteri No:", 18, 93);
+    doc.setFont("helvetica", "normal");
+    doc.text(session?.user?.id ? session.user.id.substring(0,8).toUpperCase() : "SZN-001", 42, 93);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Rapor Tarihi:", 18, 101);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date().toLocaleDateString("tr-TR"), 42, 101);
+
+    // --- Sağ Kart: Proje Bilgileri ---
+    doc.setTextColor(100, 116, 139); 
+    doc.setFont("helvetica", "bold");
+    doc.text("PROJE BİLGİLERİ", 112, 68);
+
+    doc.setTextColor(15, 23, 42); 
+    doc.text("Proje Adı:", 112, 77);
+    doc.setFont("helvetica", "normal");
+    const safeTitle = project.title || "";
+    doc.text(safeTitle.length > 22 ? safeTitle.substring(0, 22) + "..." : safeTitle, 136, 77);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Konum:", 112, 85);
+    doc.setFont("helvetica", "normal");
+    const safeLoc = project.location || "Belirtilmedi";
+    doc.text(safeLoc.length > 22 ? safeLoc.substring(0, 22) + "..." : safeLoc, 136, 85);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Başlangıç:", 112, 93);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date(project.createdAt).toLocaleDateString("tr-TR"), 136, 93);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Durum:", 112, 101);
+    doc.setTextColor(2, 82, 156); 
+    doc.text(`%${project.progress} Tamamlandı`, 136, 101);
     
     // 4. CLEAN UI (FERAH) VERİ TABLOSU
     autoTable(doc, {
-      startY: 105,
-      head: [['Proje Aciklamasi', 'Baslangic Tarihi', 'Ilerleme']],
+      startY: 115,
+      head: [['Proje Açıklaması', 'Başlangıç Tarihi', 'İlerleme']],
       body: [
         [
-          temizleTR(project.description), 
+          project.description || "-", 
           new Date(project.createdAt).toLocaleDateString("tr-TR"), 
           `%${project.progress}`
         ],
       ],
-      theme: 'plain', // Ağır renkleri kaldırır, sadelik verir
+      theme: 'plain',
       styles: { 
         font: 'helvetica',
         fontSize: 10, 
@@ -259,9 +262,9 @@ export default function CustomerPortal() {
       },
       headStyles: { 
         fillColor: [255, 255, 255], 
-        textColor: [2, 82, 156], // Başlıklar Lacivert
+        textColor: [2, 82, 156], 
         fontStyle: 'bold', 
-        lineWidth: { bottom: 0.5 }, // Sadece alt çizgi
+        lineWidth: { bottom: 0.5 }, 
         lineColor: [200, 200, 200] 
       },
       bodyStyles: {
@@ -276,16 +279,17 @@ export default function CustomerPortal() {
     });
 
     // 5. KURUMSAL ALT BİLGİ (FOOTER)
-    const finalY = doc.lastAutoTable.finalY || 130;
+    const finalY = doc.lastAutoTable.finalY || 140;
     doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184); // Soluk Açık Gri
+    doc.setTextColor(148, 163, 184); 
     doc.setFont("helvetica", "normal");
     
-    doc.text("Bu belge Sozen Enerji CRM sistemi tarafindan otomatik olarak uretilmistir.", pageWidth / 2, pageHeight - 20, { align: 'center' });
-    doc.text("Destek: destek@sozen-enerji.com | Musteri Hizmetleri: 444 0 123", pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text("Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir.", pageWidth / 2, pageHeight - 20, { align: 'center' });
+    doc.text("Destek: destek@sozen-enerji.com | Müşteri Hizmetleri: 444 0 123", pageWidth / 2, pageHeight - 15, { align: 'center' });
 
-    const dosyaIsmi = `SozenEnerji_${temizleTR(project.title).replace(/\s+/g, '_')}_Raporu.pdf`;
-    doc.save(dosyaIsmi);
+    // Bilgisayara kaydederken dosya isminde hata çıkmaması için özel karakterler temizlenir
+    const safeFileName = (project.title || "Proje").replace(/[^a-zA-Z0-9]/g, '_');
+    doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
   // ------------------------------------------
 
