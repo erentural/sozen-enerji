@@ -16,6 +16,7 @@ export async function GET() {
         id: true,
         title: true,
         description: true,
+        imageUrl: true, // YENİ EKLENDİ: Artık görsel linki de ön yüze gönderiliyor!
         // Müşteri maili gibi gizli verileri bilerek dışarı aktarmıyoruz (Güvenlik)
       }
     });
