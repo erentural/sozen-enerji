@@ -17,7 +17,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // GÜNCELLEME BURADA: cache: 'no-store' eklenerek eski verinin takılı kalması engellendi
         const res = await fetch("/api/admin/dashboard-stats", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
@@ -32,47 +31,75 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
-  // İstatistik Kartı Bileşeni
-  const StatCard = ({ title, value, icon: Icon, color, link, linkText }) => (
-    <div className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
-      <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-150 transition-transform duration-500 bg-${color}-500`}></div>
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <p className="text-sm font-bold text-gray-500 mb-1">{title}</p>
-          <h3 className="text-4xl font-black text-gray-900 tracking-tight">
-            {loading ? "..." : value}
-          </h3>
+  // Premium İstatistik Kartı Bileşeni
+  const StatCard = ({ title, value, icon: Icon, color, link, linkText }) => {
+    const colorClasses = {
+      blue: "text-blue-600 bg-blue-50 border-blue-100 hover:border-blue-300",
+      yellow: "text-amber-600 bg-amber-50 border-amber-100 hover:border-amber-300",
+      red: "text-rose-600 bg-rose-50 border-rose-100 hover:border-rose-300",
+      green: "text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300",
+    };
+    const bgHover = {
+      blue: "group-hover:bg-blue-600",
+      yellow: "group-hover:bg-amber-600",
+      red: "group-hover:bg-rose-600",
+      green: "group-hover:bg-emerald-600",
+    };
+
+    return (
+      <Link href={link} className="block group">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)]">
+          
+          {/* Arka Plan Dekoratif Halka */}
+          <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-5 ${bgHover[color]} transition-colors duration-500 blur-2xl`}></div>
+          
+          <div className="flex justify-between items-start mb-6">
+            <div className="relative z-10">
+              <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+              <h3 className="text-5xl font-black text-slate-900 tracking-tighter">
+                {loading ? <span className="animate-pulse text-slate-300">...</span> : value}
+              </h3>
+            </div>
+            <div className={`p-4 rounded-2xl ${colorClasses[color]} transition-colors duration-300 relative z-10`}>
+              <Icon className="w-7 h-7" />
+            </div>
+          </div>
+          
+          <div className={`inline-flex items-center text-sm font-bold ${colorClasses[color].split(' ')[0]} opacity-80 group-hover:opacity-100 transition-opacity`}>
+            {linkText} <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform" />
+          </div>
         </div>
-        <div className={`p-3 rounded-xl bg-${color}-50 text-${color}-600`}>
-          <Icon className="w-6 h-6" />
-        </div>
-      </div>
-      <Link href={link} className={`inline-flex items-center text-sm font-bold text-${color}-600 hover:text-${color}-800 transition-colors`}>
-        {linkText} <ArrowRight className="w-4 h-4 ml-1" />
       </Link>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto font-sans">
+    <div className="p-8 max-w-7xl mx-auto font-sans selection:bg-[#02529C] selection:text-white">
       
       {/* Üst Karşılama Alanı */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
-            <Activity className="w-8 h-8 text-[#02529C]" /> 
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3">
+            <div className="p-2.5 bg-blue-50 text-[#02529C] rounded-2xl">
+              <Activity className="w-7 h-7" />
+            </div>
             Sistem Özeti
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Enerji Yönetim Merkezi kontrol paneline hoş geldiniz.</p>
+          <p className="text-slate-500 mt-2 font-medium">Enerji Yönetim Merkezi kontrol paneline hoş geldiniz.</p>
         </div>
-        <div className="bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-bold text-gray-700">Sistem Aktif & Çevrimiçi</span>
+        
+        {/* Canlı Ping Animasyonlu Durum Bildirgesi */}
+        <div className="bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center gap-3">
+          <div className="relative flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+          </div>
+          <span className="text-sm font-bold text-slate-700">Sistem Aktif & Çevrimiçi</span>
         </div>
       </div>
 
       {/* İstatistik Kartları Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard 
           title="Aktif Projeler" 
           value={stats.projects} 
@@ -82,7 +109,7 @@ export default function AdminDashboard() {
           linkText="Projeleri Yönet"
         />
         <StatCard 
-          title="Bekleyen Randevular" 
+          title="Yeni Randevular" 
           value={stats.pendingAppointments} 
           icon={CalendarDays} 
           color="yellow" 
@@ -107,36 +134,47 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Büyük Bilgi / Hoş Geldin Kartı */}
-      <div className="bg-[#02529C] rounded-2xl overflow-hidden relative shadow-lg">
-        {/* Dekoratif Arka Plan Çizgileri */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
-          <div className="absolute -top-[50%] -left-[10%] w-[120%] h-[200%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          <Zap className="absolute -bottom-10 -right-10 w-64 h-64 text-white rotate-12" />
-        </div>
+      {/* Premium Hoş Geldin / Kısayol Banner'ı */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-[#02529C] to-slate-900 shadow-2xl shadow-blue-900/20">
         
-        <div className="relative z-10 p-10 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+        {/* Dekoratif Gradient Katmanları */}
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        
+        <div className="relative z-10 p-10 md:p-14 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-12">
+          
           <div className="max-w-2xl text-white">
-            <h2 className="text-3xl md:text-4xl font-black mb-4 flex items-center gap-3">
-              Enerjimiz <span className="text-[#FFC107]">Panel</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-black tracking-widest uppercase mb-6">
+              <Zap className="w-4 h-4 text-amber-400" /> Sözen Enerji CRM
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight">
+              Enerjimiz <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">Panel</span>
             </h2>
-            <p className="text-blue-100 text-lg leading-relaxed mb-6 font-medium">
-              Bu panel üzerinden şirketinizin tüm operasyonlarını tek bir noktadan yönetebilirsiniz. Yeni gelen randevu taleplerini onaylayabilir, müşteri projelerinin ilerlemesini güncelleyebilir ve web sitesindeki ürün kataloğunuzu anında değiştirebilirsiniz.
+            
+            <p className="text-blue-100/90 text-lg leading-relaxed mb-10 font-medium max-w-xl">
+              Bu panel üzerinden şirketinizin tüm operasyonlarını tek bir noktadan yönetebilirsiniz. Müşteri projelerinin ilerlemesini güncelleyin ve randevu taleplerini hızlıca onaylayın.
             </p>
-            <div className="flex gap-4">
-              <Link href="/admin/projeler" className="bg-[#FFC107] text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 transition-colors shadow-sm">
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/admin/projeler" className="group bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 px-8 py-4 rounded-xl font-black transition-all shadow-lg hover:shadow-amber-500/25 flex items-center justify-center gap-2">
                 Hızlı Proje Ekle
               </Link>
-              <Link href="/" className="bg-white/10 border border-white/20 text-white px-6 py-3 rounded-lg font-bold hover:bg-white/20 transition-colors flex items-center gap-2">
-                Siteyi Görüntüle <ArrowRight className="w-4 h-4" />
+              <Link href="/" target="_blank" className="group bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                Siteyi Görüntüle <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
           
-          {/* Grafik İllüstrasyonu */}
-          <div className="hidden lg:flex shrink-0 w-64 h-64 bg-white/5 border border-white/10 rounded-full items-center justify-center backdrop-blur-sm">
-            <TrendingUp className="w-32 h-32 text-[#FFC107]" />
+          {/* Sağ Taraftaki Şık İkonografi */}
+          <div className="hidden lg:flex shrink-0 w-80 h-80 relative">
+            <div className="absolute inset-0 border border-white/10 rounded-full animate-[spin_60s_linear_infinite]"></div>
+            <div className="absolute inset-4 border border-white/5 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-white/5 to-white/10 rounded-full backdrop-blur-sm border border-white/20 shadow-2xl">
+              <TrendingUp className="w-32 h-32 text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]" />
+            </div>
           </div>
+          
         </div>
       </div>
 
