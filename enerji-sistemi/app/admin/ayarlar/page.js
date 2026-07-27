@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Building2, Bell, Shield, Save, CheckCircle2, Mail, Phone, MapPin, Palette, Sun, Moon, Monitor } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const [profileForm, setProfileForm] = useState({
     name: "Sistem Yöneticisi",
@@ -14,11 +15,12 @@ export default function AdminSettingsPage() {
     newPassword: "",
   });
 
+  // Şirket bilgileri başlangıçta boş veya geçici olabilir, API'den dolacak
   const [companyForm, setCompanyForm] = useState({
-    companyName: "Sözen Enerji Elektrik & İnşaat A.Ş.",
-    supportEmail: "destek@sozen-enerji.com",
-    phone: "444 0 123",
-    address: "Konya / Merkez Sanayi Sitesi 42. Cadde 12. Sokak",
+    companyName: "",
+    supportEmail: "",
+    phone: "",
+    address: "",
   });
 
   const [notificationForm, setNotificationForm] = useState({
@@ -29,16 +31,66 @@ export default function AdminSettingsPage() {
   });
 
   const [themeForm, setThemeForm] = useState({
-    mode: "light", // light, dark, system
-    accent: "blue", // blue, amber, emerald
+    mode: "light", 
+    accent: "blue", 
     compactMode: false,
   });
 
-  const handleSave = (e) => {
+  // 1. ADIM: Sayfa açıldığında veritabanından gerçek bilgileri çek
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.company) {
+            setCompanyForm(data.company); // Veritabanından gelen gerçek şirket bilgileri
+          }
+          if (data.profile) {
+            setProfileForm(prev => ({ ...prev, name: data.profile.name, email: data.profile.email }));
+          }
+        }
+      } catch (error) {
+        console.error("Ayarlar yüklenemedi", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // 2. ADIM: Değişiklikleri kaydet butonuna basınca veritabanına gönder
+  const handleSave = async (e) => {
     e.preventDefault();
-    setSuccessMessage("Değişiklikler başarıyla kaydedildi!");
-    setTimeout(() => setSuccessMessage(""), 3000);
+    
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyForm,
+          profileForm,
+          notificationForm,
+          themeForm,
+        }),
+      });
+
+      if (res.ok) {
+        if (activeTab === "theme") {
+          localStorage.setItem("sozen_admin_theme", JSON.stringify(themeForm));
+        }
+        setSuccessMessage("Değişiklikler veritabanına başarıyla kaydedildi!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        alert("Kaydedilirken bir hata oluştu.");
+      }
+    } catch (error) {
+      console.error("Kayıt hatası:", error);
+      alert("Sistemsel bir hata oluştu.");
+    }
   };
+
+  if (loading) return <div className="p-8 text-gray-500 font-medium">Ayarlar yükleniyor...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto font-sans selection:bg-[#02529C] selection:text-white">
@@ -62,15 +114,13 @@ export default function AdminSettingsPage() {
       {/* Sekmeli Yapı (Tabs Layout) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Sol Menü / Sekmeler (Col 4) */}
+        {/* Sol Menü / Sekmeler */}
         <div className="lg:col-span-4 space-y-2">
           <div className="bg-white p-3 rounded-3xl shadow-sm border border-slate-100 space-y-1">
             <button
               onClick={() => setActiveTab("profile")}
               className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === "profile"
-                  ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10"
-                  : "text-slate-600 hover:bg-slate-50"
+                activeTab === "profile" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"
               }`}
             >
               <User className="w-5 h-5" /> Profil ve Güvenlik
@@ -79,9 +129,7 @@ export default function AdminSettingsPage() {
             <button
               onClick={() => setActiveTab("company")}
               className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === "company"
-                  ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10"
-                  : "text-slate-600 hover:bg-slate-50"
+                activeTab === "company" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"
               }`}
             >
               <Building2 className="w-5 h-5" /> Kurumsal Bilgiler
@@ -90,9 +138,7 @@ export default function AdminSettingsPage() {
             <button
               onClick={() => setActiveTab("notifications")}
               className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === "notifications"
-                  ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10"
-                  : "text-slate-600 hover:bg-slate-50"
+                activeTab === "notifications" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"
               }`}
             >
               <Bell className="w-5 h-5" /> Bildirim Tercihleri
@@ -101,9 +147,7 @@ export default function AdminSettingsPage() {
             <button
               onClick={() => setActiveTab("theme")}
               className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === "theme"
-                  ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10"
-                  : "text-slate-600 hover:bg-slate-50"
+                activeTab === "theme" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"
               }`}
             >
               <Palette className="w-5 h-5" /> Görünüm ve Tema
@@ -111,7 +155,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Sağ İçerik Alanı (Col 8) */}
+        {/* Sağ İçerik Alanı */}
         <div className="lg:col-span-8">
           <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
             
@@ -145,12 +189,10 @@ export default function AdminSettingsPage() {
                       disabled
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-400 bg-slate-100 cursor-not-allowed"
                     />
-                    <p className="text-[11px] text-slate-400 mt-1 font-medium">E-posta adresi sistem girişinde kullanıldığı için değiştirilemez.</p>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100">
                     <h3 className="text-sm font-black text-slate-900 mb-4">Şifre Değiştirme</h3>
-                    
                     <div className="space-y-4">
                       <div>
                         <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Mevcut Şifreniz</label>
@@ -162,7 +204,6 @@ export default function AdminSettingsPage() {
                           className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]"
                         />
                       </div>
-
                       <div>
                         <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Yeni Şifreniz</label>
                         <input
@@ -178,17 +219,14 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <button
-                    type="submit"
-                    className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
-                  >
+                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
                     <Save className="w-4 h-4" /> Değişiklikleri Kaydet
                   </button>
                 </div>
               </form>
             )}
 
-            {/* 2. SEKME: KURUMSAL BİLGİLER */}
+            {/* 2. SEKME: KURUMSAL BİLGİLER (ADRES BURADA) */}
             {activeTab === "company" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div>
@@ -256,10 +294,7 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <button
-                    type="submit"
-                    className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
-                  >
+                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
                     <Save className="w-4 h-4" /> Değişiklikleri Kaydet
                   </button>
                 </div>
@@ -302,10 +337,7 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <button
-                    type="submit"
-                    className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
-                  >
+                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
                     <Save className="w-4 h-4" /> Tercihleri Kaydet
                   </button>
                 </div>
@@ -323,7 +355,6 @@ export default function AdminSettingsPage() {
                 <div className="h-px bg-slate-100 w-full"></div>
 
                 <div className="space-y-6">
-                  {/* Tema Modu Seçimi */}
                   <div>
                     <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Panel Tema Modu</label>
                     <div className="grid grid-cols-3 gap-4">
@@ -339,9 +370,7 @@ export default function AdminSettingsPage() {
                             key={item.id}
                             onClick={() => setThemeForm({ ...themeForm, mode: item.id })}
                             className={`cursor-pointer p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                              isSelected
-                                ? "border-[#02529C] bg-blue-50/50 text-[#02529C]"
-                                : "border-slate-100 bg-slate-50/50 text-slate-600 hover:border-slate-200"
+                              isSelected ? "border-[#02529C] bg-blue-50/50 text-[#02529C]" : "border-slate-100 bg-slate-50/50 text-slate-600 hover:border-slate-200"
                             }`}
                           >
                             <IconComponent className="w-6 h-6" />
@@ -352,7 +381,6 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Vurgu Rengi Seçimi */}
                   <div>
                     <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Kurumsal Vurgu Rengi</label>
                     <div className="flex gap-4">
@@ -366,9 +394,7 @@ export default function AdminSettingsPage() {
                           type="button"
                           onClick={() => setThemeForm({ ...themeForm, accent: color.id })}
                           className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                            themeForm.accent === color.id
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
+                            themeForm.accent === color.id ? "border-slate-900 bg-slate-900 text-white" : "border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
                           }`}
                         >
                           <span className={`w-3.5 h-3.5 rounded-full ${color.bg}`}></span>
@@ -378,7 +404,6 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Kompakt Görünüm Toggle */}
                   <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
                     <div>
                       <h4 className="text-sm font-black text-slate-900 mb-0.5">Kompakt Tablo Görünümü</h4>
@@ -397,10 +422,7 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <button
-                    type="submit"
-                    className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm"
-                  >
+                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
                     <Save className="w-4 h-4" /> Temayı Kaydet
                   </button>
                 </div>
