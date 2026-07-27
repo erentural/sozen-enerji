@@ -48,25 +48,28 @@ export default function AdminDashboard() {
 
     return (
       <Link href={link} className="block group h-full">
-        {/* YENİ: h-full, flex ve flex-col eklenerek kutu yüksekliği eşitlendi */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] h-full flex flex-col">
           
           <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-5 ${bgHover[color]} transition-colors duration-500 blur-2xl pointer-events-none`}></div>
           
           <div className="flex justify-between items-start mb-6">
             <div className="relative z-10 pr-2">
-              <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+              
+              {/* ÇÖZÜM BURADA: min-h-[40px] eklenerek tüm başlıkların kapladığı alan eşitlendi */}
+              <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2 min-h-[40px]">
+                {title}
+              </p>
+              
               <h3 className="text-5xl font-black text-slate-900 tracking-tighter">
                 {loading ? <span className="animate-pulse text-slate-300">...</span> : value}
               </h3>
             </div>
-            {/* YENİ: shrink-0 eklenerek yazının ikonu sıkıştırması engellendi */}
+            
             <div className={`p-4 rounded-2xl ${colorClasses[color]} transition-colors duration-300 relative z-10 shrink-0`}>
               <Icon className="w-7 h-7" />
             </div>
           </div>
           
-          {/* YENİ: mt-auto (margin-top: auto) eklenerek alt link her zaman kutunun en dibine itildi */}
           <div className={`mt-auto inline-flex items-center text-sm font-bold ${colorClasses[color].split(' ')[0]} opacity-80 group-hover:opacity-100 transition-opacity`}>
             {linkText} <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform" />
           </div>
