@@ -8,9 +8,9 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // YENİ: formData içine phone eklendi
+  // YENİ: countryCode state'e eklendi ve varsayılan +90 atandı
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", password: "", role: "USER" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", countryCode: "+90", password: "", role: "USER" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -40,19 +40,28 @@ export default function CustomersPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // API'ye gönderilecek veriyi hazırlıyoruz (Ülke kodu ve numarayı birleştirerek)
+    const submitData = {
+      name: formData.name,
+      email: formData.email,
+      phone: `${formData.countryCode} ${formData.phone}`,
+      password: formData.password,
+      role: formData.role
+    };
+
     try {
       const res = await fetch("/api/admin/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData), // Düzenlenmiş veriyi gönderiyoruz
       });
 
       const data = await res.json();
 
       if (res.ok) {
         setIsModalOpen(false);
-        // Form sıfırlanırken phone da sıfırlanıyor
-        setFormData({ name: "", email: "", phone: "", password: "", role: "USER" });
+        // Formu tamamen sıfırla
+        setFormData({ name: "", email: "", phone: "", countryCode: "+90", password: "", role: "USER" });
         fetchCustomers();
       } else {
         setErrorMessage(data.error || "Kayıt sırasında bir hata oluştu.");
@@ -165,7 +174,6 @@ export default function CustomersPage() {
                     <td className="p-4 text-gray-600">
                       <div className="flex flex-col gap-1">
                         <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {c.email}</span>
-                        {/* Tabloya Telefon Eklendi */}
                         <span className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-3.5 h-3.5 text-gray-400" /> {c.phone || "Belirtilmemiş"}</span>
                       </div>
                     </td>
@@ -232,14 +240,34 @@ export default function CustomersPage() {
                 />
               </div>
               
-              {/* YENİ: Telefon Numarası Girişi */}
+              {/* YENİ: Ülke Kodlu ve Sınırlamalı Telefon Girişi */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon Numarası *</label>
-                <input 
-                  type="tel" required placeholder="Örn: 0555 555 5555" value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C]"
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon Numaranız *</label>
+                <div className="flex gap-2">
+                  <select 
+                    value={formData.countryCode}
+                    onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                    className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] bg-white text-sm font-medium shadow-sm"
+                  >
+                    <option value="+90">+90</option>
+                    <option value="+1">+1</option>
+                    <option value="+44">+44</option>
+                    <option value="+49">+49</option>
+                  </select>
+                  <input 
+                    type="tel" 
+                    required
+                    maxLength="10"
+                    placeholder="555 123 4567"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      // Sadece rakam girişine izin ver
+                      const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                      if (onlyNums.length <= 10) setFormData({ ...formData, phone: onlyNums });
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#02529C] text-sm shadow-sm"
+                  />
+                </div>
               </div>
 
               <div>
