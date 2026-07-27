@@ -35,9 +35,17 @@ export default function AdminSettingsPage() {
     compactMode: false,
   });
 
+  // Dinamik Vurgu Renkleri Haritası
+  const themeColors = {
+    blue: { bg: "bg-[#02529C]", text: "text-[#02529C]", border: "border-[#02529C]", focus: "focus:border-[#02529C]", hoverBg: "hover:bg-blue-800" },
+    amber: { bg: "bg-amber-500", text: "text-amber-500", border: "border-amber-500", focus: "focus:border-amber-500", hoverBg: "hover:bg-amber-600" },
+    emerald: { bg: "bg-emerald-600", text: "text-emerald-600", border: "border-emerald-600", focus: "focus:border-emerald-600", hoverBg: "hover:bg-emerald-700" }
+  };
+
+  const currentTheme = themeColors[themeForm.accent] || themeColors.blue;
+
   // 1. Sayfa yüklendiğinde ayarları ve temayı çek
   useEffect(() => {
-    // Tema tercihini localStorage'dan anında oku ve uygula
     const savedTheme = localStorage.getItem("sozen_admin_theme");
     if (savedTheme) {
       try {
@@ -70,7 +78,6 @@ export default function AdminSettingsPage() {
     fetchSettings();
   }, []);
 
-  // Diğer sekmeler (Profil, Kurumsal, Bildirim) için manuel kaydetme
   const handleSave = async (e) => {
     e.preventDefault();
     try {
@@ -96,22 +103,17 @@ export default function AdminSettingsPage() {
     }
   };
 
-  // YENİ: Tema sekmesindeki butonlar için anlık (real-time) güncelleme fonksiyonu
   const handleThemeChange = (key, value) => {
     const updatedTheme = { ...themeForm, [key]: value };
-    setThemeForm(updatedTheme); // Ekranda anında seçili butonu değiştirir
-
-    // Tarayıcı hafızasına anında kaydet
+    setThemeForm(updatedTheme);
     localStorage.setItem("sozen_admin_theme", JSON.stringify(updatedTheme));
 
-    // Dark mod için HTML sınıfını anında değiştir
     if (key === "mode") {
       if (value === "dark") {
         document.documentElement.classList.add("dark");
       } else if (value === "light") {
         document.documentElement.classList.remove("dark");
       } else {
-        // Sistem tercihine göre (Kullanıcı bilgisayarı karanlık moddaysa otomatik karanlık yapar)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
           document.documentElement.classList.add("dark");
         } else {
@@ -120,95 +122,95 @@ export default function AdminSettingsPage() {
       }
     }
 
-    // İsteğe bağlı: Ekranda küçük bir anlık bildirim gösterelim
     setSuccessMessage("Tema tercihi anında uygulandı!");
     setTimeout(() => setSuccessMessage(""), 2000);
 
-    // İsteğe bağlı: Veritabanına da arka planda sessizce kaydedebiliriz (kullanıcıyı bekletmeden)
     fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ themeForm: updatedTheme }),
-    }).catch(err => console.error("Tema veritabanına kaydedilemedi:", err));
+    }).catch(err => console.error("Tema kaydedilemedi:", err));
   };
 
   if (loading) return <div className="p-8 text-slate-500 font-medium">Ayarlar yükleniyor...</div>;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto font-sans selection:bg-[#02529C] selection:text-white">
+    <div className="p-8 max-w-7xl mx-auto font-sans transition-colors duration-300 dark:bg-slate-900 min-h-screen">
       
       {/* Sayfa Başlığı */}
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-          <Shield className="w-8 h-8 text-[#02529C]" /> Sistem Ayarları
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 transition-colors">
+          <Shield className={`w-8 h-8 ${currentTheme.text}`} /> Sistem Ayarları
         </h1>
-        <p className="text-slate-500 text-sm mt-1">Yönetici profili, kurumsal bilgiler, bildirimler ve tema tercihlerinizi buradan yönetin.</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors">Yönetici profili, kurumsal bilgiler, bildirimler ve tema tercihlerinizi buradan yönetin.</p>
       </div>
 
       {/* Başarı Mesajı */}
-      <div className={`mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-2xl flex items-center gap-3 transition-all duration-300 ${successMessage ? 'opacity-100' : 'opacity-0 h-0 p-0 m-0 overflow-hidden border-0'}`}>
+      <div className={`mb-6 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-6 py-4 rounded-2xl flex items-center gap-3 transition-all duration-300 ${successMessage ? 'opacity-100' : 'opacity-0 h-0 p-0 m-0 overflow-hidden border-0'}`}>
         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
         <span className="font-bold text-sm">{successMessage}</span>
       </div>
 
-      {/* Sekmeli Yapı (Tabs Layout) */}
+      {/* Sekmeli Yapı */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Sol Menü / Sekmeler */}
         <div className="lg:col-span-4 space-y-2">
-          <div className="bg-white p-3 rounded-3xl shadow-sm border border-slate-100 space-y-1">
-            <button onClick={() => setActiveTab("profile")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "profile" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"}`}>
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-1 transition-colors">
+            
+            <button onClick={() => setActiveTab("profile")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "profile" ? `${currentTheme.bg} text-white shadow-md` : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}>
               <User className="w-5 h-5" /> Profil ve Güvenlik
             </button>
-            <button onClick={() => setActiveTab("company")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "company" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"}`}>
+            <button onClick={() => setActiveTab("company")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "company" ? `${currentTheme.bg} text-white shadow-md` : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}>
               <Building2 className="w-5 h-5" /> Kurumsal Bilgiler
             </button>
-            <button onClick={() => setActiveTab("notifications")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "notifications" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"}`}>
+            <button onClick={() => setActiveTab("notifications")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "notifications" ? `${currentTheme.bg} text-white shadow-md` : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}>
               <Bell className="w-5 h-5" /> Bildirim Tercihleri
             </button>
-            <button onClick={() => setActiveTab("theme")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "theme" ? "bg-[#02529C] text-white shadow-md shadow-blue-900/10" : "text-slate-600 hover:bg-slate-50"}`}>
+            <button onClick={() => setActiveTab("theme")} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "theme" ? `${currentTheme.bg} text-white shadow-md` : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}>
               <Palette className="w-5 h-5" /> Görünüm ve Tema
             </button>
+            
           </div>
         </div>
 
         {/* Sağ İçerik Alanı */}
         <div className="lg:col-span-8">
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
             
             {/* 1. SEKME: PROFİL VE GÜVENLİK */}
             {activeTab === "profile" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 mb-1">Profil ve Güvenlik</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Profil ve Güvenlik</h2>
                   <p className="text-xs text-slate-400 font-medium">Yönetici hesap bilgilerinizi ve şifrenizi güncelleyin.</p>
                 </div>
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Görüntülenen Adınız</label>
-                    <input type="text" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" required />
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Görüntülenen Adınız</label>
+                    <input type="text" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} required />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">E-posta Adresiniz</label>
-                    <input type="email" value={profileForm.email} disabled className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-400 bg-slate-100 cursor-not-allowed" />
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">E-posta Adresiniz</label>
+                    <input type="email" value={profileForm.email} disabled className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 cursor-not-allowed transition-colors" />
                   </div>
-                  <div className="pt-4 border-t border-slate-100">
-                    <h3 className="text-sm font-black text-slate-900 mb-4">Şifre Değiştirme</h3>
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4">Şifre Değiştirme</h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Mevcut Şifreniz</label>
-                        <input type="password" placeholder="••••••••" value={profileForm.currentPassword} onChange={(e) => setProfileForm({ ...profileForm, currentPassword: e.target.value })} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" />
+                        <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Mevcut Şifreniz</label>
+                        <input type="password" placeholder="••••••••" value={profileForm.currentPassword} onChange={(e) => setProfileForm({ ...profileForm, currentPassword: e.target.value })} className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} />
                       </div>
                       <div>
-                        <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Yeni Şifreniz</label>
-                        <input type="password" placeholder="Yeni şifrenizi girin" value={profileForm.newPassword} onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" />
+                        <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Yeni Şifreniz</label>
+                        <input type="password" placeholder="Yeni şifrenizi girin" value={profileForm.newPassword} onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })} className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} />
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">
-                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
+                  <button type="submit" className={`${currentTheme.bg} ${currentTheme.hoverBg} text-white font-bold px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 text-sm`}>
                     <Save className="w-4 h-4" /> Değişiklikleri Kaydet
                   </button>
                 </div>
@@ -219,41 +221,41 @@ export default function AdminSettingsPage() {
             {activeTab === "company" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 mb-1">Kurumsal Bilgiler</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Kurumsal Bilgiler</h2>
                   <p className="text-xs text-slate-400 font-medium">Web sitesinde ve PDF raporlarında kullanılan resmi şirket bilgileri.</p>
                 </div>
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Şirket Resmi Unvanı</label>
-                    <input type="text" value={companyForm.companyName} onChange={(e) => setCompanyForm({ ...companyForm, companyName: e.target.value })} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" required />
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Şirket Resmi Unvanı</label>
+                    <input type="text" value={companyForm.companyName} onChange={(e) => setCompanyForm({ ...companyForm, companyName: e.target.value })} className={`w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} required />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Destek E-Postası</label>
+                      <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Destek E-Postası</label>
                       <div className="relative">
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input type="email" value={companyForm.supportEmail} onChange={(e) => setCompanyForm({ ...companyForm, supportEmail: e.target.value })} className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" required />
+                        <input type="email" value={companyForm.supportEmail} onChange={(e) => setCompanyForm({ ...companyForm, supportEmail: e.target.value })} className={`w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} required />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Çağrı Merkezi / Telefon</label>
+                      <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Çağrı Merkezi / Telefon</label>
                       <div className="relative">
                         <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input type="text" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C]" required />
+                        <input type="text" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className={`w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} transition-colors`} required />
                       </div>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Merkez Adres Bilgisi</label>
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Merkez Adres Bilgisi</label>
                     <div className="relative">
                       <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                      <textarea rows={3} value={companyForm.address} onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })} className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-slate-50/50 focus:outline-none focus:border-[#02529C] resize-none" required></textarea>
+                      <textarea rows={3} value={companyForm.address} onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })} className={`w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none ${currentTheme.focus} resize-none transition-colors`} required></textarea>
                     </div>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">
-                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
+                  <button type="submit" className={`${currentTheme.bg} ${currentTheme.hoverBg} text-white font-bold px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 text-sm`}>
                     <Save className="w-4 h-4" /> Değişiklikleri Kaydet
                   </button>
                 </div>
@@ -264,10 +266,10 @@ export default function AdminSettingsPage() {
             {activeTab === "notifications" && (
               <form onSubmit={handleSave} className="space-y-6 animate-in fade-in duration-300">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 mb-1">Bildirim Tercihleri</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Bildirim Tercihleri</h2>
                   <p className="text-xs text-slate-400 font-medium">Sistemde gerçekleşen olaylar için bilgilendirme kanallarını yapılandırın.</p>
                 </div>
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
                 <div className="space-y-4">
                   {[
                     { key: "emailOnAppointment", title: "Yeni Randevu Talebi", desc: "Müşteriler yeni bir randevu talebi oluşturduğunda e-posta al." },
@@ -275,39 +277,38 @@ export default function AdminSettingsPage() {
                     { key: "emailOnQuote", title: "Fiyat Teklifi İstekleri", desc: "Web sitesi hesaplayıcısından yeni bir teklif talebi geldiğinde uyar." },
                     { key: "smsAlerts", title: "Acil Durum SMS Uyarıları", desc: "Kritik sistem güncellemeleri ve acil destek taleplerinde SMS bildirimi gönder." },
                   ].map((item) => (
-                    <div key={item.key} className="flex items-start justify-between p-4 rounded-2xl border border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <div key={item.key} className="flex items-start justify-between p-4 rounded-2xl border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <div className="pr-4">
-                        <h4 className="text-sm font-black text-slate-900 mb-0.5">{item.title}</h4>
-                        <p className="text-xs text-slate-500 font-medium">{item.desc}</p>
+                        <h4 className="text-sm font-black text-slate-900 dark:text-white mb-0.5">{item.title}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{item.desc}</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
                         <input type="checkbox" checked={notificationForm[item.key]} onChange={(e) => setNotificationForm({ ...notificationForm, [item.key]: e.target.checked })} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#02529C]"></div>
+                        <div className={`w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:${currentTheme.bg.replace('bg-', '')} bg-emerald-500`}></div>
                       </label>
                     </div>
                   ))}
                 </div>
                 <div className="pt-4 flex justify-end">
-                  <button type="submit" className="bg-[#02529C] hover:bg-blue-800 text-white font-bold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2 text-sm">
+                  <button type="submit" className={`${currentTheme.bg} ${currentTheme.hoverBg} text-white font-bold px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 text-sm`}>
                     <Save className="w-4 h-4" /> Tercihleri Kaydet
                   </button>
                 </div>
               </form>
             )}
 
-            {/* 4. SEKME: GÖRÜNÜM VE TEMA (ANLIK UYGULANAN) */}
+            {/* 4. SEKME: GÖRÜNÜM VE TEMA */}
             {activeTab === "theme" && (
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 mb-1">Görünüm ve Tema</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Görünüm ve Tema</h2>
                   <p className="text-xs text-slate-400 font-medium">Yönetim paneli arayüz temasını ve renk modunu özelleştirin. Seçimleriniz anında uygulanır.</p>
                 </div>
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
                 
                 <div className="space-y-6">
-                  {/* Tema Modu Seçimi */}
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Panel Tema Modu</label>
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Panel Tema Modu</label>
                     <div className="grid grid-cols-3 gap-4">
                       {[
                         { id: "light", label: "Aydınlık", icon: Sun },
@@ -321,7 +322,7 @@ export default function AdminSettingsPage() {
                             key={item.id}
                             onClick={() => handleThemeChange("mode", item.id)}
                             className={`cursor-pointer p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                              isSelected ? "border-[#02529C] bg-blue-50/50 text-[#02529C]" : "border-slate-100 bg-slate-50/50 text-slate-600 hover:border-slate-200"
+                              isSelected ? `${currentTheme.border} ${currentTheme.text} bg-slate-50 dark:bg-slate-900/50` : "border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-200 dark:hover:border-slate-600"
                             }`}
                           >
                             <IconComponent className="w-6 h-6" />
@@ -332,9 +333,8 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Vurgu Rengi Seçimi */}
                   <div>
-                    <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Kurumsal Vurgu Rengi</label>
+                    <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Kurumsal Vurgu Rengi</label>
                     <div className="flex gap-4">
                       {[
                         { id: "blue", name: "Sözen Mavi", bg: "bg-[#02529C]" },
@@ -346,7 +346,7 @@ export default function AdminSettingsPage() {
                           type="button"
                           onClick={() => handleThemeChange("accent", color.id)}
                           className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                            themeForm.accent === color.id ? "border-slate-900 bg-slate-900 text-white shadow-md" : "border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
+                            themeForm.accent === color.id ? "border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md" : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-200 dark:hover:border-slate-600"
                           }`}
                         >
                           <span className={`w-3.5 h-3.5 rounded-full ${color.bg}`}></span>
@@ -356,11 +356,10 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Kompakt Görünüm Toggle */}
-                  <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 transition-colors">
                     <div>
-                      <h4 className="text-sm font-black text-slate-900 mb-0.5">Kompakt Tablo Görünümü</h4>
-                      <p className="text-xs text-slate-500 font-medium">Veri listelerinde daha az boşluk bırakarak ekrana daha fazla içerik sığdır.</p>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white mb-0.5">Kompakt Tablo Görünümü</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Veri listelerinde daha az boşluk bırakarak ekrana daha fazla içerik sığdır.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
                       <input
@@ -369,12 +368,10 @@ export default function AdminSettingsPage() {
                         onChange={(e) => handleThemeChange("compactMode", e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#02529C]"></div>
+                      <div className={`w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:${currentTheme.bg.replace('bg-', '')} bg-emerald-500`}></div>
                     </label>
                   </div>
                 </div>
-                
-                {/* DİKKAT: Tema sekmesinden 'Kaydet' butonunu kaldırdık, çünkü handleThemeChange ile tıklanan her ayar anında devreye giriyor. */}
               </div>
             )}
 
