@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { 
   FolderKanban, CalendarDays, LogOut, FileDown, FileText, 
   Download, PlusCircle, X, Clock, CheckCircle2, MessageSquare, 
-  Send, Image as ImageIcon, Check // YENİ: Check ikonu eklendi
+  Send, Image as ImageIcon, Check, AlertCircle 
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -17,6 +17,9 @@ export default function CustomerPortal() {
   
   const [data, setData] = useState({ projects: [], appointments: [] });
   const [loading, setLoading] = useState(true);
+
+  // YENİ: Sistem Ayarları State'i (Admin panelinden gelecek)
+  const [sysSettings, setSysSettings] = useState({ workHourStart: "08:30", workHourEnd: "18:30", allowWeekend: false });
 
   // Randevu Formu State'leri
   const [showForm, setShowForm] = useState(false);
@@ -44,6 +47,7 @@ export default function CustomerPortal() {
       router.push("/login");
     } else if (status === "authenticated") {
       fetchCustomerData();
+      fetchSystemSettings(); // YENİ: Ayarları yükle
     }
   }, [status]);
 
@@ -61,6 +65,23 @@ export default function CustomerPortal() {
     }
   };
 
+  // YENİ: Admin ayarlarını veritabanından çekme fonksiyonu
+  const fetchSystemSettings = async () => {
+    try {
+      const res = await fetch("/api/admin/settings");
+      if (res.ok) {
+        const result = await res.json();
+        setSysSettings({
+          workHourStart: result.workHourStart || "08:30",
+          workHourEnd: result.workHourEnd || "18:30",
+          allowWeekend: result.allowWeekend ?? false
+        });
+      }
+    } catch (error) {
+      console.error("Ayarlar çekilemedi", error);
+    }
+  };
+
   const handleApptSubmit = async (e) => {
     e.preventDefault();
     
@@ -72,21 +93,28 @@ export default function CustomerPortal() {
       return;
     }
 
-    const gun = secilenTarih.getDay(); 
+    const gun = secilenTarih.getDay(); // 0: Pazar, 6: Cumartesi
     const saat = secilenTarih.getHours();
     const dakika = secilenTarih.getMinutes();
     
     const toplamDakika = (saat * 60) + dakika;
-    const mesaiBaslangic = (8 * 60) + 30; 
-    const mesaiBitis = (18 * 60) + 30; 
+    
+    // YENİ: Admin panelindeki ayarları dakikaya çevirip dinamik kontrol yapıyoruz
+    const [startHour, startMin] = sysSettings.workHourStart.split(':').map(Number);
+    const [endHour, endMin] = sysSettings.workHourEnd.split(':').map(Number);
+    
+    const mesaiBaslangic = (startHour * 60) + startMin; 
+    const mesaiBitis = (endHour * 60) + endMin; 
 
-    if (gun === 0) {
+    // YENİ: Hafta sonu izni kapalıysa ve gün Pazar (0) ise engelle
+    if (!sysSettings.allowWeekend && gun === 0) {
       alert("Hata: Pazar günleri hizmet verememekteyiz. Lütfen Pazartesi - Cumartesi arası bir gün seçiniz.");
       return;
     }
 
+    // YENİ: Dinamik saat aralığı kontrolü
     if (toplamDakika < mesaiBaslangic || toplamDakika > mesaiBitis) {
-      alert("Hata: Randevu talepleri sadece mesai saatlerimiz içinde (08:30 - 18:30) oluşturulabilir. Lütfen bu aralıkta bir saat seçiniz.");
+      alert(`Hata: Randevu talepleri sadece mesai saatlerimiz içinde (${sysSettings.workHourStart} - ${sysSettings.workHourEnd}) oluşturulabilir. Lütfen bu aralıkta bir saat seçiniz.`);
       return;
     }
 
@@ -260,28 +288,10 @@ export default function CustomerPortal() {
         ],
       ],
       theme: 'plain',
-      styles: { 
-        font: 'helvetica',
-        fontSize: 10, 
-        cellPadding: 6, 
-        textColor: [51, 65, 85] 
-      },
-      headStyles: { 
-        fillColor: [255, 255, 255], 
-        textColor: [2, 82, 156], 
-        fontStyle: 'bold', 
-        lineWidth: { bottom: 0.5 }, 
-        lineColor: [200, 200, 200] 
-      },
-      bodyStyles: {
-        lineWidth: { bottom: 0.5 }, 
-        lineColor: [241, 245, 249]
-      },
-      columnStyles: {
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 40, halign: 'center' },
-        2: { cellWidth: 30, halign: 'center', fontStyle: 'bold', textColor: [2, 82, 156] },
-      },
+      styles: { font: 'helvetica', fontSize: 10, cellPadding: 6, textColor: [51, 65, 85] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [2, 82, 156], fontStyle: 'bold', lineWidth: { bottom: 0.5 }, lineColor: [200, 200, 200] },
+      bodyStyles: { lineWidth: { bottom: 0.5 }, lineColor: [241, 245, 249] },
+      columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 40, halign: 'center' }, 2: { cellWidth: 30, halign: 'center', fontStyle: 'bold', textColor: [2, 82, 156] } },
     });
 
     const finalY = doc.lastAutoTable.finalY || 140;
@@ -311,8 +321,6 @@ export default function CustomerPortal() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 font-sans">
-      
-      {/* ÜST BİLGİ VE ÇIKIŞ ÇUBUĞU */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -336,7 +344,6 @@ export default function CustomerPortal() {
         </div>
       </header>
 
-      {/* ANA İÇERİK ALANI */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -358,11 +365,7 @@ export default function CustomerPortal() {
                     
                     <div className="w-full sm:w-1/3 h-48 sm:h-auto relative bg-gray-50 overflow-hidden shrink-0 border-b sm:border-b-0 sm:border-r border-gray-100">
                       {project.imageUrl ? (
-                        <img 
-                          src={project.imageUrl} 
-                          alt={project.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                        <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-gray-300">
                           <ImageIcon className="w-12 h-12 mb-2" />
@@ -394,19 +397,13 @@ export default function CustomerPortal() {
                           <span>Teslimat</span>
                         </div>
                         <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden shadow-inner relative mb-6">
-                          <div 
-                            className="bg-gradient-to-r from-[#02529C] to-blue-400 h-full rounded-full transition-all duration-1000 ease-out relative"
-                            style={{ width: `${project.progress}%` }}
-                          >
+                          <div className="bg-gradient-to-r from-[#02529C] to-blue-400 h-full rounded-full transition-all duration-1000 ease-out relative" style={{ width: `${project.progress}%` }}>
                             <div className="absolute top-0 right-0 bottom-0 left-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:20px_20px] animate-[shimmer_2s_linear_infinite]"></div>
                           </div>
                         </div>
 
                         <div className="flex justify-end pt-4 border-t border-gray-100">
-                          <button 
-                            onClick={() => generatePDF(project)} 
-                            className="flex items-center gap-2 text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl hover:border-[#02529C] hover:text-[#02529C] hover:bg-blue-50 transition-all shadow-sm hover:shadow"
-                          >
+                          <button onClick={() => generatePDF(project)} className="flex items-center gap-2 text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl hover:border-[#02529C] hover:text-[#02529C] hover:bg-blue-50 transition-all shadow-sm hover:shadow">
                             <FileDown className="w-4 h-4" /> Raporu İndir
                           </button>
                         </div>
@@ -418,7 +415,7 @@ export default function CustomerPortal() {
             )}
           </div>
 
-          {/* SAĞ KOLON: RANDEVULAR, BİZE ULAŞIN VE BELGELER */}
+          {/* SAĞ KOLON */}
           <div className="space-y-6">
             
             {/* 1. Randevular Widget'ı */}
@@ -428,10 +425,7 @@ export default function CustomerPortal() {
                   <CalendarDays className="w-5 h-5 text-[#02529C]" /> Randevularınız
                 </h3>
                 {!showForm && (
-                  <button 
-                    onClick={() => setShowForm(true)}
-                    className="text-[#02529C] text-sm font-bold hover:underline flex items-center gap-1"
-                  >
+                  <button onClick={() => setShowForm(true)} className="text-[#02529C] text-sm font-bold hover:underline flex items-center gap-1">
                     <PlusCircle className="w-4 h-4" /> Yeni
                   </button>
                 )}
@@ -441,31 +435,21 @@ export default function CustomerPortal() {
                 <form onSubmit={handleApptSubmit} className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 mb-4 animate-in fade-in zoom-in duration-200">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-[#02529C]">Yeni Talep</h3>
-                    <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm">
-                      <X className="w-4 h-4" />
-                    </button>
+                    <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm"><X className="w-4 h-4" /></button>
                   </div>
-                  <input 
-                    type="text" 
-                    placeholder="Görüşme Konusu (Örn: Saha Keşfi)" 
-                    value={newAppt.subject}
-                    onChange={(e) => setNewAppt({...newAppt, subject: e.target.value})}
-                    className="w-full text-sm px-3 py-2.5 mb-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]"
-                    required
-                  />
-                  <input 
-                    type="datetime-local" 
-                    value={newAppt.date}
-                    min={minDateTime}
-                    onChange={(e) => setNewAppt({...newAppt, date: e.target.value})}
-                    className="w-full text-sm px-3 py-2.5 mb-4 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]"
-                    required
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="w-full bg-[#02529C] text-white text-sm font-bold py-3 rounded-xl hover:bg-blue-800 transition-colors disabled:opacity-50"
-                  >
+                  
+                  {/* YENİ: Dinamik Mesai Saatleri Bilgisi */}
+                  <div className="mb-3 p-3 bg-white rounded-xl border border-blue-100 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                    <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
+                      Lütfen sadece <strong>{sysSettings.workHourStart} - {sysSettings.workHourEnd}</strong> saatleri arasında bir randevu seçin. 
+                      {!sysSettings.allowWeekend && " (Pazar günleri kapalıyız)"}
+                    </p>
+                  </div>
+
+                  <input type="text" placeholder="Görüşme Konusu (Örn: Saha Keşfi)" value={newAppt.subject} onChange={(e) => setNewAppt({...newAppt, subject: e.target.value})} className="w-full text-sm px-3 py-2.5 mb-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" required />
+                  <input type="datetime-local" value={newAppt.date} min={minDateTime} onChange={(e) => setNewAppt({...newAppt, date: e.target.value})} className="w-full text-sm px-3 py-2.5 mb-4 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" required />
+                  <button type="submit" disabled={isSubmitting} className="w-full bg-[#02529C] text-white text-sm font-bold py-3 rounded-xl hover:bg-blue-800 transition-colors disabled:opacity-50">
                     {isSubmitting ? "Gönderiliyor..." : "Talebi Gönder"}
                   </button>
                 </form>
@@ -478,57 +462,36 @@ export default function CustomerPortal() {
               ) : (
                 <div className="space-y-4">
                   {data.appointments.map((app) => (
-                    <div key={app.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div key={app.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start mb-5 border-b border-gray-100 pb-4">
                         <div>
                           <h3 className="text-base font-black text-gray-900">{app.subject}</h3>
-                          <p className="text-xs font-medium text-gray-500 mt-1">
-                            Randevu Tarihi: {new Date(app.date).toLocaleDateString("tr-TR")}
-                          </p>
+                          <p className="text-xs font-medium text-gray-500 mt-1">Randevu Tarihi: {new Date(app.date).toLocaleDateString("tr-TR")}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
-                          app.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 
-                          app.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                          app.status === 'REJECTED' ? 'bg-red-50 text-red-700 border-red-200' :
-                          'bg-yellow-50 text-yellow-700 border-yellow-200'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${app.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : app.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-200' : app.status === 'REJECTED' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
                           {getStatusText(app.status)}
                         </span>
                       </div>
-
-                      {/* ETKİLEŞİMLİ ZAMAN ÇİZELGESİ (TIMELINE) */}
                       <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:w-0.5 before:bg-gray-100">
-                        
-                        {/* 1. Adım: Talep Oluşturuldu */}
                         <div className="relative flex items-center justify-between group">
-                          <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-[#02529C] text-white shadow shrink-0 absolute -left-3">
-                            <Check className="w-3 h-3" />
-                          </div>
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-[#02529C] text-white shadow shrink-0 absolute -left-3"><Check className="w-3 h-3" /></div>
                           <div className="w-full ml-6 p-3 rounded-xl bg-gray-50 border border-gray-100">
                             <div className="flex items-center gap-2 mb-1">
                               <CalendarDays className="w-4 h-4 text-gray-400" />
                               <h4 className="font-bold text-xs text-gray-900">Talep İletildi</h4>
                             </div>
-                            <p className="text-[10px] text-gray-500 font-medium">
-                              {new Date(app.createdAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}
-                            </p>
+                            <p className="text-[10px] text-gray-500 font-medium">{new Date(app.createdAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}</p>
                           </div>
                         </div>
-
-                        {/* 2. Adım: Tamamlanma Durumu (Sadece COMPLETED ise görünür) */}
                         {app.status === "COMPLETED" && app.completedAt && (
                           <div className="relative flex items-center justify-between group animate-in slide-in-from-top-2 duration-300">
-                            <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-green-500 text-white shadow shrink-0 absolute -left-3">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            </div>
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-green-500 text-white shadow shrink-0 absolute -left-3"><CheckCircle2 className="w-3.5 h-3.5" /></div>
                             <div className="w-full ml-6 p-3 rounded-xl bg-green-50/50 border border-green-100">
                               <div className="flex items-center gap-2 mb-1">
                                 <CheckCircle2 className="w-4 h-4 text-green-600" />
                                 <h4 className="font-bold text-xs text-green-700">Hizmet Tamamlandı</h4>
                               </div>
-                              <p className="text-[10px] text-green-600/70 font-medium">
-                                İşlem Saati: {new Date(app.completedAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}
-                              </p>
+                              <p className="text-[10px] text-green-600/70 font-medium">İşlem Saati: {new Date(app.completedAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}</p>
                             </div>
                           </div>
                         )}
@@ -542,10 +505,7 @@ export default function CustomerPortal() {
             {/* 2. Yönetime Mesaj Gönder Widget'ı */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
-              
-              <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-1 relative z-10">
-                <MessageSquare className="w-5 h-5 text-[#02529C]" /> Bize Ulaşın
-              </h3>
+              <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-1 relative z-10"><MessageSquare className="w-5 h-5 text-[#02529C]" /> Bize Ulaşın</h3>
               <p className="text-xs font-medium text-gray-500 mb-4 relative z-10">Projenizle ilgili her türlü soruyu direkt yönetime iletebilirsiniz.</p>
 
               {messageSuccess ? (
@@ -557,45 +517,20 @@ export default function CustomerPortal() {
               ) : (
                 <form onSubmit={handleSendMessage} className="space-y-3 relative z-10">
                   <div className="flex flex-col gap-3">
-                    <select 
-                      value={messageForm.subject}
-                      onChange={(e) => setMessageForm({...messageForm, subject: e.target.value})}
-                      className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50"
-                    >
+                    <select value={messageForm.subject} onChange={(e) => setMessageForm({...messageForm, subject: e.target.value})} className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50">
                       <option value="Proje Hakkında Soru">Proje Hakkında Soru</option>
                       <option value="Teknik Destek">Teknik Destek</option>
                       <option value="Ek Talep">Ek Talep / Revizyon</option>
                       <option value="Diğer Konular">Diğer Konular</option>
                     </select>
-
                     {messageForm.subject === "Diğer Konular" && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <input
-                          type="text"
-                          required
-                          value={messageForm.otherSubjectDetail}
-                          onChange={(e) => setMessageForm({ ...messageForm, otherSubjectDetail: e.target.value })}
-                          placeholder="Lütfen konuyu kısaca belirtiniz..."
-                          className="w-full text-sm font-medium px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-blue-50/50 shadow-sm transition-all"
-                        />
+                        <input type="text" required value={messageForm.otherSubjectDetail} onChange={(e) => setMessageForm({ ...messageForm, otherSubjectDetail: e.target.value })} placeholder="Lütfen konuyu kısaca belirtiniz..." className="w-full text-sm font-medium px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-blue-50/50 shadow-sm transition-all" />
                       </div>
                     )}
                   </div>
-                  
-                  <textarea 
-                    required
-                    rows={3}
-                    placeholder="Mesajınızı buraya yazınız..."
-                    value={messageForm.message}
-                    onChange={(e) => setMessageForm({...messageForm, message: e.target.value})}
-                    className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 resize-none"
-                  ></textarea>
-                  
-                  <button 
-                    type="submit"
-                    disabled={isSending}
-                    className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70 shadow-sm"
-                  >
+                  <textarea required rows={3} placeholder="Mesajınızı buraya yazınız..." value={messageForm.message} onChange={(e) => setMessageForm({...messageForm, message: e.target.value})} className="w-full text-sm font-medium px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C] bg-gray-50 resize-none"></textarea>
+                  <button type="submit" disabled={isSending} className="w-full bg-[#02529C] hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70 shadow-sm">
                     {isSending ? "Gönderiliyor..." : <><Send className="w-4 h-4" /> Yönetime Gönder</>}
                   </button>
                 </form>
@@ -604,9 +539,7 @@ export default function CustomerPortal() {
 
             {/* 3. Belgeler Widget'ı */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-[#02529C]" /> Resmi Belgeler
-              </h3>
+              <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4"><FileText className="w-5 h-5 text-[#02529C]" /> Resmi Belgeler</h3>
               <div className="space-y-3">
                 {[
                   { name: "Sistem Kullanım Kılavuzu", size: "2.4 MB", type: "PDF" },
@@ -631,11 +564,7 @@ export default function CustomerPortal() {
         </div>
       </main>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes shimmer {
-          100% { background-position: 40px 0; }
-        }
-      `}} />
+      <style dangerouslySetInnerHTML={{__html: `@keyframes shimmer { 100% { background-position: 40px 0; } }`}} />
     </div>
   );
 }
