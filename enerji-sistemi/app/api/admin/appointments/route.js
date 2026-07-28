@@ -30,9 +30,15 @@ export async function PATCH(request) {
       return NextResponse.json({ error: "Randevu ID ve Status zorunludur." }, { status: 400 });
     }
 
+    // Eğer randevu tamamlanıyorsa, o anın tarihini ve saatini sisteme kaydet
+    const updateData = { status };
+    if (status === "COMPLETED") {
+      updateData.completedAt = new Date();
+    }
+
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
-      data: { status }, // "PENDING", "APPROVED", "REJECTED", "COMPLETED"
+      data: updateData, 
     });
 
     return NextResponse.json(updatedAppointment, { status: 200 });

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { 
   FolderKanban, CalendarDays, LogOut, FileDown, FileText, 
   Download, PlusCircle, X, Clock, CheckCircle2, MessageSquare, 
-  Send, Image as ImageIcon 
+  Send, Image as ImageIcon, Check // YENİ: Check ikonu eklendi
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -153,7 +153,6 @@ export default function CustomerPortal() {
     }
   };
 
-  // --- TÜRKÇE KARAKTER DÜZELTİCİ ---
   const temizleTR = (text) => {
     if (!text) return "";
     return String(text)
@@ -165,13 +164,11 @@ export default function CustomerPortal() {
       .replace(/ü/g, 'u').replace(/Ü/g, 'U');
   };
 
-  // ----- GÜNCELLENMİŞ DETAYLI PDF MOTORU (KURUMSAL MÜŞTERİ NO EKLENDİ) -----
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
 
-    // 1. KURUMSAL ÜST BİLGİ (HEADER)
     doc.setFillColor(2, 82, 156); 
     doc.rect(0, 0, pageWidth, 35, 'F');
     doc.setFillColor(255, 193, 7); 
@@ -186,19 +183,16 @@ export default function CustomerPortal() {
     doc.setFont("helvetica", "normal");
     doc.text(temizleTR("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri"), 14, 28);
 
-    // 2. RAPOR BAŞLIĞI
     doc.setTextColor(30, 41, 59); 
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.text(temizleTR("PROJE DURUM RAPORU"), 14, 52);
 
-    // 3. MODERN VE DETAYLI BİLGİ KARTLARI (GRID)
     doc.setFillColor(248, 250, 252); 
     doc.setDrawColor(226, 232, 240); 
     doc.roundedRect(14, 60, 88, 65, 3, 3, 'FD'); 
     doc.roundedRect(108, 60, 88, 65, 3, 3, 'FD'); 
 
-    // --- Sol Kart: Müşteri Bilgileri ---
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139); 
     doc.setFont("helvetica", "bold");
@@ -220,7 +214,6 @@ export default function CustomerPortal() {
     doc.text("Musteri No:", 18, 101);
     doc.setFont("helvetica", "normal");
     
-    // ÇÖZÜM BURADA: Karmaşık ID'nin son 5 hanesini alıp başına SZN- ekleyerek kurumsal bir format oluşturuyoruz
     const rawId = session?.user?.id || "00000";
     const corporateCustomerNo = `SZN-${rawId.substring(rawId.length - 5).toUpperCase()}`;
     doc.text(corporateCustomerNo, 42, 101);
@@ -230,7 +223,6 @@ export default function CustomerPortal() {
     doc.setFont("helvetica", "normal");
     doc.text(new Date().toLocaleDateString("tr-TR"), 42, 113);
 
-    // --- Sağ Kart: Proje Bilgileri ---
     doc.setTextColor(100, 116, 139); 
     doc.setFont("helvetica", "bold");
     doc.text(temizleTR("PROJE BİLGİLERİ"), 112, 68);
@@ -257,7 +249,6 @@ export default function CustomerPortal() {
     doc.setTextColor(2, 82, 156); 
     doc.text(temizleTR(`%${project.progress} Tamamlandi`), 136, 113);
     
-    // 4. CLEAN UI (FERAH) VERİ TABLOSU
     autoTable(doc, {
       startY: 135,
       head: [[temizleTR('Proje Açıklaması'), temizleTR('Başlangıç Tarihi'), temizleTR('İlerleme')]],
@@ -293,7 +284,6 @@ export default function CustomerPortal() {
       },
     });
 
-    // 5. KURUMSAL ALT BİLGİ (FOOTER)
     const finalY = doc.lastAutoTable.finalY || 140;
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184); 
@@ -305,7 +295,6 @@ export default function CustomerPortal() {
     const safeFileName = temizleTR(project.title || "Proje").replace(/[^a-zA-Z0-9]/g, '_');
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
-  // ------------------------------------------
 
   if (status === "loading" || loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Yükleniyor...</div>;
@@ -487,22 +476,62 @@ export default function CustomerPortal() {
                   <p className="text-sm font-medium text-gray-500">Geçmiş veya planlanan randevunuz yok.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {data.appointments.map((app) => (
-                    <div key={app.id} className="border border-gray-100 p-4 rounded-2xl hover:bg-gray-50 transition-colors">
-                      <p className="font-bold text-gray-900 text-sm mb-2">{app.subject}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {new Date(app.date).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}
-                        </span>
-                        <span className={`text-xs px-2.5 py-1 rounded-lg font-bold ${
-                          app.status === "APPROVED" ? "bg-green-100 text-green-700" :
-                          app.status === "REJECTED" ? "bg-red-100 text-red-700" : 
-                          app.status === "COMPLETED" ? "bg-gray-200 text-gray-700" : "bg-yellow-100 text-yellow-700"
+                    <div key={app.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                      <div className="flex justify-between items-start mb-5 border-b border-gray-100 pb-4">
+                        <div>
+                          <h3 className="text-base font-black text-gray-900">{app.subject}</h3>
+                          <p className="text-xs font-medium text-gray-500 mt-1">
+                            Randevu Tarihi: {new Date(app.date).toLocaleDateString("tr-TR")}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
+                          app.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 
+                          app.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          app.status === 'REJECTED' ? 'bg-red-50 text-red-700 border-red-200' :
+                          'bg-yellow-50 text-yellow-700 border-yellow-200'
                         }`}>
                           {getStatusText(app.status)}
                         </span>
+                      </div>
+
+                      {/* ETKİLEŞİMLİ ZAMAN ÇİZELGESİ (TIMELINE) */}
+                      <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:w-0.5 before:bg-gray-100">
+                        
+                        {/* 1. Adım: Talep Oluşturuldu */}
+                        <div className="relative flex items-center justify-between group">
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-[#02529C] text-white shadow shrink-0 absolute -left-3">
+                            <Check className="w-3 h-3" />
+                          </div>
+                          <div className="w-full ml-6 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CalendarDays className="w-4 h-4 text-gray-400" />
+                              <h4 className="font-bold text-xs text-gray-900">Talep İletildi</h4>
+                            </div>
+                            <p className="text-[10px] text-gray-500 font-medium">
+                              {new Date(app.createdAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 2. Adım: Tamamlanma Durumu (Sadece COMPLETED ise görünür) */}
+                        {app.status === "COMPLETED" && app.completedAt && (
+                          <div className="relative flex items-center justify-between group animate-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-green-500 text-white shadow shrink-0 absolute -left-3">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="w-full ml-6 p-3 rounded-xl bg-green-50/50 border border-green-100">
+                              <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                <h4 className="font-bold text-xs text-green-700">Hizmet Tamamlandı</h4>
+                              </div>
+                              <p className="text-[10px] text-green-600/70 font-medium">
+                                İşlem Saati: {new Date(app.completedAt).toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

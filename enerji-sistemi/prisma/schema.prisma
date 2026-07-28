@@ -65,6 +65,7 @@ model Appointment {
   customer    User              @relation(fields: [customerId], references: [id])
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+  completedAt DateTime?         // YENİ: Randevunun tamamlandığı tarihi tutacak opsiyonel alan
 }
 
 model QuoteRequest {
