@@ -216,6 +216,7 @@ export default function CustomerPortal() {
       .replace(/ü/g, 'u').replace(/Ü/g, 'U');
   };
 
+  // 1. Proje Durum Raporu PDF'i (Mevcut Tasarım)
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
@@ -330,118 +331,159 @@ export default function CustomerPortal() {
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
 
-  // YENİ: Resmi Belgeleri Dinamik Olarak PDF'e Dönüştüren Fonksiyon
+  // 2. YENİ: Profesyonel Resmi Belge ve Kılavuz PDF'i
   const generateOfficialDocument = (type) => {
     showToast("Belgeniz hazırlanıyor, lütfen bekleyin...", "info");
     
     setTimeout(() => {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
       
-      // Standart Antetli Başlık Alanı
+      // ÜST BİLGİ (HEADER) - MODERN VE KALIN
       doc.setFillColor(2, 82, 156); 
-      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.rect(0, 0, pageWidth, 45, 'F');
       doc.setFillColor(255, 193, 7); 
-      doc.rect(0, 35, pageWidth, 2, 'F');
+      doc.rect(0, 45, pageWidth, 3, 'F');
       
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(26);
       doc.setFont("helvetica", "bold");
-      doc.text(temizleTR("SÖZEN ENERJİ"), 14, 22);
+      doc.text(temizleTR("SÖZEN ENERJİ"), 20, 26);
       
-      doc.setFontSize(9);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(temizleTR("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri"), 14, 28);
-  
-      doc.setTextColor(30, 41, 59);
-  
-      // KILAVUZ, GARANTİ VEYA SÖZLEŞME İÇERİĞİ
+      doc.setTextColor(200, 220, 255);
+      doc.text(temizleTR("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri"), 20, 34);
+
+      // Tarih ve Belge No (Sağ Üst)
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(temizleTR(`Tarih: ${new Date().toLocaleDateString("tr-TR")}`), pageWidth - 20, 26, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      doc.text(temizleTR(`Belge No: SZN-${Math.floor(1000 + Math.random() * 9000)}`), pageWidth - 20, 34, { align: "right" });
+
+      // İÇERİK AYARLARI (Seçilen belgeye göre)
+      let title = "";
+      let fileName = "";
+      let introText = "";
+      let sections = [];
+
       if (type === "kilavuz") {
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text(temizleTR("MÜŞTERİ PORTALI KULLANIM KILAVUZU"), 14, 52);
-  
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
-        let y = 65;
-        const lines = [
-          "Degerli Musterimiz,",
-          "Sozen Enerji Musteri Takip Portali'na hos geldiniz. Bu portal uzerinden asagidaki",
-          "islemleri guvenle ve hizlica gerceklestirebilirsiniz:",
-          "",
-          "1. Proje Takibi:",
-          "Sol ekranda yer alan bolumden, aktif ve gecmis projelerinizin ilerleme yuzdesini",
-          "anlik olarak takip edebilirsiniz. Ayrica projenize ozel olusturulan 'Durum",
-          "Raporu'nu tek tikla bilgisayariniza PDF olarak indirebilirsiniz.",
-          "",
-          "2. Randevu Olusturma:",
-          "Saha kesfi, onarim veya destek talepleriniz icin randevu takvimini kullanarak",
-          "size en uygun gune talep olusturabilirsiniz. Talebiniz yonetim tarafindan",
-          "onaylandiginda durumunu yine bu ekrandan gorebilirsiniz.",
-          "",
-          "3. Direk İletisim:",
-          "'Bize Ulasin' bolumunden projeleriniz hakkinda soru sorabilir, ek taleplerinizi",
-          "veya teknik sorunlarinizi dogrudan yonetim ekibimize iletebilirsiniz."
+        title = "MÜŞTERİ PORTALI KULLANIM KILAVUZU";
+        fileName = "SozenEnerji_Kullanim_Kilavuzu.pdf";
+        introText = "Değerli Müşterimiz,\nSözen Enerji Müşteri Takip Portalı'na hoş geldiniz. Bu portal üzerinden projelerinizi anlık takip edebilir, randevu oluşturabilir ve doğrudan yönetim ekibimizle iletişime geçebilirsiniz. Aşağıda sistemin temel kullanım adımlarını bulabilirsiniz.";
+        sections = [
+          { t: "1. Proje Durumu Takibi", c: "Sol ekranda yer alan bölümden, aktif ve geçmiş projelerinizin ilerleme yüzdesini anlık olarak takip edebilirsiniz. Projenize özel oluşturulan 'Durum Raporu'nu tek tıkla bilgisayarınıza veya telefonunuza PDF olarak indirebilirsiniz." },
+          { t: "2. Randevu Sistemi", c: "Saha keşfi, onarım veya teknik destek talepleriniz için 'Yeni Randevu' butonunu kullanarak size en uygun güne talep oluşturabilirsiniz. Talebiniz yönetim tarafından onaylandığında, durumunu zaman çizelgesi üzerinden takip edebilirsiniz." },
+          { t: "3. Doğrudan İletişim (Destek)", c: "'Bize Ulaşın' bölümünden projeleriniz hakkında sorular sorabilir, ek taleplerinizi veya karşılaştığınız teknik sorunları doğrudan şirket yönetimine iletebilirsiniz. Mesajlarınız öncelikli olarak işleme alınacaktır." }
         ];
-        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
-        doc.save("SozenEnerji_Musteri_Kilavuzu.pdf");
-  
       } else if (type === "garanti") {
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text(temizleTR("GARANTİ VE SERVİS ŞARTNAMESİ"), 14, 52);
-  
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
-        let y = 65;
-        const lines = [
-          "1. Garanti Kapsami:",
-          "Sozen Enerji tarafindan gerceklestirilen tum elektrik taahhut, montaj ve",
-          "kurulum islemleri, teslim tarihinden itibaren 2 (iki) yil sureyle iscilige karsi",
-          "firmamiz garantisi altindadir.",
-          "",
-          "2. Malzeme Garantisi:",
-          "Projelerde kullanilan bilesenlerin (kablo, pano, aydinlatma, panel vb.)",
-          "malzeme garantileri, uretici firmalarin belirledigi standart sureler",
-          "kapsaminda degerlendirilmektedir.",
-          "",
-          "3. Garanti Disi Durumlar:",
-          "Kullanici tarafindan yapilan hatali mudahaleler, sebeke dalgalanmalari,",
-          "yildirim dusmesi, su baskini gibi dogal afetlerden kaynaklanan arizalar",
-          "ve periyodik bakimlarin aksatilmasi durumu garanti kapsami disindadir."
+        title = "GARANTİ VE SERVİS ŞARTNAMESİ";
+        fileName = "SozenEnerji_Garanti_Sartnamesi.pdf";
+        introText = "Bu belge, Sözen Enerji tarafından sağlanan hizmetlerin ve projelerde kullanılan materyallerin garanti koşullarını, yasal haklarınızı ve servis şartlarını içermektedir.";
+        sections = [
+          { t: "1. Genel Garanti Kapsamı", c: "Sözen Enerji tarafından gerçekleştirilen tüm elektrik taahhüt, montaj, pano kurulumu ve altyapı işlemleri, projenin teslim tarihinden itibaren 2 (İki) yıl süreyle işçilik hatalarına karşı firmamızın garantisi altındadır." },
+          { t: "2. Malzeme ve Donanım Garantisi", c: "Projelerde kullanılan tüm bileşenlerin (kablo, aydınlatma armatürü, sigorta, şalter vb.) malzeme garantileri, üretici firmaların belirlediği standart süreler ve koşullar kapsamında değerlendirilmektedir. Sözen Enerji, arızalı ürünlerin üreticiye gönderimi konusunda müşteriye aracılık eder." },
+          { t: "3. Garanti Dışı Kalan Durumlar", c: "Yetkisiz kişilerce yapılan hatalı müdahaleler, şebeke kaynaklı yüksek voltaj dalgalanmaları, yıldırım düşmesi, su baskını gibi doğal afetlerden (mücbir sebepler) kaynaklanan arızalar ve periyodik bakımların aksatılması durumu garanti kapsamı dışındadır." }
         ];
-        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
-        doc.save("SozenEnerji_Garanti_Sartnamesi.pdf");
-  
       } else if (type === "sozlesme") {
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text(temizleTR("GENEL HİZMET VE GİZLİLİK SÖZLEŞMESİ"), 14, 52);
-  
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
-        let y = 65;
-        const lines = [
-          "1. Taraflar",
-          "Bu sozlesme, hizmeti veren Sozen Enerji ile hizmeti alan Musteri arasinda",
-          "portal uzerinden gerceklestirilen hizmetleri kapsar.",
-          "",
-          "2. Taahhut",
-          "Firma, musteri tarafindan onaylanan projeleri ve yapilan on anlasmalari,",
-          "ulusal ve uluslararasi elektrik teknik sartnamelerine uygun sekilde, eksiksiz",
-          "ve guvenli bir formda teslim etmeyi kabul eder.",
-          "",
-          "3. Kisisel Verilerin Korunmasi",
-          "Musteriye ait projeler, randevular, kisisel veriler ve iletisim bilgileri",
-          "kesinlikle ucuncu sahislarla paylasilmaz ve 6698 sayili Kisisel Verilerin",
-          "Korunmasi Kanunu (KVKK) kapsaminda firmanin guvenli sunucularinda tutulur."
+        title = "GENEL HİZMET VE GİZLİLİK SÖZLEŞMESİ";
+        fileName = "SozenEnerji_Hizmet_Sozlesmesi.pdf";
+        introText = "İşbu sözleşme, hizmeti sağlayan Sözen Enerji ile hizmeti alan Müşteri arasında, dijital portal üzerinden yürütülen işlemlerin genel çerçevesini ve gizlilik esaslarını belirler.";
+        sections = [
+          { t: "1. Sözleşmenin Konusu ve Taraflar", c: "Bu sözleşme, Sözen Enerji CRM Portalı üzerinden müşteri adına açılan projelerin takibi, randevu yönetimi ve dijital iletişim süreçlerindeki tarafların hak ve yükümlülüklerini düzenler." },
+          { t: "2. Hizmet Taahhüdü", c: "Sözen Enerji, müşteri tarafından onaylanan projeleri ve yapılan ön anlaşmaları; ulusal ve uluslararası elektrik, iş güvenliği ve teknik şartnamelere tam uygun şekilde, eksiksiz ve taahhüt edilen sürede teslim etmeyi kabul eder." },
+          { t: "3. Kişisel Verilerin Korunması (KVKK)", c: "Müşteriye ait projeler, lokasyon bilgileri, randevular, ödeme kayıtları ve iletişim bilgileri kesinlikle üçüncü şahıslarla veya kurumlarla paylaşılmaz. Tüm veriler 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında şifreli olarak muhafaza edilir." }
         ];
-        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
-        doc.save("SozenEnerji_Hizmet_Sozlesmesi.pdf");
       }
+
+      // BELGE BAŞLIĞI
+      doc.setTextColor(15, 23, 42); 
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(temizleTR(title), 20, 65);
+
+      // ÖZET (INTRO) KUTUSU - Yuvarlak köşeli ve açık mavi arka plan
+      doc.setFillColor(240, 247, 255); 
+      doc.setDrawColor(186, 230, 253); 
+      doc.roundedRect(20, 75, pageWidth - 40, 35, 3, 3, 'FD');
+
+      doc.setTextColor(30, 58, 138); 
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const introLines = doc.splitTextToSize(temizleTR(introText), pageWidth - 50);
+      doc.text(introLines, 25, 83);
+
+      // MADDELER VE SECTİONLAR
+      let yPos = 125;
       
+      sections.forEach((sec) => {
+        if (yPos > pageHeight - 50) {
+          doc.addPage();
+          yPos = 30;
+        }
+
+        // Madde Başlığı
+        doc.setTextColor(2, 82, 156);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(temizleTR(sec.t), 20, yPos);
+        
+        yPos += 7;
+
+        // Madde İçeriği
+        doc.setTextColor(71, 85, 105);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const secLines = doc.splitTextToSize(temizleTR(sec.c), pageWidth - 40);
+        doc.text(secLines, 20, yPos);
+
+        yPos += (secLines.length * 5) + 12; 
+      });
+
+      // İMZA / ONAY ALANI (Görsellik için)
+      if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 30;
+      }
+      doc.setDrawColor(226, 232, 240);
+      doc.line(20, yPos, pageWidth - 20, yPos); 
+      
+      yPos += 10;
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(temizleTR("SÖZEN ENERJİ YÖNETİMİ"), 20, yPos);
+      doc.text(temizleTR("MÜŞTERİ ONAYI"), pageWidth - 60, yPos);
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text(temizleTR("E-İmza ile onaylanmıştır."), 20, yPos + 6);
+      doc.text(temizleTR("Okudum, anladım ve kabul ediyorum."), pageWidth - 80, yPos + 6);
+
+
+      // ALT BİLGİ (FOOTER) - TÜM SAYFALARA DİNAMİK OLARAK EKLENİR
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFillColor(248, 250, 252); 
+        doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+        
+        doc.setDrawColor(226, 232, 240);
+        doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+        
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(temizleTR("Bu resmi belge, Sözen Enerji CRM sistemi tarafından otomatik üretilmiştir."), pageWidth / 2, pageHeight - 12, { align: 'center' });
+        doc.text(temizleTR("www.sozen-enerji.com  |  destek@sozen-enerji.com  |  Sayfa " + i + " / " + pageCount), pageWidth / 2, pageHeight - 7, { align: 'center' });
+      }
+
+      doc.save(fileName);
       showToast("Belgeniz başarıyla indirildi.", "success");
-    }, 500);
+    }, 800); 
   };
 
   if (status === "loading" || loading) {
@@ -731,7 +773,7 @@ export default function CustomerPortal() {
               )}
             </div>
 
-            {/* 3. Belgeler Widget'ı (GÜNCELLENDİ) */}
+            {/* 3. Belgeler Widget'ı */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4"><FileText className="w-5 h-5 text-[#02529C]" /> Resmi Belgeler</h3>
               <div className="space-y-3">
