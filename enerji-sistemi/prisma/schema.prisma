@@ -116,3 +116,23 @@ model Settings {
 
   updatedAt          DateTime @updatedAt
 }
+
+model SystemSettings {
+  id           String   @id @default("global")
+  companyName  String?  @default("Sözen Enerji")
+  supportEmail String?  @default("destek@sozen-enerji.com")
+  phone        String?  
+  address      String?
+  smtpHost     String?  @default("smtp.gmail.com")
+  smtpPort     Int?     @default(465)
+  smtpUser     String?  
+  smtpPass     String?
+  workHourStart    String?  @default("08:30")
+  workHourEnd      String?  @default("18:30")
+  allowWeekend     Boolean  @default(false) // false = Sadece hafta içi
+  taxNumber        String?  
+  mersisNumber     String?  
+  pdfFooterText    String?  @default("Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir.")
+  logoUrl          String?  // İleride rapora eklenebilecek şirket logosu URL'si
+  updatedAt        DateTime @updatedAt
+}
