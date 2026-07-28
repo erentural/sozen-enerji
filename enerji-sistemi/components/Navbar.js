@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Zap, Phone, UserCircle } from "lucide-react";
+// TEMA DEĞİŞTİRME BUTONU EKLENDİ
+import ThemeToggle from "@/components/ThemeToggle"; 
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -19,15 +21,16 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white shadow-sm font-sans sticky top-0 z-50">
+    // dark:bg-slate-900 ve transition eklendi
+    <nav className="bg-white dark:bg-slate-900 shadow-sm dark:shadow-slate-800/50 font-sans sticky top-0 z-50 transition-colors duration-300 border-b border-transparent dark:border-slate-800">
       
       {/* 1. Üst İletişim Bandı */}
-      <div className="bg-gray-50 border-b border-gray-100 py-2 px-6 lg:px-12 flex justify-between items-center text-xs font-medium text-gray-500">
+      <div className="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800 py-2 px-6 lg:px-12 flex justify-between items-center text-xs font-medium text-gray-500 dark:text-gray-400 transition-colors duration-300">
         <div className="hidden md:block">
           Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri
         </div>
-        <div className="flex items-center gap-2 text-gray-700 font-bold ml-auto">
-          <Phone className="w-3.5 h-3.5 text-[#02529C]" />
+        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold ml-auto">
+          <Phone className="w-3.5 h-3.5 text-[#02529C] dark:text-blue-400" />
           7/24 Destek: 444 0 123
         </div>
       </div>
@@ -39,24 +42,24 @@ export default function Navbar() {
           {/* Logo Alanı */}
           <Link href="/" className="flex items-center gap-2">
             <div className="relative flex items-center justify-center">
-              <span className="text-5xl font-black text-[#02529C] italic tracking-tighter">V</span>
+              <span className="text-5xl font-black text-[#02529C] dark:text-blue-400 italic tracking-tighter transition-colors">V</span>
               <Zap className="w-6 h-6 text-[#FFC107] absolute -right-3 top-1 fill-[#FFC107]" />
             </div>
             {/* SÖZEN ENERJİ LOGOSU */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#02529C] rounded-xl flex items-center justify-center shadow-inner">
+              <div className="w-10 h-10 bg-[#02529C] dark:bg-blue-600 rounded-xl flex items-center justify-center shadow-inner transition-colors">
                 <Zap className="w-6 h-6 text-[#FFC107] fill-[#FFC107]" />
               </div>
               <div className="flex flex-col justify-center">
-                <h1 className="text-xl font-black text-[#02529C] leading-none tracking-tight">
+                <h1 className="text-xl font-black text-[#02529C] dark:text-blue-400 leading-none tracking-tight transition-colors">
                   SÖZEN<span className="text-[#FFC107]">ENERJİ</span>
                 </h1>
-                <p className="text-[9px] font-bold text-gray-500 tracking-widest uppercase mt-0.5">Elektrik & İnşaat</p>
+                <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 tracking-widest uppercase mt-0.5">Elektrik & İnşaat</p>
               </div>
             </div>
           </Link>
 
-          {/* Orta Kısım: Sayfa Linkleri (Sıkışıklık giderildi ve animasyon eklendi) */}
+          {/* Orta Kısım: Sayfa Linkleri */}
           <div className="hidden lg:flex items-center gap-8 flex-1 justify-center mx-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
@@ -67,15 +70,15 @@ export default function Navbar() {
                   href={link.href} 
                   className={`relative text-sm transition-colors whitespace-nowrap group ${
                     isActive 
-                      ? "text-[#02529C] font-bold" 
-                      : "text-gray-600 hover:text-[#02529C] font-medium"
+                      ? "text-[#02529C] dark:text-blue-400 font-bold" 
+                      : "text-gray-600 dark:text-gray-300 hover:text-[#02529C] dark:hover:text-blue-400 font-medium"
                   }`}
                 >
                   {link.name}
                   {/* Modern Alt Çizgi Animasyonu */}
                   <span 
                     className={`absolute -bottom-1.5 left-0 h-0.5 rounded-full transition-all duration-300 ${
-                      isActive ? "w-full bg-[#FFC107]" : "w-0 bg-[#02529C] group-hover:w-full"
+                      isActive ? "w-full bg-[#FFC107]" : "w-0 bg-[#02529C] dark:bg-blue-400 group-hover:w-full"
                     }`}
                   ></span>
                 </Link>
@@ -97,7 +100,7 @@ export default function Navbar() {
             {/* YÖNETİCİ GİRİŞİ */}
             <Link 
               href="/admin-login" 
-              className="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-[#02529C] transition-colors whitespace-nowrap" 
+              className="flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-slate-400 hover:text-[#02529C] dark:hover:text-blue-400 transition-colors whitespace-nowrap" 
               title="Yönetici Girişi"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -107,15 +110,18 @@ export default function Navbar() {
             </Link>
 
             {/* AYIRAÇ ÇİZGİSİ */}
-            <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
+            <div className="hidden sm:block w-px h-6 bg-gray-200 dark:bg-slate-700 transition-colors"></div>
 
             {/* MÜŞTERİ GİRİŞİ */}
             <Link 
               href="/login" 
-              className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#02529C] border border-[#02529C] rounded-md hover:bg-blue-800 transition-colors whitespace-nowrap shadow-sm"
+              className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#02529C] border border-[#02529C] dark:border-blue-600 dark:bg-blue-600 rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
             >
               Müşteri Girişi
             </Link>
+
+            {/* YENİ: TEMA DEĞİŞTİRME BUTONU BURAYA EKLENDİ */}
+            <ThemeToggle />
 
           </div>
         </div>
