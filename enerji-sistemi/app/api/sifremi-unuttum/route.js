@@ -32,7 +32,7 @@ export async function POST(request) {
     });
 
     // 4. Müşteriye gidecek tıklanabilir URL'yi oluştur
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sozen-enerji.com";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.xn--szen-enerji-rfb.com/";
     const resetUrl = `${siteUrl}/sifre-sifirla?token=${resetToken}`;
 
     // 5. Nodemailer ile Gmail Üzerinden Mail Gönderimi
