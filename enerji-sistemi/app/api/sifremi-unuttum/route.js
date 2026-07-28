@@ -32,29 +32,26 @@ export async function POST(request) {
     });
 
     // 4. Müşteriye gidecek tıklanabilir URL'yi oluştur
-    // NEXT_PUBLIC_SITE_URL environment variable'ına sitenin adresini eklemelisin (Örn: https://sozen-enerji.com)
-    // Şimdilik test için localhost kullanıyoruz.
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "www.xn--szen-enerji-rfb.com";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sozen-enerji.com";
     const resetUrl = `${siteUrl}/sifre-sifirla?token=${resetToken}`;
 
-    // 5. Nodemailer ile Turhost üzerinden Mail Gönderimi
+    // 5. Nodemailer ile Gmail Üzerinden Mail Gönderimi
     const transporter = nodemailer.createTransport({
-      host: "mail.sozen-enerji.com", 
+      host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
-        user: "eren.tural61@gmail.com", // Kendi mailin
-        pass: "pefj fcan lbpm doap",           // Kendi şifren
+        user: "eren.tural61@gmail.com", // Senin mail adresin
+        pass: "pefj fcan lbpm doap",     // Gmail Uygulama Şifren (App Password)
       },
-      tls: { rejectUnauthorized: false }
     });
 
     await transporter.sendMail({
-      from: '"Sözen Enerji Sistem" <info@sozen-enerji.com>',
+      from: '"Sözen Enerji Sistem" <eren.tural61@gmail.com>',
       to: email,
       subject: "Şifre Sıfırlama Talebi",
       html: `
-        <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #02529C; margin-bottom: 20px;">Şifre Sıfırlama Talebi</h2>
           <p style="color: #333; font-size: 16px;">Merhaba <strong>${user.name}</strong>,</p>
           <p style="color: #555; font-size: 15px; line-height: 1.5;">
