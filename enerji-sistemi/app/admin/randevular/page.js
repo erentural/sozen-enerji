@@ -113,10 +113,12 @@ export default function AdminAppointmentsPage() {
         </div>
 
         <div className="flex flex-wrap gap-1.5 w-full md:w-auto">
+          {/* YENİ EKLENEN: COMPLETED (Tamamlananlar) Filtresi */}
           {[
             { key: "ALL", label: "Tümü" },
             { key: "PENDING", label: "Bekleyenler" },
             { key: "APPROVED", label: "Onaylananlar" },
+            { key: "COMPLETED", label: "Tamamlananlar" },
             { key: "REJECTED", label: "İptal Edilenler" }
           ].map((tab) => (
             <button
