@@ -20,16 +20,18 @@ enum AppointmentStatus {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  phone        String?       // Telefon numarası
-  password     String        
-  role         String        @default("USER") // "ADMIN" veya "USER"
-  projects     Project[]
-  appointments Appointment[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  name             String
+  email            String        @unique
+  phone            String?
+  password         String        
+  role             String        @default("USER")
+  resetToken       String?       // YENİ: Şifre sıfırlama linki için özel kod
+  resetTokenExpiry DateTime?     // YENİ: Kodun geçerlilik süresi (Örn: 1 saat)
+  projects         Project[]
+  appointments     Appointment[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model Product {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // YENİ: Sayfa geçişleri için eklendi
+import Link from "next/link"; 
 import { signIn } from "next-auth/react";
 
 export default function AuthPage() {
@@ -43,7 +43,7 @@ export default function AuthPage() {
         if (res?.error) {
           setError("E-posta veya şifre hatalı. Lütfen kontrol ediniz.");
         } else {
-          router.push("/portal"); // Müşteri portalının uzantısını buraya yaz
+          router.push("/portal"); 
           router.refresh();
         }
       } catch (err) {
@@ -95,7 +95,6 @@ export default function AuthPage() {
 
         {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded">{error}</div>}
 
-        {/* Enter tuşunun çalışması için form etiketi ve type="submit" önemlidir */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {!isLoginMode && (
@@ -151,7 +150,18 @@ export default function AuthPage() {
           </div>
 
           <div>
-            <label className="block mb-1 text-sm text-gray-600">Şifre</label>
+            {/* YENİ: Şifre etiketi ve Şifremi Unuttum linki aynı satırda */}
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm text-gray-600">Şifre</label>
+              {isLoginMode && (
+                <Link 
+                  href="/sifremi-unuttum" 
+                  className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Şifremi unuttum
+                </Link>
+              )}
+            </div>
             <input type="password" name="password" required placeholder="••••••••" onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
           </div>
 
@@ -169,7 +179,6 @@ export default function AuthPage() {
             {isLoginMode ? "Hesabınız yok mu? Yeni müşteri kaydı oluşturun." : "Zaten hesabınız var mı? Giriş yapın."}
           </button>
 
-          {/* YENİ: Ana Sayfaya Dön Butonu */}
           <Link 
             href="/" 
             className="inline-flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
