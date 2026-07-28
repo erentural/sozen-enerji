@@ -20,16 +20,16 @@ enum AppointmentStatus {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String
-  email         String        @unique
-  phone         String?       // YENİ: Telefon numarasını ekledik (opsiyonel olması için sonuna ? koyduk)
-  password      String        
-  role          String        @default("USER") // "ADMIN" veya "USER"
-  projects      Project[]
-  appointments  Appointment[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  phone        String?       // Telefon numarası
+  password     String        
+  role         String        @default("USER") // "ADMIN" veya "USER"
+  projects     Project[]
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Product {
@@ -53,7 +53,7 @@ model Project {
   location    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  imageUrl        String?  @db.Text
+  imageUrl    String?  @db.Text
 }
 
 model Appointment {
@@ -88,9 +88,28 @@ model Message {
   name      String
   email     String
   phone     String  
-  subject   String?  // Konu (Örn: Öneri, Şikayet, Bilgi Talebi)
+  subject   String?  // Konu
   message   String   // Mesaj içeriği
   read      Boolean  @default(false)
   replied   Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// YENİ EKLENEN: Sistem Ayarları Modeli
+model Settings {
+  id                 Int      @id @default(1)
+  
+  // Kurumsal Bilgiler
+  companyName        String?
+  supportEmail       String?
+  phone              String?
+  address            String?
+
+  // Bildirim Tercihleri
+  emailOnAppointment Boolean  @default(true)
+  emailOnMessage     Boolean  @default(true)
+  emailOnQuote       Boolean  @default(true)
+  smsAlerts          Boolean  @default(false)
+
+  updatedAt          DateTime @updatedAt
 }
