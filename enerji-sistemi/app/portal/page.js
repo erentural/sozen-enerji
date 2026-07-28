@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { 
   FolderKanban, CalendarDays, LogOut, FileDown, FileText, 
   Download, PlusCircle, X, Clock, CheckCircle2, MessageSquare, 
-  Send, Image as ImageIcon, Check, AlertCircle 
+  Send, Image as ImageIcon, Check, AlertCircle, Info
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -18,10 +18,20 @@ export default function CustomerPortal() {
   const [data, setData] = useState({ projects: [], appointments: [] });
   const [loading, setLoading] = useState(true);
 
-  // Sistem Ayarları State'i
+  // YENİ: Şık Bildirim (Toast) Sistemi State'i
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+  let toastTimeout;
+
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, 4000); // 4 saniye sonra otomatik kapanır
+  };
+
   const [sysSettings, setSysSettings] = useState({ workHourStart: "08:30", workHourEnd: "18:30", allowWeekend: false });
 
-  // GÜNCELLENDİ: Tarih ve Saati ayırarak tutuyoruz
   const [showForm, setShowForm] = useState(false);
   const [newAppt, setNewAppt] = useState({ subject: "", date: "", time: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +44,6 @@ export default function CustomerPortal() {
   const [isSending, setIsSending] = useState(false);
   const [messageSuccess, setMessageSuccess] = useState(false);
 
-  // GÜNCELLENDİ: Sadece bugünün tarihini alıyoruz (YYYY-MM-DD formatında)
   const getLocalMinDate = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -81,17 +90,17 @@ export default function CustomerPortal() {
     }
   };
 
-  // YENİ: Müşteri takvimden tarih seçtiğinde anında tetiklenen kontrol
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
     
     if (selectedDate) {
       const dateObj = new Date(selectedDate);
-      const day = dateObj.getDay(); // 0: Pazar
+      const day = dateObj.getDay(); 
       
       if (!sysSettings.allowWeekend && day === 0) {
-        alert("Pazar günleri kapalıyız. Lütfen Pazartesi - Cumartesi arası bir gün seçin.");
-        setNewAppt({ ...newAppt, date: "" }); // Seçimi temizle
+        // Eski alert yerine yeni şık bildirimi kullanıyoruz
+        showToast("Pazar günleri kapalıyız. Lütfen Pazartesi - Cumartesi arası bir gün seçin.", "warning");
+        setNewAppt({ ...newAppt, date: "" }); 
         return;
       }
     }
@@ -103,7 +112,7 @@ export default function CustomerPortal() {
     e.preventDefault();
     
     if (!newAppt.date || !newAppt.time) {
-      alert("Lütfen hem tarih hem de saat seçiniz.");
+      showToast("Lütfen hem tarih hem de saat seçiniz.", "warning");
       return;
     }
 
@@ -111,7 +120,7 @@ export default function CustomerPortal() {
     const suAn = new Date();
     
     if (secilenTarih < suAn) {
-      alert("Hata: Geçmiş bir tarihe veya saate randevu talebi oluşturamazsınız!");
+      showToast("Geçmiş bir tarihe veya saate randevu talebi oluşturamazsınız!", "error");
       return;
     }
 
@@ -125,13 +134,12 @@ export default function CustomerPortal() {
     const mesaiBaslangic = (startHour * 60) + startMin; 
     const mesaiBitis = (endHour * 60) + endMin; 
 
-    // Çift dikiş güvenlik kontrolleri
     if (!sysSettings.allowWeekend && gun === 0) {
-      alert("Hata: Pazar günleri hizmet verememekteyiz.");
+      showToast("Pazar günleri hizmet verememekteyiz.", "error");
       return;
     }
     if (toplamDakika < mesaiBaslangic || toplamDakika > mesaiBitis) {
-      alert(`Hata: Randevu talepleri sadece ${sysSettings.workHourStart} - ${sysSettings.workHourEnd} arasında oluşturulabilir.`);
+      showToast(`Randevu talepleri sadece ${sysSettings.workHourStart} - ${sysSettings.workHourEnd} saatleri arasında oluşturulabilir.`, "error");
       return;
     }
 
@@ -153,14 +161,14 @@ export default function CustomerPortal() {
         setNewAppt({ subject: "", date: "", time: "" });
         fetchCustomerData(); 
         window.dispatchEvent(new Event("notificationsUpdated"));
-        alert("Randevu talebiniz başarıyla iletildi!");
+        showToast("Randevu talebiniz başarıyla iletildi!", "success");
       } else {
         const errorData = await res.json();
-        alert("Hata: " + (errorData.error || "Randevu oluşturulamadı."));
+        showToast(errorData.error || "Randevu oluşturulamadı.", "error");
       }
     } catch (error) {
       console.error("Randevu oluşturulamadı", error);
-      alert("Sistemsel bir hata oluştu.");
+      showToast("Sistemsel bir hata oluştu.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -338,7 +346,36 @@ export default function CustomerPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans">
+    <div className="min-h-screen bg-gray-50/50 font-sans relative overflow-x-hidden">
+      
+      {/* YENİ: Şık Bildirim (Toast) Bileşeni */}
+      <div 
+        className={`fixed top-6 right-6 z-50 transition-all duration-500 transform ${
+          toast.show ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className={`flex items-start gap-3 p-4 rounded-2xl shadow-xl border-l-4 min-w-[300px] max-w-md ${
+          toast.type === "success" ? "bg-white border-l-emerald-500 text-slate-800" :
+          toast.type === "error" ? "bg-white border-l-rose-500 text-slate-800" :
+          "bg-white border-l-amber-500 text-slate-800"
+        }`}>
+          <div className="mt-0.5">
+            {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+            {toast.type === "error" && <AlertCircle className="w-5 h-5 text-rose-500" />}
+            {toast.type === "warning" && <Info className="w-5 h-5 text-amber-500" />}
+          </div>
+          <div className="flex-1">
+            <h4 className="font-bold text-sm mb-0.5">
+              {toast.type === "success" ? "Başarılı İşlem" : toast.type === "error" ? "Hata Oluştu" : "Bilgilendirme"}
+            </h4>
+            <p className="text-xs font-medium text-slate-500 leading-relaxed">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast({ ...toast, show: false })} className="text-slate-400 hover:text-slate-700 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -473,7 +510,6 @@ export default function CustomerPortal() {
                     required 
                   />
                   
-                  {/* GÜNCELLENDİ: Tarih ve Saat 2 ayrı kutuya ayrıldı */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <input 
                       type="date" 
