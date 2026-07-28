@@ -18,15 +18,14 @@ export default function CustomerPortal() {
   const [data, setData] = useState({ projects: [], appointments: [] });
   const [loading, setLoading] = useState(true);
 
-  // YENİ: Sistem Ayarları State'i (Admin panelinden gelecek)
+  // Sistem Ayarları State'i
   const [sysSettings, setSysSettings] = useState({ workHourStart: "08:30", workHourEnd: "18:30", allowWeekend: false });
 
-  // Randevu Formu State'leri
+  // GÜNCELLENDİ: Tarih ve Saati ayırarak tutuyoruz
   const [showForm, setShowForm] = useState(false);
-  const [newAppt, setNewAppt] = useState({ subject: "", date: "" });
+  const [newAppt, setNewAppt] = useState({ subject: "", date: "", time: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mesaj Formu State'leri
   const [messageForm, setMessageForm] = useState({ 
     subject: "Proje Hakkında Soru", 
     otherSubjectDetail: "", 
@@ -35,19 +34,20 @@ export default function CustomerPortal() {
   const [isSending, setIsSending] = useState(false);
   const [messageSuccess, setMessageSuccess] = useState(false);
 
-  const getLocalMinDateTime = () => {
+  // GÜNCELLENDİ: Sadece bugünün tarihini alıyoruz (YYYY-MM-DD formatında)
+  const getLocalMinDate = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 16);
+    return now.toISOString().split("T")[0];
   };
-  const minDateTime = getLocalMinDateTime();
+  const minDate = getLocalMinDate();
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     } else if (status === "authenticated") {
       fetchCustomerData();
-      fetchSystemSettings(); // YENİ: Ayarları yükle
+      fetchSystemSettings(); 
     }
   }, [status]);
 
@@ -65,7 +65,6 @@ export default function CustomerPortal() {
     }
   };
 
-  // YENİ: Admin ayarlarını veritabanından çekme fonksiyonu
   const fetchSystemSettings = async () => {
     try {
       const res = await fetch("/api/admin/settings");
@@ -82,10 +81,33 @@ export default function CustomerPortal() {
     }
   };
 
+  // YENİ: Müşteri takvimden tarih seçtiğinde anında tetiklenen kontrol
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    
+    if (selectedDate) {
+      const dateObj = new Date(selectedDate);
+      const day = dateObj.getDay(); // 0: Pazar
+      
+      if (!sysSettings.allowWeekend && day === 0) {
+        alert("Pazar günleri kapalıyız. Lütfen Pazartesi - Cumartesi arası bir gün seçin.");
+        setNewAppt({ ...newAppt, date: "" }); // Seçimi temizle
+        return;
+      }
+    }
+    
+    setNewAppt({ ...newAppt, date: selectedDate });
+  };
+
   const handleApptSubmit = async (e) => {
     e.preventDefault();
     
-    const secilenTarih = new Date(newAppt.date);
+    if (!newAppt.date || !newAppt.time) {
+      alert("Lütfen hem tarih hem de saat seçiniz.");
+      return;
+    }
+
+    const secilenTarih = new Date(`${newAppt.date}T${newAppt.time}`);
     const suAn = new Date();
     
     if (secilenTarih < suAn) {
@@ -93,28 +115,23 @@ export default function CustomerPortal() {
       return;
     }
 
-    const gun = secilenTarih.getDay(); // 0: Pazar, 6: Cumartesi
+    const gun = secilenTarih.getDay();
     const saat = secilenTarih.getHours();
     const dakika = secilenTarih.getMinutes();
-    
     const toplamDakika = (saat * 60) + dakika;
     
-    // YENİ: Admin panelindeki ayarları dakikaya çevirip dinamik kontrol yapıyoruz
     const [startHour, startMin] = sysSettings.workHourStart.split(':').map(Number);
     const [endHour, endMin] = sysSettings.workHourEnd.split(':').map(Number);
-    
     const mesaiBaslangic = (startHour * 60) + startMin; 
     const mesaiBitis = (endHour * 60) + endMin; 
 
-    // YENİ: Hafta sonu izni kapalıysa ve gün Pazar (0) ise engelle
+    // Çift dikiş güvenlik kontrolleri
     if (!sysSettings.allowWeekend && gun === 0) {
-      alert("Hata: Pazar günleri hizmet verememekteyiz. Lütfen Pazartesi - Cumartesi arası bir gün seçiniz.");
+      alert("Hata: Pazar günleri hizmet verememekteyiz.");
       return;
     }
-
-    // YENİ: Dinamik saat aralığı kontrolü
     if (toplamDakika < mesaiBaslangic || toplamDakika > mesaiBitis) {
-      alert(`Hata: Randevu talepleri sadece mesai saatlerimiz içinde (${sysSettings.workHourStart} - ${sysSettings.workHourEnd}) oluşturulabilir. Lütfen bu aralıkta bir saat seçiniz.`);
+      alert(`Hata: Randevu talepleri sadece ${sysSettings.workHourStart} - ${sysSettings.workHourEnd} arasında oluşturulabilir.`);
       return;
     }
 
@@ -125,14 +142,15 @@ export default function CustomerPortal() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...newAppt,
+          subject: newAppt.subject,
+          date: secilenTarih.toISOString(),
           email: session.user.email
         }),
       });
 
       if (res.ok) {
         setShowForm(false);
-        setNewAppt({ subject: "", date: "" });
+        setNewAppt({ subject: "", date: "", time: "" });
         fetchCustomerData(); 
         window.dispatchEvent(new Event("notificationsUpdated"));
         alert("Randevu talebiniz başarıyla iletildi!");
@@ -438,8 +456,7 @@ export default function CustomerPortal() {
                     <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm"><X className="w-4 h-4" /></button>
                   </div>
                   
-                  {/* YENİ: Dinamik Mesai Saatleri Bilgisi */}
-                  <div className="mb-3 p-3 bg-white rounded-xl border border-blue-100 flex items-start gap-2">
+                  <div className="mb-3 p-3 bg-white rounded-xl border border-blue-100 flex items-start gap-2 shadow-sm">
                     <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                     <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
                       Lütfen sadece <strong>{sysSettings.workHourStart} - {sysSettings.workHourEnd}</strong> saatleri arasında bir randevu seçin. 
@@ -447,8 +464,36 @@ export default function CustomerPortal() {
                     </p>
                   </div>
 
-                  <input type="text" placeholder="Görüşme Konusu (Örn: Saha Keşfi)" value={newAppt.subject} onChange={(e) => setNewAppt({...newAppt, subject: e.target.value})} className="w-full text-sm px-3 py-2.5 mb-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" required />
-                  <input type="datetime-local" value={newAppt.date} min={minDateTime} onChange={(e) => setNewAppt({...newAppt, date: e.target.value})} className="w-full text-sm px-3 py-2.5 mb-4 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" required />
+                  <input 
+                    type="text" 
+                    placeholder="Görüşme Konusu (Örn: Saha Keşfi)" 
+                    value={newAppt.subject} 
+                    onChange={(e) => setNewAppt({...newAppt, subject: e.target.value})} 
+                    className="w-full text-sm px-3 py-2.5 mb-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" 
+                    required 
+                  />
+                  
+                  {/* GÜNCELLENDİ: Tarih ve Saat 2 ayrı kutuya ayrıldı */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <input 
+                      type="date" 
+                      min={minDate} 
+                      value={newAppt.date} 
+                      onChange={handleDateChange} 
+                      className="w-full text-sm px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" 
+                      required 
+                    />
+                    <input 
+                      type="time" 
+                      min={sysSettings.workHourStart} 
+                      max={sysSettings.workHourEnd} 
+                      value={newAppt.time} 
+                      onChange={(e) => setNewAppt({...newAppt, time: e.target.value})} 
+                      className="w-full text-sm px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#02529C]" 
+                      required 
+                    />
+                  </div>
+
                   <button type="submit" disabled={isSubmitting} className="w-full bg-[#02529C] text-white text-sm font-bold py-3 rounded-xl hover:bg-blue-800 transition-colors disabled:opacity-50">
                     {isSubmitting ? "Gönderiliyor..." : "Talebi Gönder"}
                   </button>
