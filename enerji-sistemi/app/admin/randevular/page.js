@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CalendarDays, Search, CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react";
+import { CalendarDays, Search, CheckCircle2, XCircle, Clock, AlertCircle, Trash2, Check } from "lucide-react";
 import { useTheme } from "../ThemeContext"; 
 
 export default function AdminAppointmentsPage() {
@@ -28,6 +28,40 @@ export default function AdminAppointmentsPage() {
       console.error("Randevular çekilemedi", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // DURUM GÜNCELLEME FONKSİYONU (Onayla, İptal Et, Tamamla)
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await fetch("/api/admin/appointments", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+
+      if (res.ok) {
+        setAppointments(appointments.map(app => 
+          app.id === id ? { ...app, status: newStatus } : app
+        ));
+      } else {
+        alert("Durum güncellenirken bir hata oluştu.");
+      }
+    } catch (error) {
+      console.error("Güncelleme hatası:", error);
+    }
+  };
+
+  // SİLME FONKSİYONU
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu randevu talebini tamamen silmek istediğinize emin misiniz?")) return;
+    try {
+      const res = await fetch(`/api/admin/appointments?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setAppointments(appointments.filter(app => app.id !== id));
+      }
+    } catch (error) {
+      console.error("Silme hatası:", error);
     }
   };
 
@@ -59,7 +93,6 @@ export default function AdminAppointmentsPage() {
     <div className="p-8 max-w-7xl mx-auto font-sans transition-colors duration-300">
       
       <div className="mb-8">
-        {/* text-white yerine text-slate-200 */}
         <h1 className="text-3xl font-black text-slate-900 dark:text-slate-200 flex items-center gap-3 transition-colors">
           <CalendarDays className={`w-8 h-8 ${currentTheme.text}`} /> Randevu Talepleri
         </h1>
@@ -118,7 +151,6 @@ export default function AdminAppointmentsPage() {
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  {/* text-white yerine text-slate-200 */}
                   <h3 className={`font-black text-slate-900 dark:text-slate-200 transition-colors ${
                     isCompact ? "text-base" : "text-lg"
                   }`}>
@@ -136,10 +168,57 @@ export default function AdminAppointmentsPage() {
                 </p>
               </div>
 
-              <div className={`flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-slate-100 dark:border-slate-700/80 ${
+              <div className={`flex flex-col md:flex-row items-end md:items-center gap-3 md:gap-4 w-full md:w-auto border-slate-100 dark:border-slate-700/80 ${
                 isCompact ? "pt-2 md:pt-0 border-t md:border-t-0 mt-1 md:mt-0" : "pt-3 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0"
               }`}>
+                
+                {/* Durum Rozeti */}
                 {getStatusBadge(app.status)}
+
+                {/* AKSİYON BUTONLARI */}
+                <div className="flex items-center gap-2">
+                  
+                  {/* Bekleyen Randevu İçin Aksiyonlar */}
+                  {app.status === "PENDING" && (
+                    <>
+                      <button 
+                        onClick={() => handleStatusChange(app.id, "APPROVED")} 
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg transition-colors text-xs font-bold border border-emerald-100 dark:border-emerald-800/50"
+                        title="Randevuyu Onayla"
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Onayla
+                      </button>
+                      <button 
+                        onClick={() => handleStatusChange(app.id, "REJECTED")} 
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg transition-colors text-xs font-bold border border-rose-100 dark:border-rose-800/50"
+                        title="Randevuyu İptal Et"
+                      >
+                        <XCircle className="w-4 h-4" /> Reddet
+                      </button>
+                    </>
+                  )}
+
+                  {/* Onaylanmış Randevu İçin Aksiyonlar */}
+                  {app.status === "APPROVED" && (
+                    <button 
+                      onClick={() => handleStatusChange(app.id, "COMPLETED")} 
+                      className={`flex items-center gap-1.5 px-3 py-1.5 ${currentTheme.bg} text-white hover:opacity-90 rounded-lg transition-colors text-xs font-bold shadow-sm`}
+                      title="Randevuyu Tamamlandı Olarak İşaretle"
+                    >
+                      <Check className="w-4 h-4" /> Tamamla
+                    </button>
+                  )}
+
+                  {/* Her Durumda Çıkan Sil Butonu */}
+                  <button 
+                    onClick={() => handleDelete(app.id)} 
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors ml-1"
+                    title="Sil"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
+                </div>
               </div>
             </div>
           ))}
