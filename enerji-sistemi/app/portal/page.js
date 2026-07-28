@@ -18,7 +18,6 @@ export default function CustomerPortal() {
   const [data, setData] = useState({ projects: [], appointments: [] });
   const [loading, setLoading] = useState(true);
 
-  // YENİ: Şık Bildirim (Toast) Sistemi State'i
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   let toastTimeout;
 
@@ -27,7 +26,7 @@ export default function CustomerPortal() {
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
-    }, 4000); // 4 saniye sonra otomatik kapanır
+    }, 4000); 
   };
 
   const [sysSettings, setSysSettings] = useState({ workHourStart: "08:30", workHourEnd: "18:30", allowWeekend: false });
@@ -98,7 +97,6 @@ export default function CustomerPortal() {
       const day = dateObj.getDay(); 
       
       if (!sysSettings.allowWeekend && day === 0) {
-        // Eski alert yerine yeni şık bildirimi kullanıyoruz
         showToast("Pazar günleri kapalıyız. Lütfen Pazartesi - Cumartesi arası bir gün seçin.", "warning");
         setNewAppt({ ...newAppt, date: "" }); 
         return;
@@ -332,6 +330,120 @@ export default function CustomerPortal() {
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
 
+  // YENİ: Resmi Belgeleri Dinamik Olarak PDF'e Dönüştüren Fonksiyon
+  const generateOfficialDocument = (type) => {
+    showToast("Belgeniz hazırlanıyor, lütfen bekleyin...", "info");
+    
+    setTimeout(() => {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      
+      // Standart Antetli Başlık Alanı
+      doc.setFillColor(2, 82, 156); 
+      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.setFillColor(255, 193, 7); 
+      doc.rect(0, 35, pageWidth, 2, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text(temizleTR("SÖZEN ENERJİ"), 14, 22);
+      
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(temizleTR("Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri"), 14, 28);
+  
+      doc.setTextColor(30, 41, 59);
+  
+      // KILAVUZ, GARANTİ VEYA SÖZLEŞME İÇERİĞİ
+      if (type === "kilavuz") {
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text(temizleTR("MÜŞTERİ PORTALI KULLANIM KILAVUZU"), 14, 52);
+  
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        let y = 65;
+        const lines = [
+          "Degerli Musterimiz,",
+          "Sozen Enerji Musteri Takip Portali'na hos geldiniz. Bu portal uzerinden asagidaki",
+          "islemleri guvenle ve hizlica gerceklestirebilirsiniz:",
+          "",
+          "1. Proje Takibi:",
+          "Sol ekranda yer alan bolumden, aktif ve gecmis projelerinizin ilerleme yuzdesini",
+          "anlik olarak takip edebilirsiniz. Ayrica projenize ozel olusturulan 'Durum",
+          "Raporu'nu tek tikla bilgisayariniza PDF olarak indirebilirsiniz.",
+          "",
+          "2. Randevu Olusturma:",
+          "Saha kesfi, onarim veya destek talepleriniz icin randevu takvimini kullanarak",
+          "size en uygun gune talep olusturabilirsiniz. Talebiniz yonetim tarafindan",
+          "onaylandiginda durumunu yine bu ekrandan gorebilirsiniz.",
+          "",
+          "3. Direk İletisim:",
+          "'Bize Ulasin' bolumunden projeleriniz hakkinda soru sorabilir, ek taleplerinizi",
+          "veya teknik sorunlarinizi dogrudan yonetim ekibimize iletebilirsiniz."
+        ];
+        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
+        doc.save("SozenEnerji_Musteri_Kilavuzu.pdf");
+  
+      } else if (type === "garanti") {
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text(temizleTR("GARANTİ VE SERVİS ŞARTNAMESİ"), 14, 52);
+  
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        let y = 65;
+        const lines = [
+          "1. Garanti Kapsami:",
+          "Sozen Enerji tarafindan gerceklestirilen tum elektrik taahhut, montaj ve",
+          "kurulum islemleri, teslim tarihinden itibaren 2 (iki) yil sureyle iscilige karsi",
+          "firmamiz garantisi altindadir.",
+          "",
+          "2. Malzeme Garantisi:",
+          "Projelerde kullanilan bilesenlerin (kablo, pano, aydinlatma, panel vb.)",
+          "malzeme garantileri, uretici firmalarin belirledigi standart sureler",
+          "kapsaminda degerlendirilmektedir.",
+          "",
+          "3. Garanti Disi Durumlar:",
+          "Kullanici tarafindan yapilan hatali mudahaleler, sebeke dalgalanmalari,",
+          "yildirim dusmesi, su baskini gibi dogal afetlerden kaynaklanan arizalar",
+          "ve periyodik bakimlarin aksatilmasi durumu garanti kapsami disindadir."
+        ];
+        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
+        doc.save("SozenEnerji_Garanti_Sartnamesi.pdf");
+  
+      } else if (type === "sozlesme") {
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text(temizleTR("GENEL HİZMET VE GİZLİLİK SÖZLEŞMESİ"), 14, 52);
+  
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        let y = 65;
+        const lines = [
+          "1. Taraflar",
+          "Bu sozlesme, hizmeti veren Sozen Enerji ile hizmeti alan Musteri arasinda",
+          "portal uzerinden gerceklestirilen hizmetleri kapsar.",
+          "",
+          "2. Taahhut",
+          "Firma, musteri tarafindan onaylanan projeleri ve yapilan on anlasmalari,",
+          "ulusal ve uluslararasi elektrik teknik sartnamelerine uygun sekilde, eksiksiz",
+          "ve guvenli bir formda teslim etmeyi kabul eder.",
+          "",
+          "3. Kisisel Verilerin Korunmasi",
+          "Musteriye ait projeler, randevular, kisisel veriler ve iletisim bilgileri",
+          "kesinlikle ucuncu sahislarla paylasilmaz ve 6698 sayili Kisisel Verilerin",
+          "Korunmasi Kanunu (KVKK) kapsaminda firmanin guvenli sunucularinda tutulur."
+        ];
+        lines.forEach(line => { doc.text(temizleTR(line), 14, y); y += 7; });
+        doc.save("SozenEnerji_Hizmet_Sozlesmesi.pdf");
+      }
+      
+      showToast("Belgeniz başarıyla indirildi.", "success");
+    }, 500);
+  };
+
   if (status === "loading" || loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Yükleniyor...</div>;
   }
@@ -348,7 +460,7 @@ export default function CustomerPortal() {
   return (
     <div className="min-h-screen bg-gray-50/50 font-sans relative overflow-x-hidden">
       
-      {/* YENİ: Şık Bildirim (Toast) Bileşeni */}
+      {/* Şık Bildirim (Toast) Bileşeni */}
       <div 
         className={`fixed top-6 right-6 z-50 transition-all duration-500 transform ${
           toast.show ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0 pointer-events-none"
@@ -363,6 +475,7 @@ export default function CustomerPortal() {
             {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
             {toast.type === "error" && <AlertCircle className="w-5 h-5 text-rose-500" />}
             {toast.type === "warning" && <Info className="w-5 h-5 text-amber-500" />}
+            {toast.type === "info" && <Info className="w-5 h-5 text-blue-500" />}
           </div>
           <div className="flex-1">
             <h4 className="font-bold text-sm mb-0.5">
@@ -618,20 +731,24 @@ export default function CustomerPortal() {
               )}
             </div>
 
-            {/* 3. Belgeler Widget'ı */}
+            {/* 3. Belgeler Widget'ı (GÜNCELLENDİ) */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4"><FileText className="w-5 h-5 text-[#02529C]" /> Resmi Belgeler</h3>
               <div className="space-y-3">
                 {[
-                  { name: "Sistem Kullanım Kılavuzu", size: "2.4 MB", type: "PDF" },
-                  { name: "Garanti Şartnamesi", size: "1.1 MB", type: "PDF" },
-                  { name: "Genel Hizmet Sözleşmesi", size: "850 KB", type: "PDF" }
+                  { id: "kilavuz", name: "Sistem Kullanım Kılavuzu", size: "1.2 MB", type: "PDF" },
+                  { id: "garanti", name: "Garanti Şartnamesi", size: "850 KB", type: "PDF" },
+                  { id: "sozlesme", name: "Genel Hizmet Sözleşmesi", size: "450 KB", type: "PDF" }
                 ].map((doc, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
+                  <div 
+                    key={index} 
+                    onClick={() => generateOfficialDocument(doc.id)} 
+                    className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-blue-50/50 transition-colors group cursor-pointer"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="bg-red-50 p-2.5 rounded-lg text-red-500"><FileText className="w-5 h-5" /></div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{doc.name}</p>
+                        <p className="text-sm font-bold text-gray-900 group-hover:text-[#02529C] transition-colors">{doc.name}</p>
                         <p className="text-xs font-medium text-gray-500">{doc.type} • {doc.size}</p>
                       </div>
                     </div>
