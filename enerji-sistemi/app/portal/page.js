@@ -331,7 +331,7 @@ export default function CustomerPortal() {
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
 
-  // 2. YENİ: Profesyonel Resmi Belge ve Kılavuz PDF'i
+  // 2. Profesyonel Resmi Belge ve Kılavuz PDF'i (GÜNCELLENDİ)
   const generateOfficialDocument = (type) => {
     showToast("Belgeniz hazırlanıyor, lütfen bekleyin...", "info");
     
@@ -370,14 +370,17 @@ export default function CustomerPortal() {
       let introText = "";
       let sections = [];
 
+      // KULLANIM KILAVUZU GÜNCELLENDİ: Admin panelindeki detaylı kılavuz metni eklendi
       if (type === "kilavuz") {
         title = "MÜŞTERİ PORTALI KULLANIM KILAVUZU";
         fileName = "SozenEnerji_Kullanim_Kilavuzu.pdf";
-        introText = "Değerli Müşterimiz,\nSözen Enerji Müşteri Takip Portalı'na hoş geldiniz. Bu portal üzerinden projelerinizi anlık takip edebilir, randevu oluşturabilir ve doğrudan yönetim ekibimizle iletişime geçebilirsiniz. Aşağıda sistemin temel kullanım adımlarını bulabilirsiniz.";
+        introText = "Değerli Müşterimiz,\nEnerjiPanel yönetim sistemini ve Müşteri Portalı işleyişini tam verimle kullanmak için detaylı sistem rehberi aşağıda sunulmuştur.";
         sections = [
-          { t: "1. Proje Durumu Takibi", c: "Sol ekranda yer alan bölümden, aktif ve geçmiş projelerinizin ilerleme yüzdesini anlık olarak takip edebilirsiniz. Projenize özel oluşturulan 'Durum Raporu'nu tek tıkla bilgisayarınıza veya telefonunuza PDF olarak indirebilirsiniz." },
-          { t: "2. Randevu Sistemi", c: "Saha keşfi, onarım veya teknik destek talepleriniz için 'Yeni Randevu' butonunu kullanarak size en uygun güne talep oluşturabilirsiniz. Talebiniz yönetim tarafından onaylandığında, durumunu zaman çizelgesi üzerinden takip edebilirsiniz." },
-          { t: "3. Doğrudan İletişim (Destek)", c: "'Bize Ulaşın' bölümünden projeleriniz hakkında sorular sorabilir, ek taleplerinizi veya karşılaştığınız teknik sorunları doğrudan şirket yönetimine iletebilirsiniz. Mesajlarınız öncelikli olarak işleme alınacaktır." }
+          { t: "1. Kayıt ve Güvenli Giriş", c: "Müşteriler, e-posta adresleri ve telefon numaraları ile sisteme saniyeler içinde kayıt olup giriş yapabilirler. Şifrelerini unuttuklarında, güvenli e-posta onayı (token) ile yeni şifre belirleyebilirler." },
+          { t: "2. Kişisel Kontrol Paneli", c: "Müşteri giriş yaptığında, sadece kendine ait projeleri ve randevuları gördüğü, karmaşadan uzak, mobil uyumlu, temiz bir arayüzle karşılaşır." },
+          { t: "3. Proje Takibi & PDF İndirme", c: "Müşteri aktif projesinin % kaç tamamlandığını ilerleme çubuğuyla takip edebilir. 'Raporu İndir' butonuna basarak, Sözen Enerji antetli ve kişiye özel müşteri numarası içeren PDF Durum Raporu'nu indirebilir." },
+          { t: "4. Etkileşimli Zaman Çizelgesi", c: "Randevu talebi oluşturulduğunda, müşteri 'Talep İletildi', 'Onaylandı' ve 'Hizmet Tamamlandı' aşamalarını saat ve tarih bilgisiyle şık bir zaman çizelgesi (timeline) üzerinde görür." },
+          { t: "5. Yönetime Direkt Mesaj", c: "Müşteriler, portal içindeki 'Bize Ulaşın' arayüzünden doğrudan projesiyle ilgili revizyon, destek veya genel konu taleplerini hızlıca merkeze iletebilir." }
         ];
       } else if (type === "garanti") {
         title = "GARANTİ VE SERVİS ŞARTNAMESİ";
@@ -405,7 +408,7 @@ export default function CustomerPortal() {
       doc.setFont("helvetica", "bold");
       doc.text(temizleTR(title), 20, 65);
 
-      // ÖZET (INTRO) KUTUSU - Yuvarlak köşeli ve açık mavi arka plan
+      // ÖZET (INTRO) KUTUSU
       doc.setFillColor(240, 247, 255); 
       doc.setDrawColor(186, 230, 253); 
       doc.roundedRect(20, 75, pageWidth - 40, 35, 3, 3, 'FD');
@@ -420,9 +423,10 @@ export default function CustomerPortal() {
       let yPos = 125;
       
       sections.forEach((sec) => {
+        // Dinamik Sayfa Ekleme Kontrolü
         if (yPos > pageHeight - 50) {
           doc.addPage();
-          yPos = 30;
+          yPos = 30; // Yeni sayfanın başından başlat
         }
 
         // Madde Başlığı
@@ -443,7 +447,7 @@ export default function CustomerPortal() {
         yPos += (secLines.length * 5) + 12; 
       });
 
-      // İMZA / ONAY ALANI (Görsellik için)
+      // İMZA / ONAY ALANI
       if (yPos > pageHeight - 60) {
         doc.addPage();
         yPos = 30;
@@ -464,7 +468,7 @@ export default function CustomerPortal() {
       doc.text(temizleTR("Okudum, anladım ve kabul ediyorum."), pageWidth - 80, yPos + 6);
 
 
-      // ALT BİLGİ (FOOTER) - TÜM SAYFALARA DİNAMİK OLARAK EKLENİR
+      // ALT BİLGİ (FOOTER) - TÜM SAYFALARA DİNAMİK EKLENİR
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
