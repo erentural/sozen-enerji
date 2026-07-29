@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Zap, Phone, UserCircle } from "lucide-react";
-// TEMA DEĞİŞTİRME BUTONU EKLENDİ
+import { Phone } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle"; 
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname(); 
 
-  // Mağaza menüden tamamen kaldırıldı
   const navLinks = [
     { name: "Anasayfa", href: "/" },
     { name: "Hizmetler", href: "/hizmetler" },
@@ -38,27 +36,28 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-24">
           
-          {/* YENİ, PROFESYONEL LOGO ALANI */}
-          <Link href="/" className="flex items-center gap-3 group">
+          {/* GERÇEK KURUMSAL LOGO ALANI */}
+          <Link href="/" className="flex items-center gap-3 sm:gap-4 group">
             
-            {/* İkon (Amblem) */}
-            <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#02529C] via-[#034482] to-blue-900 dark:from-blue-600 dark:via-blue-700 dark:to-blue-900 shadow-md group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden shrink-0">
-              {/* Cam Efekti (Glassmorphism) Üst Parlama */}
-              <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent"></div>
-              {/* Şimşek / Enerji İkonu */}
-              <Zap className="w-6 h-6 text-[#FFC107] fill-[#FFC107] drop-shadow-[0_0_6px_rgba(255,193,7,0.5)] relative z-10 group-hover:scale-110 transition-transform duration-300" />
+            {/* icon.png Görseli */}
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border border-gray-100 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-white">
+              <img 
+                src="/icon.png" 
+                alt="Sözen Enerji Logo" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
             </div>
             
-            {/* Tipografi (Yazı) */}
+            {/* Orijinal Logoya Uygun Serif Tipografi */}
             <div className="flex flex-col justify-center">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tighter flex items-center leading-none">
-                <span className="text-[#02529C] dark:text-slate-100 transition-colors">SÖZEN</span>
-                <span className="text-[#FFC107] dark:text-amber-400 ml-0.5 transition-colors">ENERJİ</span>
+              <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-wide text-[#02529C] dark:text-slate-100 transition-colors">
+                SÖZEN ENERJİ
               </h1>
-              <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
-                {/* Mühendislik tarzı dekoratif çizgi */}
-                <div className="w-3 h-[2px] bg-[#FFC107] dark:bg-amber-400 rounded-full"></div>
-                <p className="text-[9px] sm:text-[9.5px] font-bold text-gray-500 dark:text-gray-400 tracking-[0.25em] uppercase leading-none mt-[1px]">Elektrik & İnşaat</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="w-4 h-[2px] bg-[#FFC107] dark:bg-amber-400"></div>
+                <p className="text-[9px] sm:text-[10px] font-sans font-semibold text-gray-500 dark:text-gray-400 tracking-[0.2em] uppercase leading-none mt-0.5">
+                  Elektrik & İnşaat
+                </p>
               </div>
             </div>
 
@@ -94,7 +93,6 @@ export default function Navbar() {
           {/* Sağ Kısım: Aksiyon Butonları */}
           <div className="flex items-center gap-4 lg:gap-6">
             
-            {/* FİYAT TEKLİFİ AL BUTONU */}
             <Link 
               href="/teklif-al" 
               className="hidden md:flex px-5 py-2.5 text-sm font-bold text-slate-900 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-colors whitespace-nowrap shadow-sm"
@@ -102,7 +100,6 @@ export default function Navbar() {
               Fiyat Teklifi Al
             </Link>
 
-            {/* YÖNETİCİ GİRİŞİ */}
             <Link 
               href="/admin-login" 
               className="flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-slate-400 hover:text-[#02529C] dark:hover:text-blue-400 transition-colors whitespace-nowrap" 
@@ -114,10 +111,8 @@ export default function Navbar() {
               <span className="hidden xl:inline">Yönetici</span>
             </Link>
 
-            {/* AYIRAÇ ÇİZGİSİ */}
             <div className="hidden sm:block w-px h-6 bg-gray-200 dark:bg-slate-700 transition-colors"></div>
 
-            {/* MÜŞTERİ GİRİŞİ */}
             <Link 
               href="/login" 
               className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#02529C] border border-[#02529C] dark:border-blue-600 dark:bg-blue-600 rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
