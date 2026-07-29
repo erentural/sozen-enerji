@@ -29,7 +29,15 @@ export default function CustomerPortal() {
     }, 4000); 
   };
 
-  const [sysSettings, setSysSettings] = useState({ workHourStart: "08:30", workHourEnd: "18:30", allowWeekend: false });
+  // YENİ: PDF ayarları sisteme dahil edildi
+  const [sysSettings, setSysSettings] = useState({ 
+    workHourStart: "08:30", 
+    workHourEnd: "18:30", 
+    allowWeekend: false,
+    taxNumber: "",
+    mersisNumber: "",
+    pdfFooterText: "Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir."
+  });
 
   const [showForm, setShowForm] = useState(false);
   const [newAppt, setNewAppt] = useState({ subject: "", date: "", time: "" });
@@ -78,10 +86,14 @@ export default function CustomerPortal() {
       const res = await fetch("/api/admin/settings");
       if (res.ok) {
         const result = await res.json();
+        // YENİ: PDF ayarları API'den state'e aktarıldı
         setSysSettings({
           workHourStart: result.workHourStart || "08:30",
           workHourEnd: result.workHourEnd || "18:30",
-          allowWeekend: result.allowWeekend ?? false
+          allowWeekend: result.allowWeekend ?? false,
+          taxNumber: result.taxNumber || "",
+          mersisNumber: result.mersisNumber || "",
+          pdfFooterText: result.pdfFooterText || "Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir."
         });
       }
     } catch (error) {
@@ -216,7 +228,7 @@ export default function CustomerPortal() {
       .replace(/ü/g, 'u').replace(/Ü/g, 'U');
   };
 
-  // 1. Proje Durum Raporu PDF'i (Mevcut Tasarım)
+  // 1. Proje Durum Raporu PDF'i 
   const generatePDF = (project) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
@@ -320,18 +332,29 @@ export default function CustomerPortal() {
     });
 
     const finalY = doc.lastAutoTable.finalY || 140;
+    
+    // YENİ: DİNAMİK FOOTER VE KİMLİK BİLGİLERİ (VERGİ / MERSİS)
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184); 
     doc.setFont("helvetica", "normal");
     
-    doc.text(temizleTR("Bu belge Sözen Enerji CRM sistemi tarafından otomatik olarak üretilmiştir."), pageWidth / 2, pageHeight - 20, { align: 'center' });
-    doc.text(temizleTR("Destek: destek@sozen-enerji.com | Müşteri Hizmetleri: 444 0 123"), pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text(temizleTR(sysSettings.pdfFooterText), pageWidth / 2, pageHeight - 22, { align: 'center' });
+    
+    let officialIds = [];
+    if (sysSettings.taxNumber) officialIds.push(`Vergi No: ${sysSettings.taxNumber}`);
+    if (sysSettings.mersisNumber) officialIds.push(`Mersis No: ${sysSettings.mersisNumber}`);
+    
+    let footerLine2 = "www.sozen-enerji.com | destek@sozen-enerji.com | Müşteri Hizmetleri: 444 0 123";
+    if (officialIds.length > 0) {
+        footerLine2 += ` | ${officialIds.join(" | ")}`;
+    }
+    doc.text(temizleTR(footerLine2), pageWidth / 2, pageHeight - 16, { align: 'center' });
 
     const safeFileName = temizleTR(project.title || "Proje").replace(/[^a-zA-Z0-9]/g, '_');
     doc.save(`SozenEnerji_${safeFileName}_Raporu.pdf`);
   };
 
-  // 2. Profesyonel Resmi Belge ve Kılavuz PDF'i (GÜNCELLENDİ)
+  // 2. Profesyonel Resmi Belge ve Kılavuz PDF'i
   const generateOfficialDocument = (type) => {
     showToast("Belgeniz hazırlanıyor, lütfen bekleyin...", "info");
     
@@ -340,7 +363,7 @@ export default function CustomerPortal() {
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
       
-      // ÜST BİLGİ (HEADER) - MODERN VE KALIN
+      // ÜST BİLGİ (HEADER) 
       doc.setFillColor(2, 82, 156); 
       doc.rect(0, 0, pageWidth, 45, 'F');
       doc.setFillColor(255, 193, 7); 
@@ -364,13 +387,12 @@ export default function CustomerPortal() {
       doc.setFont("helvetica", "normal");
       doc.text(temizleTR(`Belge No: SZN-${Math.floor(1000 + Math.random() * 9000)}`), pageWidth - 20, 34, { align: "right" });
 
-      // İÇERİK AYARLARI (Seçilen belgeye göre)
+      // İÇERİK AYARLARI 
       let title = "";
       let fileName = "";
       let introText = "";
       let sections = [];
 
-      // KULLANIM KILAVUZU GÜNCELLENDİ: Admin panelindeki detaylı kılavuz metni eklendi
       if (type === "kilavuz") {
         title = "MÜŞTERİ PORTALI KULLANIM KILAVUZU";
         fileName = "SozenEnerji_Kullanim_Kilavuzu.pdf";
@@ -426,10 +448,9 @@ export default function CustomerPortal() {
         // Dinamik Sayfa Ekleme Kontrolü
         if (yPos > pageHeight - 50) {
           doc.addPage();
-          yPos = 30; // Yeni sayfanın başından başlat
+          yPos = 30; 
         }
 
-        // Madde Başlığı
         doc.setTextColor(2, 82, 156);
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
@@ -437,7 +458,6 @@ export default function CustomerPortal() {
         
         yPos += 7;
 
-        // Madde İçeriği
         doc.setTextColor(71, 85, 105);
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
@@ -468,21 +488,31 @@ export default function CustomerPortal() {
       doc.text(temizleTR("Okudum, anladım ve kabul ediyorum."), pageWidth - 80, yPos + 6);
 
 
-      // ALT BİLGİ (FOOTER) - TÜM SAYFALARA DİNAMİK EKLENİR
+      // YENİ: DİNAMİK FOOTER VE KİMLİK BİLGİLERİ (VERGİ / MERSİS)
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFillColor(248, 250, 252); 
-        doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+        doc.rect(0, pageHeight - 25, pageWidth, 25, 'F');
         
         doc.setDrawColor(226, 232, 240);
-        doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+        doc.line(0, pageHeight - 25, pageWidth, pageHeight - 25);
         
         doc.setTextColor(148, 163, 184);
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
-        doc.text(temizleTR("Bu resmi belge, Sözen Enerji CRM sistemi tarafından otomatik üretilmiştir."), pageWidth / 2, pageHeight - 12, { align: 'center' });
-        doc.text(temizleTR("www.sozen-enerji.com  |  destek@sozen-enerji.com  |  Sayfa " + i + " / " + pageCount), pageWidth / 2, pageHeight - 7, { align: 'center' });
+        
+        doc.text(temizleTR(sysSettings.pdfFooterText), pageWidth / 2, pageHeight - 17, { align: 'center' });
+        
+        let officialIds = [];
+        if (sysSettings.taxNumber) officialIds.push(`Vergi No: ${sysSettings.taxNumber}`);
+        if (sysSettings.mersisNumber) officialIds.push(`Mersis No: ${sysSettings.mersisNumber}`);
+        
+        let footerLine2 = "www.sozen-enerji.com | destek@sozen-enerji.com";
+        if (officialIds.length > 0) footerLine2 += ` | ${officialIds.join(" | ")}`;
+        
+        doc.text(temizleTR(footerLine2), pageWidth / 2, pageHeight - 12, { align: 'center' });
+        doc.text(temizleTR(`Sayfa ${i} / ${pageCount}`), pageWidth / 2, pageHeight - 7, { align: 'center' });
       }
 
       doc.save(fileName);
