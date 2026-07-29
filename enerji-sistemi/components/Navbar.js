@@ -39,10 +39,10 @@ export default function Navbar() {
           {/* GERÇEK KURUMSAL LOGO ALANI */}
           <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink-0">
             
-            {/* YENİ: TEMİZ VE KESİN ÇÖZÜM (logo site.jpg) */}
+            {/* YENİ: DOSYA YOLU DÜZELTİLDİ (logo-site.jpg) */}
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c] flex items-center justify-center">
               <img 
-                src="/logo site.jpg" 
+                src="/logo-site.jpg" 
                 alt="Sözen Enerji Logo" 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
