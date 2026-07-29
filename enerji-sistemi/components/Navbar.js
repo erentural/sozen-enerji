@@ -36,19 +36,19 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-24">
           
-          {/* GERÇEK KURUMSAL LOGO ALANI (Düzeltildi) */}
+          {/* GERÇEK KURUMSAL LOGO ALANI */}
           <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink-0">
             
-            {/* icon.png Görseli - Sadece S Sembolüne Zoomlandı, Alt Yazı Gizlendi */}
-            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c]">
+            {/* SADECE S AMBLEMİNE ZOOM YAPILMIŞ LOGO */}
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c] flex items-center justify-center">
               <img 
                 src="/icon.png" 
                 alt="Sözen Enerji Logo" 
-                className="w-full h-full object-cover scale-[1.4] -translate-y-1.5 group-hover:scale-[1.5] transition-transform duration-500"
+                className="w-full h-full object-cover scale-[2.2] -translate-y-2 group-hover:scale-[2.35] transition-transform duration-500"
               />
             </div>
             
-            {/* Profesyonel Tipografi - Tek Satıra Zorlandı (whitespace-nowrap) */}
+            {/* Profesyonel Tipografi */}
             <div className="flex flex-col justify-center">
               <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-[#02529C] dark:text-slate-100 transition-colors whitespace-nowrap flex items-center gap-1.5 leading-none">
                 <span className="font-black">SÖZEN</span>
