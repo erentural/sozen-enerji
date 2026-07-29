@@ -82,18 +82,25 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+    // dark:bg-slate-950 ve transition eklendi
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+      {/* Form Kutusu */}
+      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-none border border-transparent dark:border-slate-800 transition-colors duration-300">
+        
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 transition-colors">
             {isLoginMode ? "Sisteme Giriş" : "Yeni Hesap Oluştur"}
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 transition-colors">
             {isLoginMode ? "Lütfen bilgilerinizi giriniz" : "Hızlıca müşteri kaydınızı tamamlayın"}
           </p>
         </div>
 
-        {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded">{error}</div>}
+        {error && (
+          <div className="p-3 text-sm text-red-500 dark:text-rose-400 bg-red-50 dark:bg-rose-900/30 rounded border border-transparent dark:border-rose-900/50 transition-colors">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
@@ -101,23 +108,35 @@ export default function AuthPage() {
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block mb-1 text-sm text-gray-600">Ad</label>
-                  <input type="text" name="firstName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
+                  <label className="block mb-1 text-sm text-gray-600 dark:text-slate-300 transition-colors">Ad</label>
+                  <input 
+                    type="text" 
+                    name="firstName" 
+                    required 
+                    onChange={handleChange} 
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
+                  />
                 </div>
                 <div>
-                  <label className="block mb-1 text-sm text-gray-600">Soyad</label>
-                  <input type="text" name="lastName" required onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
+                  <label className="block mb-1 text-sm text-gray-600 dark:text-slate-300 transition-colors">Soyad</label>
+                  <input 
+                    type="text" 
+                    name="lastName" 
+                    required 
+                    onChange={handleChange} 
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
+                  />
                 </div>
               </div>
               
               <div>
-                <label className="block mb-1 text-sm text-gray-600">Telefon Numarası</label>
+                <label className="block mb-1 text-sm text-gray-600 dark:text-slate-300 transition-colors">Telefon Numarası</label>
                 <div className="flex">
                   <select 
                     name="countryCode" 
                     value={formData.countryCode} 
                     onChange={handleChange}
-                    className="px-2 py-2 border border-r-0 rounded-l-md bg-gray-50 text-gray-600 focus:outline-none"
+                    className="px-2 py-2 border border-r-0 border-gray-200 dark:border-slate-700 rounded-l-md bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 focus:outline-none transition-colors"
                   >
                     <option value="+90">+90 (TR)</option>
                     <option value="+1">+1 (ABD)</option>
@@ -137,7 +156,7 @@ export default function AuthPage() {
                     onChange={handlePhoneChange} 
                     maxLength={10} 
                     placeholder="5XX XXX XX XX" 
-                    className="w-full px-3 py-2 border rounded-r-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-r-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
                   />
                 </div>
               </div>
@@ -145,27 +164,40 @@ export default function AuthPage() {
           )}
 
           <div>
-            <label className="block mb-1 text-sm text-gray-600">E-posta Adresi</label>
-            <input type="email" name="email" required placeholder="E-posta adresiniz" onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
+            <label className="block mb-1 text-sm text-gray-600 dark:text-slate-300 transition-colors">E-posta Adresi</label>
+            <input 
+              type="email" 
+              name="email" 
+              required 
+              placeholder="E-posta adresiniz" 
+              onChange={handleChange} 
+              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
+            />
           </div>
 
           <div>
-            {/* YENİ: Şifre etiketi ve Şifremi Unuttum linki aynı satırda */}
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm text-gray-600">Şifre</label>
+              <label className="block text-sm text-gray-600 dark:text-slate-300 transition-colors">Şifre</label>
               {isLoginMode && (
                 <Link 
                   href="/sifremi-unuttum" 
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   Şifremi unuttum
                 </Link>
               )}
             </div>
-            <input type="password" name="password" required placeholder="••••••••" onChange={handleChange} className="w-full px-3 py-2 border rounded-md focus:outline-blue-500" />
+            <input 
+              type="password" 
+              name="password" 
+              required 
+              placeholder="••••••••" 
+              onChange={handleChange} 
+              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
+            />
           </div>
 
-          <button type="submit" className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+          <button type="submit" className="w-full py-2 text-white font-bold bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 rounded-md transition-colors shadow-sm">
             {isLoginMode ? "Giriş Yap" : "Kayıt Ol"}
           </button>
         </form>
@@ -174,14 +206,14 @@ export default function AuthPage() {
           <button 
             type="button" 
             onClick={() => setIsLoginMode(!isLoginMode)} 
-            className="text-sm text-blue-600 hover:underline focus:outline-none block w-full"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none block w-full transition-colors"
           >
             {isLoginMode ? "Hesabınız yok mu? Yeni müşteri kaydı oluşturun." : "Zaten hesabınız var mı? Giriş yapın."}
           </button>
 
           <Link 
             href="/" 
-            className="inline-flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            className="inline-flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
