@@ -21,7 +21,6 @@ export default function Navbar() {
   ];
 
   return (
-    // dark:bg-slate-900 ve transition eklendi
     <nav className="bg-white dark:bg-slate-900 shadow-sm dark:shadow-slate-800/50 font-sans sticky top-0 z-50 transition-colors duration-300 border-b border-transparent dark:border-slate-800">
       
       {/* 1. Üst İletişim Bandı */}
@@ -39,24 +38,30 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-24">
           
-          {/* Logo Alanı */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center">
-              <span className="text-5xl font-black text-[#02529C] dark:text-blue-400 italic tracking-tighter transition-colors">V</span>
-              <Zap className="w-6 h-6 text-[#FFC107] absolute -right-3 top-1 fill-[#FFC107]" />
+          {/* YENİ, PROFESYONEL LOGO ALANI */}
+          <Link href="/" className="flex items-center gap-3 group">
+            
+            {/* İkon (Amblem) */}
+            <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#02529C] via-[#034482] to-blue-900 dark:from-blue-600 dark:via-blue-700 dark:to-blue-900 shadow-md group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden shrink-0">
+              {/* Cam Efekti (Glassmorphism) Üst Parlama */}
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent"></div>
+              {/* Şimşek / Enerji İkonu */}
+              <Zap className="w-6 h-6 text-[#FFC107] fill-[#FFC107] drop-shadow-[0_0_6px_rgba(255,193,7,0.5)] relative z-10 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            {/* SÖZEN ENERJİ LOGOSU */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#02529C] dark:bg-blue-600 rounded-xl flex items-center justify-center shadow-inner transition-colors">
-                <Zap className="w-6 h-6 text-[#FFC107] fill-[#FFC107]" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <h1 className="text-xl font-black text-[#02529C] dark:text-blue-400 leading-none tracking-tight transition-colors">
-                  SÖZEN<span className="text-[#FFC107]">ENERJİ</span>
-                </h1>
-                <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 tracking-widest uppercase mt-0.5">Elektrik & İnşaat</p>
+            
+            {/* Tipografi (Yazı) */}
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tighter flex items-center leading-none">
+                <span className="text-[#02529C] dark:text-slate-100 transition-colors">SÖZEN</span>
+                <span className="text-[#FFC107] dark:text-amber-400 ml-0.5 transition-colors">ENERJİ</span>
+              </h1>
+              <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
+                {/* Mühendislik tarzı dekoratif çizgi */}
+                <div className="w-3 h-[2px] bg-[#FFC107] dark:bg-amber-400 rounded-full"></div>
+                <p className="text-[9px] sm:text-[9.5px] font-bold text-gray-500 dark:text-gray-400 tracking-[0.25em] uppercase leading-none mt-[1px]">Elektrik & İnşaat</p>
               </div>
             </div>
+
           </Link>
 
           {/* Orta Kısım: Sayfa Linkleri */}
@@ -120,7 +125,7 @@ export default function Navbar() {
               Müşteri Girişi
             </Link>
 
-            {/* YENİ: TEMA DEĞİŞTİRME BUTONU BURAYA EKLENDİ */}
+            {/* TEMA DEĞİŞTİRME BUTONU */}
             <ThemeToggle />
 
           </div>
