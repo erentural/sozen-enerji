@@ -36,26 +36,27 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-24">
           
-          {/* GERÇEK KURUMSAL LOGO ALANI */}
-          <Link href="/" className="flex items-center gap-3 sm:gap-4 group">
+          {/* GERÇEK KURUMSAL LOGO ALANI (Düzeltildi) */}
+          <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink-0">
             
-            {/* icon.png Görseli */}
-            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border border-gray-100 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-white">
+            {/* icon.png Görseli - Sadece S Sembolüne Zoomlandı, Alt Yazı Gizlendi */}
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c]">
               <img 
                 src="/icon.png" 
                 alt="Sözen Enerji Logo" 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover scale-[1.4] -translate-y-1.5 group-hover:scale-[1.5] transition-transform duration-500"
               />
             </div>
             
-            {/* Orijinal Logoya Uygun Serif Tipografi */}
+            {/* Profesyonel Tipografi - Tek Satıra Zorlandı (whitespace-nowrap) */}
             <div className="flex flex-col justify-center">
-              <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-wide text-[#02529C] dark:text-slate-100 transition-colors">
-                SÖZEN ENERJİ
+              <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-[#02529C] dark:text-slate-100 transition-colors whitespace-nowrap flex items-center gap-1.5 leading-none">
+                <span className="font-black">SÖZEN</span>
+                <span className="font-medium text-[0.95em]">ENERJİ</span>
               </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="w-4 h-[2px] bg-[#FFC107] dark:bg-amber-400"></div>
-                <p className="text-[9px] sm:text-[10px] font-sans font-semibold text-gray-500 dark:text-gray-400 tracking-[0.2em] uppercase leading-none mt-0.5">
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="w-5 h-[2px] bg-[#FFC107] dark:bg-amber-400 rounded-full shrink-0"></div>
+                <p className="text-[9px] sm:text-[10px] font-sans font-bold text-gray-500 dark:text-gray-400 tracking-[0.25em] uppercase leading-none whitespace-nowrap pt-[1px]">
                   Elektrik & İnşaat
                 </p>
               </div>
