@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Linkedin, MessageCircle, Link as LinkIcon } from "lucide-react";
+// DÜZELTME: Linkedin importu buradan kaldırıldı
+import { Check, MessageCircle, Link as LinkIcon } from "lucide-react"; 
 
 export default function ShareButton({ title }) {
   const [copied, setCopied] = useState(false);
@@ -38,7 +39,12 @@ export default function ShareButton({ title }) {
         </button>
         
         <button onClick={shareViaLinkedIn} className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-colors shadow-sm" title="LinkedIn'de Paylaş">
-          <Linkedin className="w-5 h-5" />
+          {/* DÜZELTME: Hata veren ikon yerine orijinal SVG kodu eklendi */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
         </button>
         
         <button onClick={copyToClipboard} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-sm rounded-xl transition-colors shadow-sm min-w-[140px] justify-center">
