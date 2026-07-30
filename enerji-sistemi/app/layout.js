@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -42,6 +43,9 @@ export default function RootLayout({ children }) {
         
         {/* VERCEL SPEED INSIGHTS BİLEŞENİ BURAYA EKLENDİ */}
         <SpeedInsights />
+        
+        {/* YENİ EKLENEN: WHATSAPP CANLI DESTEK BUTONU */}
+        <WhatsAppButton />
       </body>
     </html>
   )
