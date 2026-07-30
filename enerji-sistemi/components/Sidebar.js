@@ -7,7 +7,7 @@ import NotificationBell from "./NotificationBell";
 import { useTheme } from "@/app/admin/ThemeContext";
 import { 
   Users, ClipboardList, LayoutDashboard, CalendarDays, 
-  Settings, LogOut, FolderKanban, Mail, Globe, BookOpen
+  Settings, LogOut, FolderKanban, Mail, Globe, BookOpen, FileText
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -22,6 +22,7 @@ export default function Sidebar() {
     { name: "Kılavuz", icon: BookOpen, path: "/admin/kilavuz" },
     { name: "Müşteriler", icon: Users, path: "/admin/musteriler" },
     { name: "Teklif Talepleri", icon: ClipboardList, path: "/admin/teklifler" },
+    { name: "Blog", icon: FileText, path: "/admin/blog" },
     { name: "Ayarlar", icon: Settings, path: "/admin/ayarlar" },
   ];
 
@@ -31,7 +32,6 @@ export default function Sidebar() {
       <div className="h-16 flex items-center justify-between px-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
         <h1 className="text-xl font-black flex items-center gap-1">
           <span className={currentTheme.text}>Enerji</span>
-          {/* dark:text-white yerine dark:text-slate-200 kullanıldı */}
           <span className="text-slate-900 dark:text-slate-200 transition-colors">Panel</span>
         </h1>
         <NotificationBell />
@@ -50,7 +50,6 @@ export default function Sidebar() {
                   className={`flex items-center px-6 py-3 text-sm font-bold transition-all duration-200 ${
                     isActive 
                       ? `${currentTheme.bg} text-white shadow-md border-r-4 border-slate-900 dark:border-slate-300` 
-                      // Hover durumunda da beyaz yerine slate-200'e gidiyor
                       : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
