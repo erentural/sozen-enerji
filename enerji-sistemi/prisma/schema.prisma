@@ -136,3 +136,16 @@ model SystemSettings {
   logoUrl          String?  // İleride rapora eklenebilecek şirket logosu URL'si
   updatedAt        DateTime @updatedAt
 }
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String   // Yazının başlığı
+  slug        String   @unique // URL dostu başlık (orn: gunes-enerjisi-tesvikleri)
+  summary     String?  // Kısa özet
+  content     String   @db.Text // Yazının tam içeriği (HTML formatında tutabiliriz)
+  imageUrl    String?  // Kapak fotoğrafı
+  published   Boolean  @default(true) // Yayında mı, taslak mı?
+  viewCount   Int      @default(0) // Okunma sayısı
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
