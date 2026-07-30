@@ -10,11 +10,13 @@ export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname(); 
 
+  // YENİ EKLENEN: Haberler linki (href: "/blog") listeye dahil edildi.
   const navLinks = [
     { name: "Anasayfa", href: "/" },
     { name: "Hizmetler", href: "/hizmetler" },
     { name: "Yenilenebilir Enerji", href: "/yenilenebilir" },
     { name: "Hakkımızda", href: "/hakkimizda" },
+    { name: "Haberler", href: "/blog" }, 
     { name: "İletişim", href: "/iletisim" },
   ];
 
@@ -39,7 +41,7 @@ export default function Navbar() {
           {/* GERÇEK KURUMSAL LOGO ALANI */}
           <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink-0">
             
-            {/* YENİ: DOSYA YOLU DÜZELTİLDİ (logo-site.jpg) */}
+            {/* DOSYA YOLU DÜZELTİLDİ (logo-site.jpg) */}
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c] flex items-center justify-center">
               <img 
                 src="/logo-site.jpg" 
@@ -67,7 +69,7 @@ export default function Navbar() {
           {/* Orta Kısım: Sayfa Linkleri */}
           <div className="hidden lg:flex items-center gap-8 flex-1 justify-center mx-8">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href === '/blog' && pathname.startsWith('/blog'));
               
               return (
                 <Link 
