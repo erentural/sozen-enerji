@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { CalendarDays, ArrowRight, Eye, Zap } from "lucide-react";
+import { CalendarDays, ArrowRight, ArrowLeft, Eye, Zap } from "lucide-react";
 
 // Google SEO için Meta Etiketleri
 export const metadata = {
@@ -18,20 +18,34 @@ export default async function BlogPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pt-24 pb-20 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pt-8 md:pt-12 pb-20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Üst Başlık Alanı */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-bold tracking-widest uppercase mb-6">
-            <Zap className="w-4 h-4" /> BİLGİ MERKEZİ
+        {/* SOL ÜST: Geri Dön Butonu */}
+        <div className="mb-8 md:mb-12">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:border-[#02529C] dark:hover:border-blue-500 hover:text-[#02529C] dark:hover:text-blue-400 hover:shadow-md transition-all group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+            Ana Sayfaya Dön
+          </Link>
+        </div>
+
+        {/* Üst Başlık Alanı - Kurumsal Sol Hizalı Tasarım */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 pb-8 border-b border-slate-200 dark:border-slate-800">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#02529C]/10 dark:bg-blue-900/30 text-[#02529C] dark:text-blue-400 text-xs font-bold tracking-widest uppercase mb-4">
+              <Zap className="w-4 h-4" /> BİLGİ MERKEZİ
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
+              Sektörel Haberler <br className="hidden md:block" />
+              <span className="text-[#02529C] dark:text-blue-500">& Duyurular</span>
+            </h1>
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium">
+              Güneş enerjisi teknolojileri, güncel devlet teşvikleri ve tamamladığımız dev projeler hakkında en son gelişmeleri takip edin.
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">
-            Sektörel Haberler & <span className="text-blue-600 dark:text-blue-500">Duyurular</span>
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400 font-medium">
-            Güneş enerjisi teknolojileri, güncel devlet teşvikleri ve tamamladığımız dev projeler hakkında en son gelişmeleri takip edin.
-          </p>
         </div>
 
         {/* Yazıların Listelendiği Grid */}
@@ -49,9 +63,9 @@ export default async function BlogPage() {
                   {post.imageUrl ? (
                     <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-slate-400 font-bold opacity-30 text-2xl">SÖZEN ENERJİ</div>
+                    <div className="flex items-center justify-center h-full text-[#02529C] dark:text-blue-500 font-black opacity-20 text-3xl tracking-widest">SÖZEN</div>
                   )}
-                  <div className="absolute top-4 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 dark:text-white shadow-sm flex items-center gap-1.5">
+                  <div className="absolute top-4 left-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-[#02529C] dark:text-white shadow-sm flex items-center gap-1.5">
                     <CalendarDays className="w-3.5 h-3.5" />
                     {new Date(post.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </div>
@@ -59,7 +73,7 @@ export default async function BlogPage() {
 
                 {/* İçerik */}
                 <div className="p-6 sm:p-8 flex-1 flex flex-col">
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-[#02529C] dark:group-hover:text-blue-400 transition-colors">
                     {post.title}
                   </h2>
                   <p className="text-slate-600 dark:text-slate-400 text-sm font-medium line-clamp-3 mb-6 flex-1">
@@ -70,7 +84,7 @@ export default async function BlogPage() {
                     <span className="flex items-center gap-1 text-xs font-bold text-slate-400 dark:text-slate-500">
                       <Eye className="w-4 h-4" /> {post.viewCount} Okunma
                     </span>
-                    <span className="flex items-center gap-1 text-sm font-bold text-blue-600 dark:text-blue-500 group-hover:gap-2 transition-all">
+                    <span className="flex items-center gap-1 text-sm font-bold text-[#02529C] dark:text-blue-500 group-hover:gap-2 transition-all">
                       Devamını Oku <ArrowRight className="w-4 h-4" />
                     </span>
                   </div>
