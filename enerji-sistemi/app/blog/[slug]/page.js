@@ -15,13 +15,13 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function BlogPostPage({ params }) {
-  // Yazıyı URL'deki slug'a göre veritabanından çek
+  // HATA BURADA DÜZELTİLDİ: Sadece benzersiz alan (slug) ile arama yapıyoruz.
   const post = await prisma.blogPost.findUnique({
-    where: { slug: params.slug, published: true }
+    where: { slug: params.slug }
   });
 
-  // Eğer yazı yoksa veya taslaksa 404 sayfasına yönlendir
-  if (!post) {
+  // Yazı yoksa VEYA taslak durumundaysa (published: false) 404 sayfasına at.
+  if (!post || !post.published) {
     notFound();
   }
 
@@ -65,8 +65,8 @@ export default async function BlogPostPage({ params }) {
 
         {/* Yazı İçeriği */}
         <article className="prose prose-lg dark:prose-invert prose-blue max-w-none mb-16">
-          {/* İçerik veritabanında satır atlamalarıyla (plain text) geliyorsa okunaklı olması için ayırıyoruz */}
-          {post.content.split('\n').map((paragraph, index) => (
+          {/* GÜVENLİK EKLENDİ: (post.content || "") ile olası boş veri çökmeleri engellendi */}
+          {(post.content || "").split('\n').map((paragraph, index) => (
             paragraph.trim() !== "" ? <p key={index} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6 font-medium text-[17px]">{paragraph}</p> : <br key={index} />
           ))}
         </article>
