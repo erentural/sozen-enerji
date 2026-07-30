@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma"; // Prisma bağlantı yolunuzu kendi yapınıza göre uyarlayın
+import { prisma } from "@/lib/prisma"; // Prisma bağlantı yolunuzu kendi yapınıza göre uyarlayın
 
 export async function GET() {
   try {
