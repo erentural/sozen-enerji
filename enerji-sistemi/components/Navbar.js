@@ -10,7 +10,6 @@ export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname(); 
 
-  // YENİ EKLENEN: Haberler linki (href: "/blog") listeye dahil edildi.
   const navLinks = [
     { name: "Anasayfa", href: "/" },
     { name: "Hizmetler", href: "/hizmetler" },
@@ -24,7 +23,7 @@ export default function Navbar() {
     <nav className="bg-white dark:bg-slate-900 shadow-sm dark:shadow-slate-800/50 font-sans sticky top-0 z-50 transition-colors duration-300 border-b border-transparent dark:border-slate-800">
       
       {/* 1. Üst İletişim Bandı */}
-      <div className="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800 py-2 px-6 lg:px-12 flex justify-between items-center text-xs font-medium text-gray-500 dark:text-gray-400 transition-colors duration-300">
+      <div className="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800 py-2 px-4 sm:px-6 xl:px-12 flex justify-between items-center text-xs font-medium text-gray-500 dark:text-gray-400 transition-colors duration-300">
         <div className="hidden md:block">
           Güvenilir Elektrik ve Yenilenebilir Enerji Çözümleri
         </div>
@@ -34,14 +33,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 2. Ana Menü */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+      {/* 2. Ana Menü (max-w-7xl yerine max-w-[95rem] yapılarak alan genişletildi) */}
+      <div className="max-w-[95rem] mx-auto px-4 sm:px-6 xl:px-12">
         <div className="flex justify-between items-center h-24">
           
-          {/* GERÇEK KURUMSAL LOGO ALANI */}
+          {/* GERÇEK KURUMSAL LOGO ALANI (shrink-0 ile sıkışması engellendi) */}
           <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink-0">
-            
-            {/* DOSYA YOLU DÜZELTİLDİ (logo-site.jpg) */}
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-[#02529C]/10 dark:border-slate-700 shrink-0 group-hover:shadow-lg transition-all duration-300 bg-[#16215c] flex items-center justify-center">
               <img 
                 src="/logo-site.jpg" 
@@ -50,7 +47,6 @@ export default function Navbar() {
               />
             </div>
             
-            {/* Profesyonel Tipografi */}
             <div className="flex flex-col justify-center">
               <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-[#02529C] dark:text-slate-100 transition-colors whitespace-nowrap flex items-center gap-1.5 leading-none">
                 <span className="font-black">SÖZEN</span>
@@ -63,11 +59,10 @@ export default function Navbar() {
                 </p>
               </div>
             </div>
-
           </Link>
 
-          {/* Orta Kısım: Sayfa Linkleri */}
-          <div className="hidden lg:flex items-center gap-8 flex-1 justify-center mx-8">
+          {/* Orta Kısım: Sayfa Linkleri (gap ve mx değerleri ekran boyutuna göre dinamikleştirildi) */}
+          <div className="hidden lg:flex items-center gap-4 xl:gap-8 flex-1 justify-center mx-2 xl:mx-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || (link.href === '/blog' && pathname.startsWith('/blog'));
               
@@ -82,7 +77,6 @@ export default function Navbar() {
                   }`}
                 >
                   {link.name}
-                  {/* Modern Alt Çizgi Animasyonu */}
                   <span 
                     className={`absolute -bottom-1.5 left-0 h-0.5 rounded-full transition-all duration-300 ${
                       isActive ? "w-full bg-[#FFC107]" : "w-0 bg-[#02529C] dark:bg-blue-400 group-hover:w-full"
@@ -93,32 +87,32 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Sağ Kısım: Aksiyon Butonları */}
-          <div className="flex items-center gap-4 lg:gap-6">
+          {/* Sağ Kısım: Aksiyon Butonları (shrink-0 eklendi, böylece butonlar dışarı taşmaz) */}
+          <div className="flex items-center gap-3 xl:gap-5 shrink-0">
             
             <Link 
               href="/teklif-al" 
-              className="hidden md:flex px-5 py-2.5 text-sm font-bold text-slate-900 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-colors whitespace-nowrap shadow-sm"
+              className="hidden lg:flex px-4 py-2 text-sm font-bold text-slate-900 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-colors whitespace-nowrap shadow-sm"
             >
               Fiyat Teklifi Al
             </Link>
 
             <Link 
               href="/admin-login" 
-              className="flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-slate-400 hover:text-[#02529C] dark:hover:text-blue-400 transition-colors whitespace-nowrap" 
+              className="hidden xl:flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-slate-400 hover:text-[#02529C] dark:hover:text-blue-400 transition-colors whitespace-nowrap" 
               title="Yönetici Girişi"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
-              <span className="hidden xl:inline">Yönetici</span>
+              <span>Yönetici</span>
             </Link>
 
-            <div className="hidden sm:block w-px h-6 bg-gray-200 dark:bg-slate-700 transition-colors"></div>
+            <div className="hidden lg:block w-px h-6 bg-gray-200 dark:bg-slate-700 transition-colors"></div>
 
             <Link 
               href="/login" 
-              className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#02529C] border border-[#02529C] dark:border-blue-600 dark:bg-blue-600 rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
+              className="hidden sm:flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-[#02529C] border border-[#02529C] dark:border-blue-600 dark:bg-blue-600 rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors whitespace-nowrap shadow-sm"
             >
               Müşteri Girişi
             </Link>
