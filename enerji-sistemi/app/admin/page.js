@@ -1,28 +1,94 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FolderKanban, CalendarDays, Mail, Users, Activity, Zap, ArrowRight, TrendingUp } from "lucide-react";
+import { 
+  FolderKanban, CalendarDays, Mail, Users, Activity, 
+  Zap, ArrowRight, TrendingUp, CheckCircle, XCircle, Clock, Save
+} from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "./ThemeContext";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ projects: 0, pendingAppointments: 0, unreadMessages: 0, customers: 0 });
+  // Veri yapısını yeni modülleri destekleyecek şekilde genişlettik
+  const [data, setData] = useState({
+    stats: { projects: 0, pendingAppointments: 0, unreadMessages: 0, customers: 0 },
+    recentProjects: [],
+    pendingAppointments: []
+  });
+  
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null); // Butonlardaki yüklenme animasyonu için
   const { currentTheme } = useTheme(); 
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch("/api/admin/dashboard-stats", { cache: "no-store" });
-        if (res.ok) setStats(await res.json());
-      } catch (error) {
-        console.error("İstatistikler alınamadı", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch("/api/admin/dashboard-stats", { cache: "no-store" });
+      if (res.ok) {
+        const result = await res.json();
+        // API henüz güncellenmediyse hata vermemesi için güvenli (fallback) atama
+        setData({
+          stats: result.stats || result, 
+          recentProjects: result.recentProjects || [],
+          pendingAppointments: result.pendingAppointments || []
+        });
+      }
+    } catch (error) {
+      console.error("Dashboard verileri alınamadı", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- HIZLI AKSİYON FONKSİYONLARI ---
+
+  // 1. Proje Yüzdesini Güncelleme
+  const updateProjectProgress = async (id, newProgress) => {
+    setActionLoading(`proj-${id}`);
+    try {
+      const res = await fetch(`/api/admin/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ progress: newProgress }),
+      });
+      if (res.ok) {
+        // Başarılı olursa listeyi yerel olarak güncelle
+        setData(prev => ({
+          ...prev,
+          recentProjects: prev.recentProjects.map(p => p.id === id ? { ...p, progress: newProgress } : p)
+        }));
+      }
+    } catch (error) {
+      console.error("Proje güncellenemedi", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // 2. Randevu Durumunu Güncelleme
+  const updateAppointmentStatus = async (id, newStatus) => {
+    setActionLoading(`appt-${id}`);
+    try {
+      const res = await fetch(`/api/admin/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        // Başarılı olursa listeyi yenile
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error("Randevu güncellenemedi", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // --- BİLEŞENLER ---
 
   const StatCard = ({ title, value, icon: Icon, color, link, linkText }) => {
     const colorClasses = {
@@ -48,7 +114,6 @@ export default function AdminDashboard() {
               <p className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 min-h-[40px] transition-colors">
                 {title}
               </p>
-              {/* text-white yerine text-slate-200 kullanıldı */}
               <h3 className="text-5xl font-black text-slate-900 dark:text-slate-200 tracking-tighter transition-colors">
                 {loading ? <span className="animate-pulse text-slate-300 dark:text-slate-600">...</span> : value}
               </h3>
@@ -67,7 +132,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="font-sans transition-colors duration-300">
+    <div className="font-sans transition-colors duration-300 pb-10">
+      
+      {/* ÜST BAŞLIK ALANI */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-200 flex items-center gap-3 transition-colors">
@@ -88,13 +155,117 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* 1. İSTATİSTİK KARTLARI */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <StatCard title="Aktif Projeler" value={stats.projects} icon={FolderKanban} color="blue" link="/admin/projeler" linkText="Projeleri Yönet" />
-        <StatCard title="Yeni Randevular" value={stats.pendingAppointments} icon={CalendarDays} color="yellow" link="/admin/randevular" linkText="Talepleri İncele" />
-        <StatCard title="Yeni Mesajlar" value={stats.unreadMessages} icon={Mail} color="red" link="/admin/mesajlar" linkText="Gelen Kutusuna Git" />
-        <StatCard title="Müşteriler" value={stats.customers} icon={Users} color="green" link="/admin/musteriler" linkText="Müşterileri Yönet" />
+        <StatCard title="Aktif Projeler" value={data.stats.projects} icon={FolderKanban} color="blue" link="/admin/projeler" linkText="Projeleri Yönet" />
+        <StatCard title="Yeni Randevular" value={data.stats.pendingAppointments} icon={CalendarDays} color="yellow" link="/admin/randevular" linkText="Talepleri İncele" />
+        <StatCard title="Yeni Mesajlar" value={data.stats.unreadMessages} icon={Mail} color="red" link="/admin/mesajlar" linkText="Gelen Kutusuna Git" />
+        <StatCard title="Müşteriler" value={data.stats.customers} icon={Users} color="green" link="/admin/musteriler" linkText="Müşterileri Yönet" />
       </div>
 
+      {/* YENİ: HIZLI YÖNETİM MODÜLLERİ */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+        
+        {/* Modül 1: Hızlı Proje İlerleme Kontrolü */}
+        <div className="bg-white dark:bg-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700/80 backdrop-blur-sm transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <FolderKanban className={`w-6 h-6 ${currentTheme.text}`} /> Aktif Projeler
+            </h2>
+            <Link href="/admin/projeler" className={`text-sm font-bold ${currentTheme.text} hover:underline`}>Tümünü Gör</Link>
+          </div>
+          
+          <div className="space-y-5">
+            {data.recentProjects.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl">Henüz aktif proje bulunmuyor.</p>
+            ) : (
+              data.recentProjects.slice(0, 4).map((project) => (
+                <div key={project.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-slate-200 text-sm line-clamp-1">{project.title}</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">{project.customerName}</p>
+                    </div>
+                    <span className="font-black text-lg text-blue-600 dark:text-blue-400">%{project.progress}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="range" 
+                      min="0" max="100" step="5"
+                      value={project.progress}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setData(prev => ({
+                          ...prev,
+                          recentProjects: prev.recentProjects.map(p => p.id === project.id ? { ...p, progress: val } : p)
+                        }));
+                      }}
+                      className={`w-full h-2 rounded-lg appearance-none cursor-pointer bg-slate-200 dark:bg-slate-700 accent-current ${currentTheme.text}`}
+                    />
+                    <button 
+                      onClick={() => updateProjectProgress(project.id, project.progress)}
+                      disabled={actionLoading === `proj-${project.id}`}
+                      className={`p-2 rounded-lg text-white ${currentTheme.bg} ${currentTheme.hoverBg} transition-colors shadow-sm disabled:opacity-50`}
+                      title="Kaydet"
+                    >
+                      {actionLoading === `proj-${project.id}` ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Modül 2: Bekleyen Randevu Talepleri */}
+        <div className="bg-white dark:bg-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700/80 backdrop-blur-sm transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <CalendarDays className="w-6 h-6 text-amber-500" /> Bekleyen Randevular
+            </h2>
+            <Link href="/admin/randevular" className="text-sm font-bold text-amber-500 hover:underline">Tümünü Gör</Link>
+          </div>
+
+          <div className="space-y-4">
+            {data.pendingAppointments.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl">Onay bekleyen yeni talep yok.</p>
+            ) : (
+              data.pendingAppointments.slice(0, 4).map((appt) => (
+                <div key={appt.id} className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100/50 dark:border-amber-800/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-slate-200 text-sm mb-1">{appt.subject}</h4>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5" /> 
+                      {new Date(appt.date).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-1 font-semibold">{appt.customerName}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button 
+                      onClick={() => updateAppointmentStatus(appt.id, 'APPROVED')}
+                      disabled={actionLoading === `appt-${appt.id}`}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" /> Onayla
+                    </button>
+                    <button 
+                      onClick={() => updateAppointmentStatus(appt.id, 'REJECTED')}
+                      disabled={actionLoading === `appt-${appt.id}`}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                    >
+                      <XCircle className="w-3.5 h-3.5" /> İptal
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* ALT HERO BANNER (Mevcut Görünüm Korundu) */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 dark:bg-slate-950 shadow-2xl transition-all duration-300 border border-slate-800">
         <div className={`absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob transition-colors duration-1000 ${currentTheme.bg.replace('bg-', 'bg-')}`}></div>
         <div className={`absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-slate-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 transition-colors duration-1000`}></div>

@@ -1,42 +1,58 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-// Next.js'in bu API yanıtını önbelleğe (cache) almasını engeller
-export const dynamic = 'force-dynamic';
+import prisma from "@/lib/prisma"; // Prisma bağlantı yolunuzu kendi yapınıza göre uyarlayın
 
 export async function GET() {
   try {
-    // 1. Aktif Projeler (Project tablosu)
-    // Eğer sadece devam edenleri saymak istersen { where: { isCompleted: false } } eklenebilir.
-    const projectsCount = await prisma.project.count().catch(() => 0);
+    // 1. İstatistik Sayılarını Çek
+    const projectsCount = await prisma.project.count({ where: { progress: { lt: 100 } } });
+    const pendingAppointments = await prisma.appointment.count({ where: { status: "PENDING" } });
+    const unreadMessages = await prisma.message.count({ where: { isRead: false } });
+    const customersCount = await prisma.user.count({ where: { role: "USER" } });
 
-    // 2. Bekleyen Randevular (Appointment tablosu)
-    // schema.prisma'daki AppointmentStatus enum'una göre "PENDING" olanlar
-    const pendingAppointmentsCount = await prisma.appointment.count({
-      where: { status: "PENDING" }
-    }).catch(() => 0);
+    // 2. Aktif Projeleri Çek (Son 4 Proje)
+    const recentProjectsData = await prisma.project.findMany({
+      where: { progress: { lt: 100 } },
+      orderBy: { updatedAt: 'desc' },
+      take: 4,
+      include: { user: true } // Müşteri adını alabilmek için user tablosunu dahil ediyoruz
+    });
 
-    // 3. Yeni Mesajlar (Message tablosu)
-    // Sadece okunmamış mesajlar (read: false)
-    const unreadMessagesCount = await prisma.message.count({
-      where: { read: false }
-    }).catch(() => 0);
+    const recentProjects = recentProjectsData.map(p => ({
+      id: p.id,
+      title: p.title,
+      progress: p.progress,
+      customerName: p.user?.name || "Bilinmeyen Müşteri"
+    }));
 
-    // 4. Müşteriler (User tablosu)
-    // Customer tablosu yerine, Role'ü "USER" olan kullanıcılar sayılıyor
-    const customersCount = await prisma.user.count({
-      where: { role: "USER" }
-    }).catch(() => 0);
+    // 3. Bekleyen Randevuları Çek (Son 4 Randevu)
+    const pendingApptsData = await prisma.appointment.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+      include: { user: true }
+    });
 
+    const pendingAppointmentsList = pendingApptsData.map(a => ({
+      id: a.id,
+      subject: a.subject,
+      date: a.date,
+      customerName: a.user?.name || "Bilinmeyen Müşteri"
+    }));
+
+    // Tüm verileri tek bir JSON objesi olarak arayüze gönder
     return NextResponse.json({
-      projects: projectsCount,
-      pendingAppointments: pendingAppointmentsCount,
-      unreadMessages: unreadMessagesCount,
-      customers: customersCount,
+      stats: {
+        projects: projectsCount,
+        pendingAppointments: pendingAppointments,
+        unreadMessages: unreadMessages,
+        customers: customersCount
+      },
+      recentProjects: recentProjects,
+      pendingAppointments: pendingAppointmentsList
     });
 
   } catch (error) {
-    console.error("Dashboard istatistikleri alınırken hata:", error);
-    return NextResponse.json({ error: "İstatistikler yüklenemedi." }, { status: 500 });
+    console.error("Dashboard Stats API Hatası:", error);
+    return NextResponse.json({ error: "Veriler alınırken bir hata oluştu." }, { status: 500 });
   }
 }
