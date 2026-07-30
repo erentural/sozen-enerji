@@ -86,7 +86,7 @@ export default async function BlogPostPage({ params }) {
 
           {/* Yazı Altı Paylaşım ve Etiket Alanı */}
           <div className="flex items-center justify-between py-6 border-t border-slate-200 dark:border-slate-800">
-            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Yazar: Ali Bülent</span>
+            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Yazar: {post.author || "Sözen Enerji"}</span>
             <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-sm rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
               <Share2 className="w-4 h-4" /> Yazıyı Paylaş
             </button>

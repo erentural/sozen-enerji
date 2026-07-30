@@ -16,6 +16,7 @@ export default function AdminBlogPage() {
     summary: "",
     content: "",
     imageUrl: "",
+    author: "",
     published: true
   });
 
@@ -137,6 +138,11 @@ export default function AdminBlogPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Yazı Başlığı</label>
                 <input required type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100" placeholder="Örn: Güneş Enerjisinde 2026 Teşvikleri Açıklandı" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Yazar Adı</label>
+                <input type="text" value={formData.author} onChange={(e) => setFormData({...formData, author: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100" placeholder="Örn: Eren veya Sözen Enerji" />
               </div>
               
               <div>

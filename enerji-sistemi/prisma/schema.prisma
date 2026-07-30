@@ -144,6 +144,7 @@ model BlogPost {
   summary     String?  // Kısa özet
   content     String   @db.Text // Yazının tam içeriği (HTML formatında tutabiliriz)
   imageUrl    String?  // Kapak fotoğrafı
+  author      String?  @default("Sözen Enerji")
   published   Boolean  @default(true) // Yayında mı, taslak mı?
   viewCount   Int      @default(0) // Okunma sayısı
   createdAt   DateTime @default(now())

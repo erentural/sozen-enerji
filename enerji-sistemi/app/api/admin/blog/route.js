@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
-// Tüm blog yazılarını getir
 export async function GET() {
   try {
     const posts = await prisma.blogPost.findMany({
@@ -16,17 +15,16 @@ export async function GET() {
   }
 }
 
-// Yeni blog yazısı ekle
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { title, summary, content, imageUrl, published } = body;
+    // author verisini de req.json'dan alıyoruz
+    const { title, summary, content, imageUrl, author, published } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: "Başlık ve içerik zorunludur." }, { status: 400 });
     }
 
-    // Başlıktan otomatik URL dostu (SEO) slug oluşturma
     let slug = title
       .toLowerCase()
       .trim()
@@ -35,7 +33,6 @@ export async function POST(req) {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
       
-    // Aynı isimde başlık olma ihtimaline karşı sonuna benzersiz bir ID ekliyoruz
     slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newPost = await prisma.blogPost.create({
@@ -45,6 +42,7 @@ export async function POST(req) {
         summary: summary || "",
         content,
         imageUrl: imageUrl || null,
+        author: author || "Sözen Enerji", // Yazar girilmezse varsayılan değer
         published: published !== undefined ? published : true,
       }
     });
